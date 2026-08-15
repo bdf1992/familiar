@@ -69,13 +69,20 @@ class WorkspaceTidyHost:
     def resolve_authority(self, caster: dict[str, Any], authority: str, context: dict[str, Any]) -> bool:
         return authority == "workspace.write" and caster.get("id") in self.write_authorized_casters
 
-    def execute(self, spell: dict[str, Any], effect_id: str, context: dict[str, Any]) -> dict[str, Any]:
+    def execute(
+        self,
+        spell: dict[str, Any],
+        effect_id: str,
+        context: dict[str, Any],
+        execution_max_ms: int | None,
+    ) -> dict[str, Any]:
         self.executor_calls += 1
         completed = subprocess.run(
             [sys.executable, str(self.script), str(self.workspace)],
             check=True,
             capture_output=True,
             text=True,
+            timeout=(execution_max_ms / 1000) if execution_max_ms is not None else None,
         )
         return json.loads(completed.stdout)
 
