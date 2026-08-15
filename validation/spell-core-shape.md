@@ -71,25 +71,30 @@ Authority is treated as a before Requirement but must be resolved by the host/se
 
 **Forbids:** substituting stale or assumed state where the declaration requires a current observation.
 
-### Cost — unresolved
+### Cost — runtime mechanism validated; FORMAT field not yet promoted
 
 **Meaning:** measurable resource bounds material to whether or how an Effect may run.
 
-**Why it may belong:** a runtime could gate a cast on declared budgets and record actual use in CAST.
+**Validated behavior:** the Kernel can provide a Technique binding with a named integer ceiling. The reference fixture gives `tool_calls` a ceiling of one. The Technique charges once, performs the first action, then attempts to charge again. The second charge is rejected before the second action occurs. CAST records used and maximum cost, execution fails, and a residual records the exceeded ceiling. CI passes.
 
-**What the Duration fixture exposed:** recording a resource after execution is not the same as enforcing a resource ceiling. A useful Cost field requires the effectful operations to pass through a host/runtime path that can meter or deny consumption before the ceiling is crossed.
+**Important boundary:** Cost is governable only when the effectful resource passes through a runtime/Technique path that participates in the meter. Counting resource use after uncontrolled execution is observation, not enforcement.
 
-**Forbids, if it survives:** exceeding a declared measurable resource ceiling or reporting author estimates as observed usage.
+**Forbids:** a compliant binding consuming another metered unit after the declared ceiling would be exceeded, or reporting author estimates as observed usage.
 
-Candidate resources include tool calls, bytes written, files changed, compute, money/quota, or required approvals where the host can meter them.
+Still unvalidated:
 
-If no host meter exists, the proposed Cost is not enforceable and must remain outside FORMAT. Cost has not yet earned a FORMAT field.
+- a Cost declaration arriving from portable `SPELL.md`;
+- host-independent resource naming/units;
+- externally metered resources such as money, quota, compute, or bytes written;
+- whether some proposed Cost categories are better represented as Scope or Requirements.
+
+Cost has earned a runtime mechanism. It has not yet earned a required FORMAT field.
 
 ### Duration — runtime mechanism validated; FORMAT field not yet promoted
 
 **Meaning:** measurable time bounds that materially constrain execution, confirmation, or temporary effect lifetime.
 
-**Validated behavior:** the Kernel now accepts an execution duration bound and passes it to the Technique binding. The reference fixture uses a subprocess that exceeds the bound; the binding terminates the subprocess, the Kernel records failed execution with the bound and measured elapsed time, post-execution telemetry still runs, and CAST resolves to `failed` with residuals. CI passes.
+**Validated behavior:** the Kernel accepts an execution duration bound and passes it to the Technique binding. The reference fixture uses a subprocess that exceeds the bound; the binding terminates the subprocess, the Kernel records failed execution with the bound and measured elapsed time, post-execution telemetry still runs, and CAST resolves to `failed` with residuals. CI passes.
 
 **Important boundary:** the Kernel can only govern execution Duration when the Technique binding can actually enforce the bound. Merely measuring elapsed time after an uncontrolled Technique returns is observation, not containment.
 
@@ -138,8 +143,8 @@ FORMAT 0.2 contains a first-class `limits` field. This pass suggests it may be a
 Candidate absorption:
 
 - reach/target boundaries -> Scope;
-- resource ceilings -> Cost, if Cost survives;
-- time ceilings -> Duration;
+- resource ceilings -> Cost, if Cost survives FORMAT validation;
+- time ceilings -> Duration, if Duration survives FORMAT validation;
 - invariants such as preservation/safety conditions -> Requirements.
 
 The workspace-tidy `preserve-unmarked` limit can be rewritten as an after Requirement asserting that every unmarked pre-existing file remains present and byte-identical. This is more directly observable than calling it a generic Limit.
@@ -157,7 +162,7 @@ A useful test for every candidate field is whether CAST can record the runtime c
 | Scope | concrete resolved target/reach |
 | Telemetry | observations actually obtained with provenance/freshness |
 | Requirements | before/after check results |
-| Cost | actual measured resource use, only if a real meter exists |
+| Cost | actual metered resource use when a real meter participates |
 | Duration | actual bound plus measured timing when Duration participates |
 | Description | no authoritative runtime counterpart |
 
@@ -181,19 +186,25 @@ The Duration fixture additionally supports:
 - timeout does not erase post-execution observation;
 - Duration evidence is omitted from casts where Duration is not involved.
 
-It does not yet validate Cost, Domain as an enforceable portable field, observation/effect-lifetime Duration, or learned Scaling/Stats.
+The Cost fixture additionally supports:
+
+- a named budget can be enforced before the next metered unit is consumed;
+- used/max resource evidence can be retained in CAST;
+- an exceeded Cost can fail execution without pretending the second action occurred;
+- ordinary casts remain unchanged when no Cost participates.
+
+It does not yet validate Domain as an enforceable portable field, Scope as a portable declaration, observation/effect-lifetime Duration, portable Cost resource semantics, or learned Scaling/Stats.
 
 ## Next validation sequence
 
 Do not revise FORMAT from vocabulary alone. Continue in this order:
 
-1. **Cost investigation:** determine whether one concrete resource can be metered and denied before the ceiling is crossed. If the runtime can only count it afterward, challenge Cost as a first-class Spell field.
-2. **Scope fixture:** request a target wider than the declared bound; prove the Kernel refuses before the Technique can touch the excess target.
-3. **Domain fixture:** bind the same Effect request to one compatible and one incompatible target/environment; determine whether a portable Domain identifier provides real value beyond a before Requirement.
-4. **Requirements migration:** rewrite workspace-tidy's generic `preserve-unmarked` Limit as an after Requirement and verify the same external-effect guarantees.
-5. **Duration declaration path:** if the prior structure still survives, introduce Duration only in an experimental candidate declaration and prove the Kernel consumes it without host-specific configuration.
-6. If the surviving candidate fields pass, draft FORMAT 0.3 and derive CAST 0.3 from the new declaration shape.
-7. Only after multiple real CAST records exist, design Stats/Scaling aggregation. Do not add either to `SPELL.md`.
+1. **Scope fixture:** request a target wider than the declared bound; prove the Kernel refuses before the Technique can touch the excess target.
+2. **Domain fixture:** bind the same Effect request to one compatible and one incompatible target/environment; determine whether a portable Domain identifier provides real value beyond a before Requirement.
+3. **Requirements migration:** rewrite workspace-tidy's generic `preserve-unmarked` Limit as an after Requirement and verify the same external-effect guarantees.
+4. **Candidate declaration path:** if the prior structure still survives, introduce Scope, Cost, and Duration only in an experimental candidate declaration and prove the Kernel consumes them without host-specific cast configuration.
+5. If the surviving candidate fields pass, draft FORMAT 0.3 and derive CAST 0.3 from the new declaration shape.
+6. Only after multiple real CAST records exist, design Stats/Scaling aggregation. Do not add either to `SPELL.md`.
 
 The working proposition is:
 
