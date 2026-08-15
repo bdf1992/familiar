@@ -1,5 +1,5 @@
 {
-  "familiar_format": "0.2",
+  "familiar_format": "0.3",
   "id": "owl.system",
   "caster": {"id": "agent-spells", "kind": "system"},
   "dialect": {
@@ -25,7 +25,7 @@
     "Spell format review",
     "Spellcraft guidance"
   ],
-  "authority": [
+  "advisory_authority": [
     "familiar.validate",
     "spell.format.read"
   ]
