@@ -1,14 +1,19 @@
+import json
 import subprocess
 import sys
 import unittest
 from copy import deepcopy
 from pathlib import Path
 
+import jsonschema
+
 from kernel.spell_kernel import SpellKernel
 from validation.candidate_adapter import cast_candidate, load_candidate_spell
 
 ROOT = Path(__file__).resolve().parents[1]
 CANDIDATE = ROOT / "validation" / "candidate" / "SPELL.md"
+SPELL_DRAFT_SCHEMA = ROOT / "format" / "0.3-draft" / "spell.schema.json"
+CAST_DRAFT_SCHEMA = ROOT / "kernel" / "0.3-draft" / "cast.schema.json"
 
 
 def target_observable(phase, context):
@@ -31,6 +36,10 @@ def build_kernel(executor, *, authorized=True):
         scope_resolver=lambda target, context: target["items"],
         executor=executor,
     )
+
+
+def load_json(path):
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 class CandidateRequirementTests(unittest.TestCase):
@@ -66,6 +75,14 @@ class CandidateRequirementTests(unittest.TestCase):
         self.assertEqual("satisfied", by_id["execution-time"]["status"])
         self.assertEqual("during", by_id["execution-time"]["phase"])
         self.assertEqual("satisfied", by_id["effect-confirmed"]["status"])
+
+        draft_spell = deepcopy(self.spell)
+        draft_spell["spell_format"] = "0.3"
+        jsonschema.validate(instance=draft_spell, schema=load_json(SPELL_DRAFT_SCHEMA))
+
+        draft_cast = deepcopy(record)
+        draft_cast["cast_format"] = "0.3"
+        jsonschema.validate(instance=draft_cast, schema=load_json(CAST_DRAFT_SCHEMA))
 
     def test_candidate_scope_requirement_refuses_before_execution(self):
         calls = []
