@@ -1,4 +1,6 @@
 import json
+import subprocess
+import sys
 import unittest
 from pathlib import Path
 
@@ -38,7 +40,7 @@ def authority(caster, permission, context):
     return permission == "workspace.write" and caster.get("id") in {"caster-1", "agent-1"}
 
 
-def execute(spell, effect_id, context):
+def execute(spell, effect_id, context, execution_max_ms):
     return {"removed": ["a.tmp"]}
 
 
@@ -82,12 +84,36 @@ class KernelTests(unittest.TestCase):
         self.assertEqual(first["result"], second["result"])
 
     def test_failed_execution_keeps_record_and_residual(self):
-        def fail(spell, effect_id, context):
+        def fail(spell, effect_id, context, execution_max_ms):
             raise RuntimeError("fixture failure")
         record = kernel(executor=fail).cast(self.spell, effect_id="tidy", caster={"id": "caster-1", "kind": "human"}, target="fixture-workspace")
         self.assertEqual("closed", record["closure"]["decision"])
         self.assertEqual("failed", record["outcome"])
         self.assertTrue(record["residuals"])
+        self.assertTrue(any(o["kind"] == "telemetry" and o["phase"] == "after" for o in record["observations"]))
+
+    def test_execution_duration_is_enforced_by_technique_binding(self):
+        def slow(spell, effect_id, context, execution_max_ms):
+            subprocess.run(
+                [sys.executable, "-c", "import time; time.sleep(0.2)"],
+                check=True,
+                timeout=(execution_max_ms / 1000) if execution_max_ms is not None else None,
+            )
+            return {"finished": True}
+
+        record = kernel(executor=slow).cast(
+            self.spell,
+            effect_id="tidy",
+            caster={"id": "caster-1", "kind": "human"},
+            target="fixture-workspace",
+            execution_max_ms=25,
+        )
+        self.assertEqual("closed", record["closure"]["decision"])
+        self.assertEqual("failed", record["outcome"])
+        self.assertTrue(record["residuals"])
+        execution = next(o for o in record["observations"] if o["kind"] == "execution")
+        self.assertEqual("failed", execution["status"])
+        self.assertEqual(25, execution["value"]["max_ms"])
         self.assertTrue(any(o["kind"] == "telemetry" and o["phase"] == "after" for o in record["observations"]))
 
     def test_machine_caster_with_json_familiar_receives_machine_record(self):
