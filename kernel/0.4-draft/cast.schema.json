@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentspells.dev/schema/cast-0.4-draft.json",
+  "title": "Agent Spells CAST 0.4 draft record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["cast_format", "cast_id", "spell", "caster", "target", "technique", "effect", "closure", "observations", "residuals"],
+  "properties": {
+    "cast_format": {"const": "0.4-draft"},
+    "cast_id": {"type": "string", "minLength": 1},
+    "spell": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {"name": {"type": "string"}, "version": {"type": "string"}}
+    },
+    "caster": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["human", "agent", "service", "system", "other"]}
+      }
+    },
+    "target": {},
+    "technique": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "kind"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["skill", "mcp", "script", "service", "host"]}
+      }
+    },
+    "familiar": {"type": ["object", "null"], "additionalProperties": true},
+    "guidance": {},
+    "effect": {"type": "string", "minLength": 1},
+    "closure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision", "reasons"],
+      "properties": {
+        "decision": {"enum": ["closed", "refused"]},
+        "reasons": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "observations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["kind", "id", "phase", "status"],
+        "properties": {
+          "kind": {"enum": ["telemetry", "requirement", "execution"]},
+          "id": {"type": "string", "minLength": 1},
+          "phase": {"enum": ["before", "during", "after"]},
+          "status": {"enum": ["observed", "satisfied", "missing", "denied", "violated", "failed", "unavailable"]},
+          "value": {},
+          "source": {"type": "string"},
+          "freshness_ms": {"type": "integer", "minimum": 0},
+          "detail": {"type": "string"}
+        }
+      }
+    },
+    "outcome": {"type": ["string", "null"], "enum": ["resolved", "partial", "failed", null]},
+    "result": {},
+    "residuals": {"type": "array", "items": {"type": "string"}}
+  }
+}
