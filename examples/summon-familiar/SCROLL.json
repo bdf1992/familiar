@@ -4,7 +4,7 @@
   "carries": {
     "spell": "summon-familiar",
     "version": "0.1.0",
-    "digest": "sha256:7bb805b6abef46d0e4bb8c7cd5c7ba93d08cad8f78bf34cc5c9b0d72ba9cf1ce"
+    "digest": "sha256:254dbe50474d9fa96ef253c981168c2d3a4e0168caa47bf9b8207adec5a47c42"
   },
   "source": {
     "issuer": "agent-spells"
