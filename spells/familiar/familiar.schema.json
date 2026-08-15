@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://familiar.dev/schema/familiar.schema.json",
+  "title": "Familiar Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["familiar_protocol", "id", "holder", "form", "recognition", "expression", "pull", "strengths", "stake", "history", "mutability"],
+  "properties": {
+    "familiar_protocol": {"const": "0.1"},
+    "id": {"type": "string", "minLength": 1},
+    "holder": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id", "scope"],
+      "properties": {
+        "kind": {"enum": ["human", "agent", "spell", "skill", "role", "domain", "project", "organization", "tool", "runtime", "place", "artifact", "other"]},
+        "id": {"type": "string", "minLength": 1},
+        "scope": {"type": "string", "minLength": 1}
+      }
+    },
+    "form": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "name", "description"],
+      "properties": {
+        "kind": {"enum": ["animal", "creature", "person", "object", "place", "symbol", "system", "other"]},
+        "name": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1},
+        "icon": {"type": "string"},
+        "glyph": {"type": "string"}
+      }
+    },
+    "recognition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "basis"],
+      "properties": {
+        "status": {"enum": ["candidate", "adopted", "retired", "reassigned"]},
+        "basis": {"type": "array", "items": {"type": "string"}},
+        "recognized_by": {"type": "array", "items": {"type": "string"}},
+        "adopted_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "expression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["language", "style", "preferences", "aversions"],
+      "properties": {
+        "language": {"type": "array", "items": {"type": "string"}},
+        "jargon": {"type": "array", "items": {"type": "string"}},
+        "style": {"type": "array", "items": {"type": "string"}},
+        "preferences": {"type": "array", "items": {"type": "string"}},
+        "aversions": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "pull": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["notices", "encourages", "resists"],
+      "properties": {
+        "notices": {"type": "array", "items": {"type": "string"}},
+        "encourages": {"type": "array", "items": {"type": "string"}},
+        "resists": {"type": "array", "items": {"type": "string"}},
+        "questions": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "strengths": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["strength", "shadow"],
+        "properties": {
+          "strength": {"type": "string", "minLength": 1},
+          "shadow": {"type": "string", "minLength": 1},
+          "guidance": {"type": "string"}
+        }
+      }
+    },
+    "stake": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["scope", "basis"],
+        "properties": {
+          "scope": {"type": "string", "minLength": 1},
+          "basis": {"type": "string", "minLength": 1},
+          "limit": {"type": "string"}
+        }
+      }
+    },
+    "history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["kind", "summary"],
+        "properties": {
+          "kind": {"type": "string"},
+          "summary": {"type": "string"},
+          "locator": {"type": "string"}
+        }
+      }
+    },
+    "mutability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["form", "expression", "history"],
+      "properties": {
+        "form": {"const": "holder-authorized-only"},
+        "expression": {"enum": ["learnable", "holder-authorized-only", "fixed"]},
+        "history": {"enum": ["append-only", "holder-authorized", "fixed"]}
+      }
+    }
+  }
+}
