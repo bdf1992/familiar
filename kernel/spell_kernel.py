@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import time
 import uuid
 from pathlib import Path
 from typing import Any, Callable
@@ -72,7 +73,7 @@ def validate_cast_record(record: dict[str, Any]) -> None:
 Observer = Callable[[str, dict[str, Any]], dict[str, Any]]
 Checker = Callable[[str, dict[str, Any]], bool]
 AuthorityResolver = Callable[[dict[str, Any], str, dict[str, Any]], bool]
-Executor = Callable[[dict[str, Any], str, dict[str, Any]], Any]
+Executor = Callable[[dict[str, Any], str, dict[str, Any], int | None], Any]
 Guide = Callable[[dict[str, Any], dict[str, Any], str, dict[str, Any]], Any]
 
 
@@ -121,11 +122,25 @@ class SpellKernel:
             return {"kind": kind, "id": item_id, "phase": phase, "status": "unavailable", "detail": f"checker failed: {type(exc).__name__}: {exc}"}
         return {"kind": kind, "id": item_id, "phase": phase, "status": "satisfied" if ok else "violated"}
 
-    def cast(self, spell: dict[str, Any], *, effect_id: str, caster: dict[str, Any], target: Any = None, familiar: dict[str, Any] | None = None, cast_id: str | None = None) -> dict[str, Any]:
+    def cast(
+        self,
+        spell: dict[str, Any],
+        *,
+        effect_id: str,
+        caster: dict[str, Any],
+        target: Any = None,
+        familiar: dict[str, Any] | None = None,
+        cast_id: str | None = None,
+        execution_max_ms: int | None = None,
+    ) -> dict[str, Any]:
         validate_spell(spell)
+        if execution_max_ms is not None and (not isinstance(execution_max_ms, int) or execution_max_ms <= 0):
+            raise ValueError("execution_max_ms must be a positive integer when provided")
         effect = self._effect(spell, effect_id)
         cast_id = cast_id or f"cast-{uuid.uuid4().hex[:12]}"
         context = {"spell": spell, "effect": effect, "caster": caster, "target": target}
+        if execution_max_ms is not None:
+            context["duration"] = {"execution_max_ms": execution_max_ms}
         observations = []
         reasons = []
         familiar_ref = None
@@ -173,15 +188,29 @@ class SpellKernel:
             validate_cast_record(record)
             return record
         execution_failed = False
+        started = time.monotonic()
         try:
             if self.executor is None:
                 raise RuntimeError("no executor registered")
-            record["result"] = self.executor(spell, effect_id, context)
-            observations.append({"kind": "execution", "id": effect_id, "phase": "after", "status": "satisfied"})
+            record["result"] = self.executor(spell, effect_id, context, execution_max_ms)
+            elapsed_ms = round((time.monotonic() - started) * 1000, 3)
+            execution_value = {"elapsed_ms": elapsed_ms}
+            if execution_max_ms is not None:
+                execution_value["max_ms"] = execution_max_ms
+            if execution_max_ms is not None and elapsed_ms > execution_max_ms:
+                execution_failed = True
+                observations.append({"kind": "execution", "id": effect_id, "phase": "after", "status": "failed", "value": execution_value, "detail": "execution exceeded duration bound"})
+                record["residuals"].append(f"execution exceeded duration: {elapsed_ms}ms > {execution_max_ms}ms")
+            else:
+                observations.append({"kind": "execution", "id": effect_id, "phase": "after", "status": "satisfied", "value": execution_value})
         except Exception as exc:
+            elapsed_ms = round((time.monotonic() - started) * 1000, 3)
             execution_failed = True
             record["result"] = None
-            observations.append({"kind": "execution", "id": effect_id, "phase": "after", "status": "failed", "detail": f"{type(exc).__name__}: {exc}"})
+            execution_value = {"elapsed_ms": elapsed_ms}
+            if execution_max_ms is not None:
+                execution_value["max_ms"] = execution_max_ms
+            observations.append({"kind": "execution", "id": effect_id, "phase": "after", "status": "failed", "value": execution_value, "detail": f"{type(exc).__name__}: {exc}"})
             record["residuals"].append(f"execution failed: {type(exc).__name__}: {exc}")
         for telemetry_id in effect["telemetry"]:
             observation = self._observe(telemetry_by_id[telemetry_id], "after", context)
