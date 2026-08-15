@@ -1,0 +1,231 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://familiar.dev/schema/spell.schema.json",
+  "title": "Spell Definition",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "spell_protocol",
+    "identity",
+    "invocation",
+    "telemetry",
+    "requirements",
+    "limits",
+    "energy",
+    "effect",
+    "evidence",
+    "evaluation"
+  ],
+  "properties": {
+    "spell_protocol": {
+      "type": "string",
+      "const": "0.1"
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "version", "inherent_ability"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"
+        },
+        "name": {"type": "string", "minLength": 1},
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$"
+        },
+        "description": {"type": "string"},
+        "inherent_ability": {"type": "string", "minLength": 1}
+      }
+    },
+    "invocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["expressions"],
+      "properties": {
+        "magic_words": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        },
+        "expressions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/expression"}
+        }
+      }
+    },
+    "telemetry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "optional"],
+      "properties": {
+        "required": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/telemetryRequirement"}
+        },
+        "optional": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/telemetryRequirement"}
+        }
+      }
+    },
+    "requirements": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/requirement"}
+    },
+    "limits": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/limit"}
+    },
+    "energy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["resources"],
+      "properties": {
+        "resources": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/energyResource"}
+        }
+      }
+    },
+    "effect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["description"],
+      "properties": {
+        "description": {"type": "string", "minLength": 1},
+        "schema": {"type": "object"}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required"],
+      "properties": {
+        "required": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/evidenceRequirement"}
+        }
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trials"],
+      "properties": {
+        "claimed_level": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9
+        },
+        "trials": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/trialDeclaration"}
+        }
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "agent_skill": {"type": "boolean"},
+        "skill_path": {"type": "string"},
+        "mcp": {"type": "boolean"}
+      }
+    }
+  },
+  "$defs": {
+    "expression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+        "name": {"type": "string"},
+        "description": {"type": "string", "minLength": 1}
+      }
+    },
+    "telemetryRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]*$"},
+        "description": {"type": "string", "minLength": 1},
+        "coverage": {"type": "string"},
+        "max_age_ms": {"type": "integer", "minimum": 0}
+      }
+    },
+    "requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]*$"},
+        "description": {"type": "string", "minLength": 1}
+      }
+    },
+    "limit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description", "kind"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]*$"},
+        "description": {"type": "string", "minLength": 1},
+        "kind": {
+          "type": "string",
+          "enum": ["authority", "scope", "resource", "consequence", "reversibility", "identity", "other"]
+        }
+      }
+    },
+    "energyResource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]*$"},
+        "description": {"type": "string", "minLength": 1},
+        "unit": {"type": "string"}
+      }
+    },
+    "evidenceRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]*$"},
+        "description": {"type": "string", "minLength": 1}
+      }
+    },
+    "trialDeclaration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]*$"},
+        "description": {"type": "string", "minLength": 1},
+        "proves": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "effect",
+              "telemetry-sensitive",
+              "requirements",
+              "limits",
+              "energy-scaling",
+              "graceful-blocking",
+              "multi-expression",
+              "multi-environment",
+              "long-horizon",
+              "reversibility"
+            ]
+          },
+          "uniqueItems": true
+        }
+      }
+    }
+  }
+}
