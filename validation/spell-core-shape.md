@@ -2,214 +2,201 @@
 
 Date: 2026-08-15.
 
-This note records the current Spellcraft/Owl pass over the shape of a Spell. It does **not** change FORMAT 0.2. `format/SPECIFICATION.md` remains normative until the candidate fields below are exercised by fixtures and adopted in a versioned format revision.
+This note records the current Spellcraft/Owl pass over the shape of a Spell. It does **not** change FORMAT 0.2. `format/SPECIFICATION.md` remains normative until the candidate structure is exercised and versioned.
 
 ## Survival rule
 
-A portable Spell field survives only if it is Technique-independent and at least one of the following is true:
+A portable Spell field survives only if it is Technique-independent and at least one is true:
 
-1. it materially helps selection/inspection;
+1. it materially helps selection or inspection;
 2. it gates whether an Effect may execute;
 3. it constrains effectful execution through a host-checkable boundary;
 4. it determines whether the declared Effect occurred.
 
-A field that satisfies none of these is decoration and stays outside `SPELL.md`.
+If none apply, the field is decoration and stays outside `SPELL.md`.
 
-## Candidate shape
+## What now clearly survives
 
-### Domain — survives conditionally
+### Description
 
-**Meaning:** the kind of target/environment in which the Spell's Effects have meaning.
+Discovery and inspection text. It is author-asserted and never effect evidence.
 
-**Why it may belong:** a host can refuse execution when the resolved target does not belong to a declared Domain.
+### Effect
 
-**Forbids:** silently applying an Effect to an environment for which its requirements and observations have no defined meaning.
+The runtime change or resulting condition being attempted. Without an Effect there is nothing for the Kernel to govern or confirm.
 
-**Open requirement:** the format needs a portable domain identifier strategy or must leave Domain author-asserted. Until a host can resolve it, Domain is not ready to become a required FORMAT field.
+### Telemetry
 
-### Description — survives
+Current observations needed to resolve casting Requirements. Freshness belongs here when stale state can change the decision.
 
-**Meaning:** discovery and inspection text.
+### Requirements
 
-**Why it belongs:** enables catalog selection and human/machine inspection.
+Requirements are now the validation spine. A before Requirement gates closure. An after Requirement determines effect confirmation and becomes a residual when unresolved.
 
-**Forbids:** nothing at runtime; it is explicitly author-asserted and must never count as effect evidence.
+The external workspace-tidy fixture proves that an observable preservation invariant does not need a generic Limit: `preserve-unmarked` moved to an after Requirement, retained the same byte-for-byte external guarantee, and CI remained green.
 
-### Effect — survives
+Authority is semantically a before Requirement but still requires a privileged host/security resolver. Caster prose, Familiar guidance, Skill instructions, and executor output cannot self-certify authority.
 
-**Meaning:** a runtime change or resulting condition that can be attempted and investigated after execution.
+## Concerns that have runtime mechanics but have not earned peer FORMAT fields
 
-**Why it belongs:** without an Effect there is nothing for the Kernel to govern or confirm.
+### Duration
 
-**Forbids:** classifying instructions, capability descriptions, or executor success as the effect itself.
+The Kernel can hand a finite execution bound to a Technique binding. A subprocess fixture exceeds the bound and is terminated; CAST records failed execution and residuals; post-execution observation still runs.
 
-### Scope — structurally justified, but not yet testable as portable semantics
+This proves Duration is governable when the binding can enforce it. It does not prove that `duration:` deserves a peer field in `SPELL.md`.
 
-**Meaning:** what a selected Effect may reach and how much.
+Duration may instead be a structured before/execution Requirement carrying a machine-readable bound.
 
-**Why it likely belongs:** the Kernel should be able to resolve a concrete requested target against a portable bound before execution.
+### Cost
 
-**Forbids:** a Technique silently affecting targets outside the resolved cast.
+The Kernel can hand a named resource ceiling to a Technique binding. A fixture with `tool_calls: 1` charges once, performs one action, then has the second charge rejected before the second action occurs. CAST records used/max cost and the failure residual.
 
-**Blocker found:** Kernel `cast()` already accepts a target, but CAST 0.2 drops that target instead of persisting it, and SPELL 0.2 has no machine-readable Scope boundary. A host-only scope check would therefore prove host code, not portable Spell semantics.
+This proves Cost is governable when the effectful resource participates in the meter. It does not prove that `cost:` deserves a peer field in `SPELL.md`.
 
-Before Scope can be validated, the candidate runtime record must retain the resolved target/scope and the candidate declaration must contain at least one machine-readable bound. Do not call the current host's workspace path a validated Scope field.
+Cost may instead be a structured Requirement carrying a resource and ceiling.
 
-### Requirements — survives and absorbs more structure
+### Scope
 
-**Meaning:** conditions evaluated before execution and conditions evaluated afterward for effect confirmation.
+The Kernel can resolve a target into concrete items, compare the count to a bound, record the resolved target/items/count, and refuse before Technique execution when the bound is exceeded. The scope fixture is green.
 
-**Why it belongs:** Requirements are the main bridge between declaration and observable runtime truth.
+The important result is that this behavior is currently recorded as a before Requirement observation (`scope-max-items`). That means Scope has demonstrated a real casting concern but has **not** demonstrated a unique declaration job separate from Requirements.
 
-**Forbids:** closure when a before Requirement is not satisfied, and successful resolution when an after Requirement remains unconfirmed.
+If Scope becomes a portable concept, the declaration must carry the machine-readable boundary and CAST must retain the resolved target/reach. A host-local target name alone is not portable Scope.
 
-Authority is treated as a before Requirement but must be resolved by the host/security environment, never by Familiar guidance, caster prose, or executor self-report.
+## Concerns that currently collapse
 
-**Validated simplification:** the real workspace-tidy effect migrated `preserve-unmarked` from a generic Limit into an after Requirement. The host independently compares pre/post file digests, the same external guarantee remains, the durable CAST fixture now records a Requirement instead of a Limit, and CI passes.
+### Domain
 
-### Telemetry — survives
+The Domain challenge is green. An effect that is only valid for filesystem targets was expressed entirely as a before Requirement (`domain-compatible`). A queue target was refused before Technique execution.
 
-**Meaning:** current observations needed to resolve Requirements, Scope, Domain, or other execution gates.
+Therefore Domain has no demonstrated unique runtime job. If Domain remains, it should be optional discovery/inspection metadata. Runtime compatibility belongs to Requirements.
 
-**Why it belongs:** the Kernel must know which current state must be observed and when freshness matters.
+### Generic Limit
 
-**Forbids:** substituting stale or assumed state where the declaration requires a current observation.
+Generic Limit no longer has a demonstrated unique job:
 
-### Cost — runtime mechanism validated; FORMAT field not yet promoted
+- reach/quantity -> Scope concern;
+- resource ceiling -> Cost concern;
+- time ceiling -> Duration concern;
+- preservation/safety/result-state invariant -> Requirement.
 
-**Meaning:** measurable resource bounds material to whether or how an Effect may run.
+FORMAT 0.2 still supports `limits` for compatibility. Current evidence argues against carrying generic `limits` into the next candidate format unless a fixture finds a constraint that cannot be represented more precisely.
 
-**Validated behavior:** the Kernel can provide a Technique binding with a named integer ceiling. The reference fixture gives `tool_calls` a ceiling of one. The Technique charges once, performs the first action, then attempts to charge again. The second charge is rejected before the second action occurs. CAST records used and maximum cost, execution fails, and a residual records the exceeded ceiling. CI passes.
+## What remains outside SPELL
 
-**Important boundary:** Cost is governable only when the effectful resource passes through a runtime/Technique path that participates in the meter. Counting resource use after uncontrolled execution is observation, not enforcement.
+### Instructions
 
-**Forbids:** a compliant binding consuming another metered unit after the declared ceiling would be exceeded, or reporting author estimates as observed usage.
+Instructions belong to a Skill, Technique, MCP tool/service binding, or host. They explain how an Effect is attempted; they are not the Effect contract.
 
-Still unvalidated:
+### State
 
-- a Cost declaration arriving from portable `SPELL.md`;
-- host-independent resource naming/units;
-- externally metered resources such as money, quota, compute, or bytes written;
-- whether some proposed Cost categories are better represented as Scope or Requirements.
+Live state belongs to runtime/CAST. State that matters to validity is observed through Telemetry and tested through Requirements. A future persistent-state case may justify a declaration schema, but no current fixture does.
 
-Cost has earned a runtime mechanism. It has not yet earned a required FORMAT field.
+### Stats
 
-### Duration — runtime mechanism validated; FORMAT field not yet promoted
+Stats are aggregates over CAST records, not author claims.
 
-**Meaning:** measurable time bounds that materially constrain execution, confirmation, or temporary effect lifetime.
+### Scaling
 
-**Validated behavior:** the Kernel accepts an execution duration bound and passes it to the Technique binding. The reference fixture uses a subprocess that exceeds the bound; the binding terminates the subprocess, the Kernel records failed execution with the bound and measured elapsed time, post-execution telemetry still runs, and CAST resolves to `failed` with residuals. CI passes.
+Scaling is learned from repeated CAST records across changing Scope, Cost, Duration, and outcomes. A supported hard boundary may later be written into a new declaration version; scaling itself is not currently declaration truth.
 
-**Important boundary:** the Kernel can only govern execution Duration when the Technique binding can actually enforce the bound. Merely measuring elapsed time after an uncontrolled Technique returns is observation, not containment.
+## Current smallest hypothesis
 
-**Forbids:** execution continuing beyond a declared finite execution bound when the binding claims duration support, and reporting an over-duration execution as resolved merely because the executor eventually returned.
+The validation now suggests that the portable semantic core may be smaller than the original field list:
 
-Still unvalidated:
+- identity/version metadata;
+- Description;
+- Telemetry declarations;
+- Effects;
+- Requirements attached to each Effect.
 
-- a Duration value arriving from portable `SPELL.md` rather than cast/runtime input;
-- observation windows for after Requirements;
-- lifetime of explicitly temporary Effects.
+Scope, Cost, Duration, Domain compatibility, Authority, and observable invariants may all be **forms of Requirements** rather than peer top-level concepts. They can still have dedicated Kernel mechanisms where enforcement requires one.
 
-Actual timing should appear in CAST only when timing is material to the cast. The Duration regression test caught and removed incidental `elapsed_ms` from ordinary casts so existing CAST records remain stable when no Duration participates.
+This is a hypothesis, not FORMAT 0.3 yet.
 
-### Generic Limit — does not currently survive as a core candidate
+## Requirement structure to test next
 
-FORMAT 0.2 still contains `limits`, so existing declarations remain valid. The structural audit no longer finds a unique job for a generic Limit in the next candidate shape:
+The next candidate should test whether one Requirement surface can carry both ordinary checks and machine-readable specialized constraints without becoming an untyped dumping ground. Example shape:
 
-- reach/target boundaries belong to Scope;
-- metered resource ceilings belong to Cost when enforceable;
-- time ceilings belong to Duration when enforceable;
-- preservation, safety, and resulting-state invariants belong to Requirements.
+```yaml
+requirements:
+  before:
+    - id: target-observable
+      description: The requested target is observable.
 
-The workspace-tidy migration is direct evidence: removing its only Limit and replacing it with an after Requirement preserved the external behavior and verification.
+    - id: write-authority
+      authority: workspace.write
 
-**Forbids:** using `Limit` as an untyped bucket for constraints that can be expressed more precisely elsewhere.
+    - id: bounded-scope
+      scope:
+        max_items: 2
 
-This is evidence for removing generic `limits` in a future candidate FORMAT. It is not a retroactive change to FORMAT 0.2.
+    - id: tool-budget
+      cost:
+        resource: tool_calls
+        max: 1
 
-### Scaling — does not survive as an author-declared core field
+    - id: execution-time
+      duration:
+        execution_max_ms: 25
 
-**Meaning:** relationship among Scope, Cost, Duration, outcome, and reliability as casts vary.
+  after:
+    - id: disposable-absent
+      description: No disposable file remains.
 
-**Why it does not belong yet:** this is learned from multiple CAST records rather than known from declaration alone.
+    - id: preserve-unmarked
+      description: Every pre-existing unmarked file remains byte-identical.
+```
 
-**Forbids:** a spellcrafter claiming scaling behavior as runtime truth.
-
-When evidence supports a useful hard boundary, a new Spell version can encode that boundary through Scope, Cost, Duration, or Requirements.
-
-### Instructions — does not belong in SPELL
-
-Instructions belong to a Skill, Technique, MCP implementation, service, or host binding.
-
-**Forbids:** binding portable Spell semantics to one implementation procedure.
-
-### State — does not belong in SPELL as live data
-
-Current execution state belongs to CAST/runtime. Required starting or resulting state is represented through Telemetry and Requirements.
-
-**Forbids:** a portable declaration pretending that live environment state is static declaration data.
-
-### Stats — do not belong in SPELL
-
-Stats are derived from CAST records: counts, outcome rates, costs, durations, scale behavior, and other aggregates.
-
-**Forbids:** author-declared runtime history.
+No new protocol nouns are introduced here. Authority, Scope, Cost, and Duration are existing concerns being tested as structured Requirement forms.
 
 ## Declaration / CAST symmetry
 
-A useful test for every candidate field is whether CAST can record the runtime counterpart:
-
-| SPELL declaration | CAST evidence |
+| Declaration concern | CAST evidence |
 |---|---|
-| Domain | resolved target/environment |
-| Effect | attempted Effect and resulting outcome |
-| Scope | concrete resolved target/reach — missing from CAST 0.2 |
-| Telemetry | observations actually obtained with provenance/freshness |
-| Requirements | before/after check results |
-| Cost | actual metered resource use when a real meter participates |
-| Duration | actual bound plus measured timing when Duration participates |
+| Effect | attempted Effect and outcome |
+| Telemetry | observations with provenance/freshness |
+| ordinary Requirement | before/after check result |
+| Authority Requirement | host authorization result |
+| Scope Requirement | resolved target/items/count/bound |
+| Cost Requirement | used resource and ceiling |
+| Duration Requirement | applied bound and material timing |
 | Description | no authoritative runtime counterpart |
 
-If a new declaration field has no plausible runtime counterpart and does not materially improve discovery, Spellcraft should challenge it.
+## Evidence status
 
-## Evidence from workspace-tidy and kernel fixtures
+Validated in current tests/fixtures:
 
-The external-effect workspace-tidy fixture supports:
+- real filesystem Effect independently observed after Skill execution;
+- authority refusal before Technique execution;
+- malformed Familiar refusal;
+- Familiar dialect changes guidance but not Spell behavior;
+- executor failure preserves post-observation and residuals;
+- machine caster receives machine-consumable CAST;
+- execution Duration can be contained by a participating Technique binding;
+- Cost can reject the next metered unit before consumption;
+- Scope can refuse an over-broad resolved target before execution;
+- Domain compatibility can be expressed as a before Requirement;
+- preservation Limit can be replaced by an after Requirement with no lost guarantee.
 
-- Effect: `tidy` is independently investigated after script execution;
-- Telemetry: before/after filesystem manifests are observed;
-- Requirements: postconditions are independent of process exit status;
-- Authority: denied write authority prevents Technique execution;
-- preservation as Requirement: unmarked files remain byte-identical without using a generic Limit;
-- CAST: the runtime emits a machine-consumable record.
+Not yet validated:
 
-The Duration fixture additionally supports:
-
-- a finite execution bound can be handed from Kernel to Technique binding;
-- a compliant subprocess binding can contain over-duration execution;
-- timeout does not erase post-execution observation;
-- Duration evidence is omitted from casts where Duration is not involved.
-
-The Cost fixture additionally supports:
-
-- a named budget can be enforced before the next metered unit is consumed;
-- used/max resource evidence can be retained in CAST;
-- an exceeded Cost can fail execution without pretending the second action occurred;
-- ordinary casts remain unchanged when no Cost participates.
-
-It does not yet validate Domain as an enforceable portable field, Scope as portable semantics, observation/effect-lifetime Duration, portable Cost resource semantics, or learned Scaling/Stats.
+- Scope/Cost/Duration/Authority values arriving from one portable candidate Requirement structure rather than cast/host configuration;
+- observation-window Duration;
+- temporary effect lifetime;
+- portable resource naming/units for Cost;
+- durable Spell State;
+- aggregation into Stats/Scaling or Spell standing.
 
 ## Next validation sequence
 
-Do not revise FORMAT from vocabulary alone. Continue in this order:
+1. Create an **experimental candidate declaration** in `validation/` that nests Authority, Scope, Cost, and Duration under Requirements while keeping FORMAT 0.2 normative.
+2. Add a candidate adapter that derives existing Kernel enforcement inputs from that declaration; the caller must not separately pass the bounds.
+3. Run one cast where all structured Requirements pass and one where Scope/Cost/Duration independently fail.
+4. If that works without semantic ambiguity, draft FORMAT 0.3 around the smaller shape and remove generic Limit.
+5. Derive the matching CAST shape so target/scope and material bound evidence are first-class rather than hidden inside incidental host configuration.
+6. Only after multiple real casts exist, revisit State, Stats, Scaling, and standing.
 
-1. **CAST target/scope correction:** create an experimental next-record shape that retains the concrete target/scope. Do not mutate FORMAT 0.2 merely to make the test convenient.
-2. **Scope candidate fixture:** once the record retains target/scope, declare one machine-readable bound and prove the Kernel refuses before the Technique can reach outside it.
-3. **Domain challenge:** test whether Domain provides anything that cannot be expressed as discovery metadata plus a before Requirement. Drop it if it does not.
-4. **Candidate declaration path:** feed validated Scope, Cost, and Duration from an experimental declaration rather than host-specific cast arguments.
-5. If the surviving candidate fields pass, draft FORMAT 0.3 and derive CAST 0.3 from the new declaration shape, with generic `limits` removed unless new evidence gives it a unique job.
-6. Only after multiple real CAST records exist, design Stats/Scaling aggregation. Do not add either to `SPELL.md`.
+Working proposition:
 
-The working proposition is:
-
-> A Spell declares the bounded conditions of an Effect. CAST records what happened under those conditions. The Kernel owns the difference between the declaration and the observation.
+> A Spell declares an Effect and the Requirements under which that Effect may count. CAST records what happened. The Kernel owns the difference.
