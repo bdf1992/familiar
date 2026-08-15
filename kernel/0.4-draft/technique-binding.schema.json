@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentspells.dev/schema/technique-binding-0.4-draft.json",
+  "title": "Agent Spells Technique Binding 0.4 draft",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["binding_format", "id", "version", "kind", "realizes", "mechanisms"],
+  "properties": {
+    "binding_format": {"const": "0.4-draft"},
+    "id": {"type": "string", "minLength": 1, "pattern": "^[a-z0-9][a-z0-9_.-]*$"},
+    "version": {"type": "string", "minLength": 1},
+    "kind": {"enum": ["skill", "mcp", "script", "service", "host"]},
+    "realizes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spell", "spell_version", "effect"],
+      "properties": {
+        "spell": {"type": "string", "minLength": 1},
+        "spell_version": {"type": "string", "minLength": 1},
+        "effect": {"type": "string", "minLength": 1}
+      }
+    },
+    "mechanisms": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authority", "scope", "cost", "duration"],
+      "properties": {
+        "authority": {"type": "boolean"},
+        "scope": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"enum": ["max_items"]}
+        },
+        "cost": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "duration": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"enum": ["execution_max_ms"]}
+        }
+      }
+    }
+  }
+}
