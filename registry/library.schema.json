@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentspells.dev/schema/library-0.1.json",
+  "title": "Agent Spells Library 0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["library_format", "id", "books", "relations"],
+  "properties": {
+    "library_format": {"const": "0.1"},
+    "id": {"type": "string", "minLength": 1},
+    "books": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["subject", "relation", "object"],
+        "properties": {
+          "subject": {"type": "string", "minLength": 1},
+          "relation": {"enum": ["issues", "publishes", "subscribes_to", "consumes_from"]},
+          "object": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

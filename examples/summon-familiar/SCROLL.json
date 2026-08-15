@@ -1,0 +1,12 @@
+{
+  "scroll_format": "0.1",
+  "id": "summon-familiar-0.1.0",
+  "carries": {
+    "spell": "summon-familiar",
+    "version": "0.1.0",
+    "digest": "sha256:7bb805b6abef46d0e4bb8c7cd5c7ba93d08cad8f78bf34cc5c9b0d72ba9cf1ce"
+  },
+  "source": {
+    "issuer": "agent-spells"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentspells.dev/schema/scroll-0.1.json",
+  "title": "Agent Spells Scroll 0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["scroll_format", "id", "carries"],
+  "properties": {
+    "scroll_format": {"const": "0.1"},
+    "id": {"type": "string", "minLength": 1},
+    "carries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spell", "version", "digest"],
+      "properties": {
+        "spell": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1},
+        "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {"issuer": {"type": "string", "minLength": 1}}
+    }
+  }
+}

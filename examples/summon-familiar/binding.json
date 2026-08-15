@@ -1,0 +1,17 @@
+{
+  "binding_format": "0.4-draft",
+  "id": "summon-familiar.session-presence",
+  "version": "0.1.0",
+  "kind": "host",
+  "realizes": {
+    "spell": "summon-familiar",
+    "spell_version": "0.1.0",
+    "effect": "summon"
+  },
+  "mechanisms": {
+    "authority": false,
+    "scope": [],
+    "cost": [],
+    "duration": []
+  }
+}
