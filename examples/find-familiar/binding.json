@@ -1,0 +1,17 @@
+{
+  "binding_format": "0.4-draft",
+  "id": "find-familiar.draw-the-owl",
+  "version": "0.1.0",
+  "kind": "skill",
+  "realizes": {
+    "spell": "find-familiar",
+    "spell_version": "0.1.0",
+    "effect": "establish"
+  },
+  "mechanisms": {
+    "authority": false,
+    "scope": [],
+    "cost": [],
+    "duration": []
+  }
+}
