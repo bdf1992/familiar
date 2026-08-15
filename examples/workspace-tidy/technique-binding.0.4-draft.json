@@ -1,0 +1,17 @@
+{
+  "binding_format": "0.4-draft",
+  "id": "workspace-tidy-skill",
+  "version": "1.0.0",
+  "kind": "skill",
+  "realizes": {
+    "spell": "workspace-tidy",
+    "spell_version": "0.2.0",
+    "effect": "tidy"
+  },
+  "mechanisms": {
+    "authority": true,
+    "scope": [],
+    "cost": [],
+    "duration": ["execution_max_ms"]
+  }
+}
