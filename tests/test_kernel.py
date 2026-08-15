@@ -113,8 +113,34 @@ class KernelTests(unittest.TestCase):
         self.assertTrue(record["residuals"])
         execution = next(o for o in record["observations"] if o["kind"] == "execution")
         self.assertEqual("failed", execution["status"])
-        self.assertEqual(25, execution["value"]["max_ms"])
+        self.assertEqual(25, execution["value"]["duration"]["max_ms"])
         self.assertTrue(any(o["kind"] == "telemetry" and o["phase"] == "after" for o in record["observations"]))
+
+    def test_cost_ceiling_stops_next_unit_before_consumption(self):
+        actions = []
+
+        def costly(spell, effect_id, context, execution_max_ms):
+            charge = context["cost"]["charge"]
+            charge("tool_calls")
+            actions.append("first")
+            charge("tool_calls")
+            actions.append("second")
+            return {"finished": True}
+
+        record = kernel(executor=costly).cast(
+            self.spell,
+            effect_id="tidy",
+            caster={"id": "caster-1", "kind": "human"},
+            target="fixture-workspace",
+            cost_max={"tool_calls": 1},
+        )
+        self.assertEqual(["first"], actions)
+        self.assertEqual("closed", record["closure"]["decision"])
+        self.assertEqual("failed", record["outcome"])
+        execution = next(o for o in record["observations"] if o["kind"] == "execution")
+        self.assertEqual(1, execution["value"]["cost"]["used"]["tool_calls"])
+        self.assertEqual(1, execution["value"]["cost"]["max"]["tool_calls"])
+        self.assertTrue(any("cost exceeded" in residual for residual in record["residuals"]))
 
     def test_machine_caster_with_json_familiar_receives_machine_record(self):
         machine = familiar("familiar-json.json")
