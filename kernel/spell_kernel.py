@@ -194,23 +194,24 @@ class SpellKernel:
                 raise RuntimeError("no executor registered")
             record["result"] = self.executor(spell, effect_id, context, execution_max_ms)
             elapsed_ms = round((time.monotonic() - started) * 1000, 3)
-            execution_value = {"elapsed_ms": elapsed_ms}
             if execution_max_ms is not None:
-                execution_value["max_ms"] = execution_max_ms
-            if execution_max_ms is not None and elapsed_ms > execution_max_ms:
-                execution_failed = True
-                observations.append({"kind": "execution", "id": effect_id, "phase": "after", "status": "failed", "value": execution_value, "detail": "execution exceeded duration bound"})
-                record["residuals"].append(f"execution exceeded duration: {elapsed_ms}ms > {execution_max_ms}ms")
+                execution_value = {"elapsed_ms": elapsed_ms, "max_ms": execution_max_ms}
+                if elapsed_ms > execution_max_ms:
+                    execution_failed = True
+                    observations.append({"kind": "execution", "id": effect_id, "phase": "after", "status": "failed", "value": execution_value, "detail": "execution exceeded duration bound"})
+                    record["residuals"].append(f"execution exceeded duration: {elapsed_ms}ms > {execution_max_ms}ms")
+                else:
+                    observations.append({"kind": "execution", "id": effect_id, "phase": "after", "status": "satisfied", "value": execution_value})
             else:
-                observations.append({"kind": "execution", "id": effect_id, "phase": "after", "status": "satisfied", "value": execution_value})
+                observations.append({"kind": "execution", "id": effect_id, "phase": "after", "status": "satisfied"})
         except Exception as exc:
             elapsed_ms = round((time.monotonic() - started) * 1000, 3)
             execution_failed = True
             record["result"] = None
-            execution_value = {"elapsed_ms": elapsed_ms}
+            observation = {"kind": "execution", "id": effect_id, "phase": "after", "status": "failed", "detail": f"{type(exc).__name__}: {exc}"}
             if execution_max_ms is not None:
-                execution_value["max_ms"] = execution_max_ms
-            observations.append({"kind": "execution", "id": effect_id, "phase": "after", "status": "failed", "value": execution_value, "detail": f"{type(exc).__name__}: {exc}"})
+                observation["value"] = {"elapsed_ms": elapsed_ms, "max_ms": execution_max_ms}
+            observations.append(observation)
             record["residuals"].append(f"execution failed: {type(exc).__name__}: {exc}")
         for telemetry_id in effect["telemetry"]:
             observation = self._observe(telemetry_by_id[telemetry_id], "after", context)
