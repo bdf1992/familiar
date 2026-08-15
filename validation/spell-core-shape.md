@@ -43,17 +43,19 @@ A field that satisfies none of these is decoration and stays outside `SPELL.md`.
 
 **Forbids:** classifying instructions, capability descriptions, or executor success as the effect itself.
 
-### Scope — survives conditionally
+### Scope — structurally justified, but not yet testable as portable semantics
 
 **Meaning:** what a selected Effect may reach and how much.
 
-**Why it may belong:** the Kernel can resolve a concrete requested target against a portable bound before execution.
+**Why it likely belongs:** the Kernel should be able to resolve a concrete requested target against a portable bound before execution.
 
 **Forbids:** a Technique silently affecting targets outside the resolved cast.
 
-**Open requirement:** Scope must be expressible without embedding domain-specific implementation data in FORMAT. Candidate implementations should prove at least target identity plus one quantity/range boundary.
+**Blocker found:** Kernel `cast()` already accepts a target, but CAST 0.2 drops that target instead of persisting it, and SPELL 0.2 has no machine-readable Scope boundary. A host-only scope check would therefore prove host code, not portable Spell semantics.
 
-### Requirements — survives
+Before Scope can be validated, the candidate runtime record must retain the resolved target/scope and the candidate declaration must contain at least one machine-readable bound. Do not call the current host's workspace path a validated Scope field.
+
+### Requirements — survives and absorbs more structure
 
 **Meaning:** conditions evaluated before execution and conditions evaluated afterward for effect confirmation.
 
@@ -62,6 +64,8 @@ A field that satisfies none of these is decoration and stays outside `SPELL.md`.
 **Forbids:** closure when a before Requirement is not satisfied, and successful resolution when an after Requirement remains unconfirmed.
 
 Authority is treated as a before Requirement but must be resolved by the host/security environment, never by Familiar guidance, caster prose, or executor self-report.
+
+**Validated simplification:** the real workspace-tidy effect migrated `preserve-unmarked` from a generic Limit into an after Requirement. The host independently compares pre/post file digests, the same external guarantee remains, the durable CAST fixture now records a Requirement instead of a Limit, and CI passes.
 
 ### Telemetry — survives
 
@@ -108,6 +112,21 @@ Still unvalidated:
 
 Actual timing should appear in CAST only when timing is material to the cast. The Duration regression test caught and removed incidental `elapsed_ms` from ordinary casts so existing CAST records remain stable when no Duration participates.
 
+### Generic Limit — does not currently survive as a core candidate
+
+FORMAT 0.2 still contains `limits`, so existing declarations remain valid. The structural audit no longer finds a unique job for a generic Limit in the next candidate shape:
+
+- reach/target boundaries belong to Scope;
+- metered resource ceilings belong to Cost when enforceable;
+- time ceilings belong to Duration when enforceable;
+- preservation, safety, and resulting-state invariants belong to Requirements.
+
+The workspace-tidy migration is direct evidence: removing its only Limit and replacing it with an after Requirement preserved the external behavior and verification.
+
+**Forbids:** using `Limit` as an untyped bucket for constraints that can be expressed more precisely elsewhere.
+
+This is evidence for removing generic `limits` in a future candidate FORMAT. It is not a retroactive change to FORMAT 0.2.
+
 ### Scaling — does not survive as an author-declared core field
 
 **Meaning:** relationship among Scope, Cost, Duration, outcome, and reliability as casts vary.
@@ -136,21 +155,6 @@ Stats are derived from CAST records: counts, outcome rates, costs, durations, sc
 
 **Forbids:** author-declared runtime history.
 
-## Limits audit
-
-FORMAT 0.2 contains a first-class `limits` field. This pass suggests it may be an intermediate abstraction rather than a core Spell property.
-
-Candidate absorption:
-
-- reach/target boundaries -> Scope;
-- resource ceilings -> Cost, if Cost survives FORMAT validation;
-- time ceilings -> Duration, if Duration survives FORMAT validation;
-- invariants such as preservation/safety conditions -> Requirements.
-
-The workspace-tidy `preserve-unmarked` limit can be rewritten as an after Requirement asserting that every unmarked pre-existing file remains present and byte-identical. This is more directly observable than calling it a generic Limit.
-
-Do not remove `limits` from FORMAT until a migrated fixture proves the replacement is at least as expressive and enforceable.
-
 ## Declaration / CAST symmetry
 
 A useful test for every candidate field is whether CAST can record the runtime counterpart:
@@ -159,7 +163,7 @@ A useful test for every candidate field is whether CAST can record the runtime c
 |---|---|
 | Domain | resolved target/environment |
 | Effect | attempted Effect and resulting outcome |
-| Scope | concrete resolved target/reach |
+| Scope | concrete resolved target/reach — missing from CAST 0.2 |
 | Telemetry | observations actually obtained with provenance/freshness |
 | Requirements | before/after check results |
 | Cost | actual metered resource use when a real meter participates |
@@ -170,13 +174,13 @@ If a new declaration field has no plausible runtime counterpart and does not mat
 
 ## Evidence from workspace-tidy and kernel fixtures
 
-The first external-effect workspace-tidy fixture supports:
+The external-effect workspace-tidy fixture supports:
 
 - Effect: `tidy` is independently investigated after script execution;
 - Telemetry: before/after filesystem manifests are observed;
-- Requirements: the postcondition is independent of process exit status;
-- Scope/target: the host operates on a concrete temporary workspace;
+- Requirements: postconditions are independent of process exit status;
 - Authority: denied write authority prevents Technique execution;
+- preservation as Requirement: unmarked files remain byte-identical without using a generic Limit;
 - CAST: the runtime emits a machine-consumable record.
 
 The Duration fixture additionally supports:
@@ -193,17 +197,17 @@ The Cost fixture additionally supports:
 - an exceeded Cost can fail execution without pretending the second action occurred;
 - ordinary casts remain unchanged when no Cost participates.
 
-It does not yet validate Domain as an enforceable portable field, Scope as a portable declaration, observation/effect-lifetime Duration, portable Cost resource semantics, or learned Scaling/Stats.
+It does not yet validate Domain as an enforceable portable field, Scope as portable semantics, observation/effect-lifetime Duration, portable Cost resource semantics, or learned Scaling/Stats.
 
 ## Next validation sequence
 
 Do not revise FORMAT from vocabulary alone. Continue in this order:
 
-1. **Scope fixture:** request a target wider than the declared bound; prove the Kernel refuses before the Technique can touch the excess target.
-2. **Domain fixture:** bind the same Effect request to one compatible and one incompatible target/environment; determine whether a portable Domain identifier provides real value beyond a before Requirement.
-3. **Requirements migration:** rewrite workspace-tidy's generic `preserve-unmarked` Limit as an after Requirement and verify the same external-effect guarantees.
-4. **Candidate declaration path:** if the prior structure still survives, introduce Scope, Cost, and Duration only in an experimental candidate declaration and prove the Kernel consumes them without host-specific cast configuration.
-5. If the surviving candidate fields pass, draft FORMAT 0.3 and derive CAST 0.3 from the new declaration shape.
+1. **CAST target/scope correction:** create an experimental next-record shape that retains the concrete target/scope. Do not mutate FORMAT 0.2 merely to make the test convenient.
+2. **Scope candidate fixture:** once the record retains target/scope, declare one machine-readable bound and prove the Kernel refuses before the Technique can reach outside it.
+3. **Domain challenge:** test whether Domain provides anything that cannot be expressed as discovery metadata plus a before Requirement. Drop it if it does not.
+4. **Candidate declaration path:** feed validated Scope, Cost, and Duration from an experimental declaration rather than host-specific cast arguments.
+5. If the surviving candidate fields pass, draft FORMAT 0.3 and derive CAST 0.3 from the new declaration shape, with generic `limits` removed unless new evidence gives it a unique job.
 6. Only after multiple real CAST records exist, design Stats/Scaling aggregation. Do not add either to `SPELL.md`.
 
 The working proposition is:
