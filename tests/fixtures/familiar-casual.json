@@ -1,10 +1,10 @@
 {
-  "familiar_format": "0.2",
+  "familiar_format": "0.3",
   "id": "caster-1-casual",
   "caster": {"id": "caster-1", "kind": "human"},
   "dialect": {"description": "Casual construction language; short direct sentences."},
   "attention": ["preserve authored work", "prefer reversible edits"],
   "preferences": ["show the smallest useful diff"],
   "stake": ["workspace maintenance"],
-  "authority": ["workspace.read"]
+  "advisory_authority": ["workspace.read"]
 }
