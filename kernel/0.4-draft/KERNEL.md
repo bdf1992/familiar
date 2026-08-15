@@ -175,7 +175,14 @@ The 0.4 validation layer currently demonstrates:
 - refusal before executor invocation when binding Duration support is absent;
 - refusal before executor invocation when binding Scope support is absent;
 - Technique identity retained in CAST;
-- two different Technique Bindings producing equivalent Requirement-level Spell behavior without modifying the Spell declaration.
+- two different synthetic Technique Bindings producing equivalent Requirement-level Spell behavior without modifying the Spell declaration;
+- the real `workspace-tidy` Skill/subprocess Technique executing through an explicit 0.4 Binding;
+- `workspace-tidy` write Authority resolved before closure;
+- `workspace-tidy` execution Duration governed by the subprocess timeout;
+- `workspace-tidy` postconditions independently confirming disposable-file removal and byte-for-byte preservation of unmarked files;
+- refusal before the real `workspace-tidy` executor runs when its Binding stops advertising required Duration containment.
+
+The real workspace specimen intentionally does not declare Scope yet. Its current subprocess receives the full workspace path and no hard runtime mechanism prevents a defective script from reaching other files in that workspace. Preservation is checked afterward, but that is detection, not Scope containment.
 
 The test suite also carries an expected-failure fixture showing that a binding's Scope-support claim alone cannot prevent an unrestricted Technique from mutating data outside the resolved Scope. This is intentional evidence of the remaining environmental-containment gap.
 
@@ -184,12 +191,11 @@ The test suite also carries an expected-failure fixture showing that a binding's
 0.4 is not complete until:
 
 1. a reference consequence path enforces Scope against an attempted out-of-scope operation rather than merely relying on Technique cooperation;
-2. Authority is similarly tied to the credentials/capabilities used by the effectful path;
-3. the real `workspace-tidy` Effect is migrated through the 0.4 binding path;
-4. a second implementation realizes the same real Effect without changing `SPELL.md`;
-5. at least one MCP-backed Technique passes the same closure/CAST rules;
-6. the expected-failure Scope containment test becomes an ordinary passing test because the runtime/environment actually blocks the operation;
-7. binding capability claims have conformance fixtures appropriate to each supported implementation kind.
+2. Authority is tied to the credentials/capabilities actually used by the effectful path, not only a preflight decision;
+3. a second implementation realizes the same real `workspace-tidy` Effect without changing its Spell declaration;
+4. at least one MCP-backed Technique passes the same closure/CAST rules;
+5. the expected-failure Scope containment test becomes an ordinary passing test because the runtime/environment actually blocks the operation;
+6. binding capability claims have conformance fixtures appropriate to each supported implementation kind.
 
 ## Deferred
 
