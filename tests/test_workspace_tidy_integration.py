@@ -39,11 +39,14 @@ class WorkspaceTidyIntegrationTests(unittest.TestCase):
             notes_before = (workspace / "notes.txt").read_bytes()
             keep_before = (workspace / "build" / "keep.json").read_bytes()
 
-            host = self.host_module.WorkspaceTidyHost(workspace)
+            host = self.host_module.WorkspaceTidyHost(
+                workspace,
+                write_authorized_casters={"ci-agent"},
+            )
             record = host.kernel().cast(
                 self.spell,
                 effect_id="tidy",
-                caster={"id": "ci-agent", "kind": "agent", "authority": ["workspace.write"]},
+                caster={"id": "ci-agent", "kind": "agent"},
                 target=str(workspace),
                 cast_id="cast-workspace-tidy-integration",
             )
@@ -71,12 +74,15 @@ class WorkspaceTidyIntegrationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             workspace = Path(tmp)
             self.make_workspace(workspace)
-            host = self.host_module.WorkspaceTidyHost(workspace)
+            host = self.host_module.WorkspaceTidyHost(
+                workspace,
+                write_authorized_casters=set(),
+            )
 
             record = host.kernel().cast(
                 self.spell,
                 effect_id="tidy",
-                caster={"id": "ci-agent", "kind": "agent", "authority": []},
+                caster={"id": "ci-agent", "kind": "agent"},
                 target=str(workspace),
                 cast_id="cast-workspace-tidy-denied",
             )
