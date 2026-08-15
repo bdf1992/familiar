@@ -28,11 +28,11 @@ def snapshot(workspace: Path) -> dict[str, dict[str, Any]]:
 class WorkspaceTidyHost:
     """Example host binding. Not part of the portable SPELL format."""
 
-    def __init__(self, workspace: Path):
+    def __init__(self, workspace: Path, *, write_authorized_casters: set[str] | None = None):
         self.workspace = workspace.resolve()
-        self.before = snapshot(self.workspace)
         self.script = Path(__file__).parent / "scripts" / "tidy.py"
         self.executor_calls = 0
+        self.write_authorized_casters = set(write_authorized_casters or set())
 
     def observe_workspace(self, phase: str, context: dict[str, Any]) -> dict[str, Any]:
         return {
@@ -45,22 +45,29 @@ class WorkspaceTidyHost:
         return self.workspace.is_dir()
 
     def disposable_absent(self, phase: str, context: dict[str, Any]) -> bool:
-        return all(not item["disposable"] for item in snapshot(self.workspace).values())
+        after = ((context.get("telemetry_after") or {}).get("workspace-state") or {}).get("value")
+        if not isinstance(after, dict):
+            return False
+        return all(not item.get("disposable", False) for item in after.values())
 
     def preserve_unmarked(self, phase: str, context: dict[str, Any]) -> bool:
+        before = ((context.get("telemetry") or {}).get("workspace-state") or {}).get("value")
+        if not isinstance(before, dict):
+            return False
         if phase == "before":
             return True
-        current = snapshot(self.workspace)
-        for rel, original in self.before.items():
-            if original["disposable"]:
+        after = ((context.get("telemetry_after") or {}).get("workspace-state") or {}).get("value")
+        if not isinstance(after, dict):
+            return False
+        for rel, original in before.items():
+            if original.get("disposable", False):
                 continue
-            if rel not in current or current[rel]["sha256"] != original["sha256"]:
+            if rel not in after or after[rel].get("sha256") != original.get("sha256"):
                 return False
         return True
 
-    @staticmethod
-    def resolve_authority(caster: dict[str, Any], authority: str, context: dict[str, Any]) -> bool:
-        return authority in set(caster.get("authority", []))
+    def resolve_authority(self, caster: dict[str, Any], authority: str, context: dict[str, Any]) -> bool:
+        return authority == "workspace.write" and caster.get("id") in self.write_authorized_casters
 
     def execute(self, spell: dict[str, Any], effect_id: str, context: dict[str, Any]) -> dict[str, Any]:
         self.executor_calls += 1
