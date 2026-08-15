@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentspells.dev/schema/spell-frontmatter-0.3-draft.json",
+  "title": "Agent Spells SPELL.md 0.3 draft frontmatter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spell_format", "name", "version", "description", "telemetry", "effects"],
+  "properties": {
+    "spell_format": {"const": "0.3"},
+    "name": {"type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$"},
+    "description": {"type": "string", "minLength": 1, "maxLength": 1024},
+    "telemetry": {"type": "array", "items": {"$ref": "#/$defs/telemetry"}},
+    "effects": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/effect"}}
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]*$"},
+    "telemetry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "description": {"type": "string", "minLength": 1},
+        "max_age_ms": {"type": "integer", "minimum": 0}
+      }
+    },
+    "ordinaryRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "description": {"type": "string", "minLength": 1}
+      }
+    },
+    "authorityRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "authority"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "description": {"type": "string"},
+        "authority": {"type": "string", "minLength": 1}
+      }
+    },
+    "scopeRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "scope"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "description": {"type": "string"},
+        "scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["max_items"],
+          "properties": {"max_items": {"type": "integer", "minimum": 0}}
+        }
+      }
+    },
+    "costRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "cost"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "description": {"type": "string"},
+        "cost": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["resource", "max"],
+          "properties": {
+            "resource": {"type": "string", "minLength": 1},
+            "max": {"type": "integer", "minimum": 0}
+          }
+        }
+      }
+    },
+    "durationRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "duration"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "description": {"type": "string"},
+        "duration": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["execution_max_ms"],
+          "properties": {"execution_max_ms": {"type": "integer", "minimum": 1}}
+        }
+      }
+    },
+    "beforeRequirement": {
+      "oneOf": [
+        {"$ref": "#/$defs/ordinaryRequirement"},
+        {"$ref": "#/$defs/authorityRequirement"},
+        {"$ref": "#/$defs/scopeRequirement"}
+      ]
+    },
+    "duringRequirement": {
+      "oneOf": [
+        {"$ref": "#/$defs/costRequirement"},
+        {"$ref": "#/$defs/durationRequirement"}
+      ]
+    },
+    "effect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description", "telemetry", "requirements"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "description": {"type": "string", "minLength": 1},
+        "telemetry": {"type": "array", "items": {"$ref": "#/$defs/id"}, "uniqueItems": true},
+        "requirements": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["before", "during", "after"],
+          "properties": {
+            "before": {"type": "array", "items": {"$ref": "#/$defs/beforeRequirement"}},
+            "during": {"type": "array", "items": {"$ref": "#/$defs/duringRequirement"}},
+            "after": {"type": "array", "items": {"$ref": "#/$defs/ordinaryRequirement"}}
+          }
+        }
+      }
+    }
+  }
+}
