@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://familiar.dev/schema/receipt.schema.json",
+  "title": "Spell Cast Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "cast_id",
+    "spell",
+    "intent",
+    "expression",
+    "effect",
+    "evidence",
+    "residuals",
+    "status"
+  ],
+  "properties": {
+    "cast_id": {"type": "string", "minLength": 1},
+    "spell": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": {
+        "id": {"type": "string"},
+        "version": {"type": "string"}
+      }
+    },
+    "caster": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "familiars": {
+      "type": "array",
+      "items": {"type": "object", "additionalProperties": true}
+    },
+    "target": {},
+    "intent": {"type": "string"},
+    "expression": {"type": "string"},
+    "telemetry_used": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "requirements_applied": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "limits_applied": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "energy_committed": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "effect": {},
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["kind", "locator"],
+        "properties": {
+          "kind": {"type": "string"},
+          "locator": {"type": "string"},
+          "summary": {"type": "string"}
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["kind"],
+        "properties": {
+          "kind": {"type": "string"},
+          "locator": {"type": "string"},
+          "summary": {"type": "string"}
+        }
+      }
+    },
+    "residuals": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "standing": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "demonstrated_level": {"type": "integer", "minimum": 0, "maximum": 9},
+        "trick": {"type": "string", "enum": ["novice", "practiced", "master"]},
+        "grade": {"type": "string"},
+        "rubric": {"type": "string"}
+      },
+      "oneOf": [
+        {"required": ["demonstrated_level"]},
+        {"required": ["trick"]}
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["blocked", "resolved", "failed"]
+    },
+    "closed_at": {"type": "string", "format": "date-time"}
+  }
+}
