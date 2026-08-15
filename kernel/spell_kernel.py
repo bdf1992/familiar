@@ -132,15 +132,37 @@ class SpellKernel:
         familiar: dict[str, Any] | None = None,
         cast_id: str | None = None,
         execution_max_ms: int | None = None,
+        cost_max: dict[str, int] | None = None,
     ) -> dict[str, Any]:
         validate_spell(spell)
         if execution_max_ms is not None and (not isinstance(execution_max_ms, int) or execution_max_ms <= 0):
             raise ValueError("execution_max_ms must be a positive integer when provided")
+        if cost_max is not None:
+            if not isinstance(cost_max, dict):
+                raise ValueError("cost_max must be a mapping when provided")
+            for resource, ceiling in cost_max.items():
+                if not isinstance(resource, str) or not resource:
+                    raise ValueError("cost_max resource names must be non-empty strings")
+                if not isinstance(ceiling, int) or ceiling < 0:
+                    raise ValueError("cost_max ceilings must be non-negative integers")
         effect = self._effect(spell, effect_id)
         cast_id = cast_id or f"cast-{uuid.uuid4().hex[:12]}"
         context = {"spell": spell, "effect": effect, "caster": caster, "target": target}
         if execution_max_ms is not None:
             context["duration"] = {"execution_max_ms": execution_max_ms}
+        cost_used: dict[str, int] = {}
+        if cost_max is not None:
+            def charge(resource: str, amount: int = 1) -> int:
+                if resource not in cost_max:
+                    raise RuntimeError(f"cost resource not permitted: {resource}")
+                if not isinstance(amount, int) or amount <= 0:
+                    raise RuntimeError("cost amount must be a positive integer")
+                next_value = cost_used.get(resource, 0) + amount
+                if next_value > cost_max[resource]:
+                    raise RuntimeError(f"cost exceeded: {resource} {next_value}>{cost_max[resource]}")
+                cost_used[resource] = next_value
+                return next_value
+            context["cost"] = {"max": dict(cost_max), "used": cost_used, "charge": charge}
         observations = []
         reasons = []
         familiar_ref = None
@@ -194,23 +216,35 @@ class SpellKernel:
                 raise RuntimeError("no executor registered")
             record["result"] = self.executor(spell, effect_id, context, execution_max_ms)
             elapsed_ms = round((time.monotonic() - started) * 1000, 3)
+            execution_value: dict[str, Any] = {}
             if execution_max_ms is not None:
-                execution_value = {"elapsed_ms": elapsed_ms, "max_ms": execution_max_ms}
-                if elapsed_ms > execution_max_ms:
-                    execution_failed = True
-                    observations.append({"kind": "execution", "id": effect_id, "phase": "after", "status": "failed", "value": execution_value, "detail": "execution exceeded duration bound"})
-                    record["residuals"].append(f"execution exceeded duration: {elapsed_ms}ms > {execution_max_ms}ms")
-                else:
-                    observations.append({"kind": "execution", "id": effect_id, "phase": "after", "status": "satisfied", "value": execution_value})
+                execution_value["duration"] = {"elapsed_ms": elapsed_ms, "max_ms": execution_max_ms}
+            if cost_max is not None:
+                execution_value["cost"] = {"used": dict(cost_used), "max": dict(cost_max)}
+            if execution_max_ms is not None and elapsed_ms > execution_max_ms:
+                execution_failed = True
+                observation = {"kind": "execution", "id": effect_id, "phase": "after", "status": "failed", "detail": "execution exceeded duration bound"}
+                if execution_value:
+                    observation["value"] = execution_value
+                observations.append(observation)
+                record["residuals"].append(f"execution exceeded duration: {elapsed_ms}ms > {execution_max_ms}ms")
             else:
-                observations.append({"kind": "execution", "id": effect_id, "phase": "after", "status": "satisfied"})
+                observation = {"kind": "execution", "id": effect_id, "phase": "after", "status": "satisfied"}
+                if execution_value:
+                    observation["value"] = execution_value
+                observations.append(observation)
         except Exception as exc:
             elapsed_ms = round((time.monotonic() - started) * 1000, 3)
             execution_failed = True
             record["result"] = None
             observation = {"kind": "execution", "id": effect_id, "phase": "after", "status": "failed", "detail": f"{type(exc).__name__}: {exc}"}
+            execution_value = {}
             if execution_max_ms is not None:
-                observation["value"] = {"elapsed_ms": elapsed_ms, "max_ms": execution_max_ms}
+                execution_value["duration"] = {"elapsed_ms": elapsed_ms, "max_ms": execution_max_ms}
+            if cost_max is not None:
+                execution_value["cost"] = {"used": dict(cost_used), "max": dict(cost_max)}
+            if execution_value:
+                observation["value"] = execution_value
             observations.append(observation)
             record["residuals"].append(f"execution failed: {type(exc).__name__}: {exc}")
         for telemetry_id in effect["telemetry"]:
