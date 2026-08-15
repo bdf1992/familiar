@@ -26,9 +26,24 @@ The validated 0.3 draft is smaller than the original field list:
 
 Identity/version metadata remains required by the FORMAT.
 
-Scope, Cost, Duration, Authority, target compatibility, preservation rules, and postconditions are currently treated as forms of Requirements rather than peer Spell fields.
+Scope, Cost, Duration, Authority, target compatibility, preservation rules, and postconditions are treated as forms of Requirements rather than peer Spell fields.
 
-FORMAT 0.2 remains the compatibility baseline. `../format/0.3-draft/` records the requirement-centered draft that current fixtures support.
+FORMAT 0.2 remains the compatibility baseline. `../format/0.3-draft/` records the requirement-centered draft. `../kernel/0.4-draft/` records the current casting/binding validation work.
+
+## Craft against one casting law
+
+Every Spell is cast through the same runtime order. Spellcraft changes which Requirements exist, not the order in which runtime truth is established.
+
+The Kernel resolves the invocation, validates the Spell/Caster/optional Familiar/Technique Binding, builds the Requirement plan, verifies that required environment and Technique mechanisms exist, resolves target and Telemetry, evaluates before Requirements, closes or refuses, governs effectful execution, observes afterward, evaluates after Requirements, then emits CAST.
+
+Spellcraft must therefore ask of every Requirement:
+
+- when must it be known or enforced?
+- what concrete runtime/environment mechanism answers or enforces it?
+- can effectful execution bypass the checked boundary?
+- what observation will appear in CAST?
+
+If there is no concrete answer, the Requirement is currently prose rather than enforceable protocol.
 
 ## Requirements are the validation spine
 
@@ -46,6 +61,8 @@ Validated forms include:
 
 A before Requirement forbids effectful execution when the condition is unavailable, denied, violated, or otherwise unsatisfied.
 
+A before check is not automatically a complete consequence boundary. Authority and Scope also require the eventual effectful path to remain inside the authority/scope that was resolved before closure.
+
 ### During
 
 During Requirements govern effectful execution while it is occurring.
@@ -55,7 +72,9 @@ Validated forms include:
 - **Cost** — a metered resource ceiling that rejects the next unit before the ceiling is crossed;
 - **Duration** — a finite execution bound that a participating Technique/runtime path can actually contain.
 
-Do not call after-the-fact measurement enforcement. If the Technique cannot participate in the meter or timeout, the runtime cannot honestly claim the Requirement is governed.
+Do not call after-the-fact measurement enforcement. If the Technique cannot participate in the meter or containment path, the runtime cannot honestly claim the Requirement is governed.
+
+Material/component use may naturally have two Requirements: availability before closure and consumption during execution. Do not consume a component merely because an invocation was attempted when the Spell says payment occurs later.
 
 ### After
 
@@ -64,6 +83,23 @@ After Requirements determine whether the Effect can count as resolved.
 They are checked from post-execution observations, independently of the Technique's own success report. An unresolved after Requirement becomes a residual.
 
 The real `workspace-tidy` fixture demonstrates this twice: disposable files must be absent, and every unmarked pre-existing file must remain byte-identical.
+
+## Consequence-boundary test
+
+A Requirement that constrains consequences must survive this question:
+
+> Can the selected Technique/environment still produce the forbidden consequence after the preflight check passed?
+
+If yes, the current implementation does not fully enforce the Requirement.
+
+Examples:
+
+- counting a resolved Scope before execution does not enforce Scope if arbitrary Technique code can later touch other targets;
+- checking Caster Authority does not enforce Authority if execution runs with broader credentials;
+- counting Cost after execution does not enforce a Cost ceiling;
+- measuring elapsed Duration after an uncontainable executor returns does not enforce Duration.
+
+The 0.4 casting work intentionally retains a failing Scope-containment conformance case until a real environment control blocks the out-of-Scope operation.
 
 ## What the validation removed
 
@@ -116,12 +152,15 @@ Spellcraft should ask:
 - Can another Skill/MCP tool/service realize the same Effect without changing the declaration?
 - Does a proposed Requirement belong to every valid Technique, or only the current implementation?
 - Can the runtime actually observe or enforce what the declaration claims?
+- Can the selected Technique participate in every required effect-path control?
 
-The Kernel 0.3 draft adds an important open requirement: closure must know whether the selected Technique can truly support the declared during mechanisms. Merely passing a timeout or cost object is not proof that the Technique honors it.
+The 0.4 Technique Binding draft records the exact Spell/version/Effect realized plus Authority, Scope, Cost, and Duration mechanisms the execution path claims to support. Closure refuses when required support is absent.
+
+A schema-valid binding is still an assertion about implementation behavior. Conformance tests and, where needed, hard environment isolation are what turn that assertion into evidence.
 
 ## Familiar and Owl
 
-A Familiar is caster-authored dialect and judgment configuration, not Spell semantics. It may change guidance representation and attention, but not Effect, Requirements, Authority, Scope, Cost, Duration, execution behavior, or outcome.
+A Familiar is caster-authored dialect and judgment configuration, not Spell semantics. It may change guidance representation and attention, but not Effect, Requirements, Authority, Scope, Cost, Duration, Technique compatibility, execution behavior, or outcome.
 
 Owl reviews the craft by asking:
 
@@ -129,10 +168,10 @@ Owl reviews the craft by asking:
 - Which Requirements actually gate, govern, or confirm it?
 - Is a caster preference leaking into the declaration?
 - Is a Technique dependency pretending to be a Spell Requirement?
-- Can Scope, Cost, and Duration actually be enforced?
+- Can Scope, Authority, Cost, and Duration actually be enforced through the consequence path?
 - Is a generic Limit hiding a more precise Requirement?
 - Is live State or derived Scaling being presented as declaration truth?
-- Can CAST point back to the exact Requirement ids that mattered?
+- Can CAST point back to the exact Requirement ids and Technique that mattered?
 
 Owl advises. FORMAT validation and runtime evidence decide what survives.
 
@@ -146,6 +185,7 @@ Read CAST as the runtime counterpart to the declaration:
 - during Requirements -> execution-governance evidence;
 - after Requirements -> effect-confirmation evidence;
 - target -> concrete object/reach the Effect applied to;
+- Technique -> implementation that actually attempted the Effect;
 - unresolved conditions -> residuals.
 
 Change `SPELL.md` only when runtime evidence shows that the declaration is missing or misstating a real condition. Do not improve apparent capability by changing description text.
@@ -164,7 +204,13 @@ The reference suite now demonstrates:
 - target compatibility as a before Requirement rather than Domain runtime semantics;
 - exact Requirement ids retained into the 0.3 candidate CAST;
 - machine Caster records;
-- different Familiar dialects with unchanged Spell behavior.
+- different Familiar dialects with unchanged Spell behavior;
+- exact Technique Binding matching;
+- closure refusal when a binding lacks Scope or Duration support;
+- Technique identity in 0.4 CAST;
+- two different synthetic Techniques producing equivalent Spell-level Requirement results without changing the Spell declaration.
+
+The unresolved Scope-containment conformance case proves that binding metadata alone cannot prevent a Technique with unrestricted environment access from bypassing the resolved Scope.
 
 These are mechanics results, not Spell standing.
 
@@ -176,5 +222,7 @@ These are mechanics results, not Spell standing.
 - encoding one Technique's dependencies as Spell properties unless every valid Technique requires them;
 - putting live State, Stats, or asserted Scaling into `SPELL.md`;
 - using generic Limit as a dumping ground;
+- claiming Scope or Authority enforcement from preflight alone when the consequence path can bypass it;
 - claiming Cost or Duration enforcement when the bound Technique cannot actually participate;
+- treating a Technique Binding capability claim as proof without conformance/environment evidence;
 - adding structure that neither selects, gates, governs, confirms, nor materially improves inspection of an Effect.
