@@ -56,12 +56,6 @@
       "status": "satisfied"
     },
     {
-      "kind": "limit",
-      "id": "preserve-unmarked",
-      "phase": "before",
-      "status": "satisfied"
-    },
-    {
       "kind": "execution",
       "id": "tidy",
       "phase": "after",
@@ -92,7 +86,7 @@
       "status": "satisfied"
     },
     {
-      "kind": "limit",
+      "kind": "requirement",
       "id": "preserve-unmarked",
       "phase": "after",
       "status": "satisfied"
