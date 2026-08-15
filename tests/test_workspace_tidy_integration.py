@@ -64,6 +64,9 @@ class WorkspaceTidyIntegrationTests(unittest.TestCase):
             ]
             self.assertEqual("satisfied", postcondition[-1]["status"])
 
+            expected = json.loads((EXAMPLE / "CAST.example.json").read_text(encoding="utf-8"))
+            self.assertEqual(expected, record)
+
     def test_denied_authority_refuses_before_technique_runs(self):
         with tempfile.TemporaryDirectory() as tmp:
             workspace = Path(tmp)

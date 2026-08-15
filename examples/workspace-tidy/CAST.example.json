@@ -1,0 +1,109 @@
+{
+  "cast_format": "0.2",
+  "cast_id": "cast-workspace-tidy-integration",
+  "spell": {
+    "name": "workspace-tidy",
+    "version": "0.1.0"
+  },
+  "caster": {
+    "id": "ci-agent",
+    "kind": "agent"
+  },
+  "familiar": null,
+  "guidance": null,
+  "effect": "tidy",
+  "closure": {
+    "decision": "closed",
+    "reasons": []
+  },
+  "observations": [
+    {
+      "kind": "telemetry",
+      "id": "workspace-state",
+      "phase": "before",
+      "status": "observed",
+      "value": {
+        "build/artifact.agentspells-disposable": {
+          "sha256": "5b3513f580c8397212ff2c8f459c199efc0c90e4354a5f3533adf0a3fff3a530",
+          "disposable": true
+        },
+        "build/keep.json": {
+          "sha256": "e1e8315dcdc2e93fd74b3083d7ea3d848fe019aad66975243cb180c1d38b5f7f",
+          "disposable": false
+        },
+        "cache.agentspells-disposable": {
+          "sha256": "30ae8992e30d51db6ae07a86d91703976f6e69880457a946a3c1e63ffeaaf83e",
+          "disposable": true
+        },
+        "notes.txt": {
+          "sha256": "482f22bb838d45d8f795b20277cc427d029d867ed166e7909cdcec7d9f73adbd",
+          "disposable": false
+        }
+      },
+      "source": "filesystem",
+      "freshness_ms": 0
+    },
+    {
+      "kind": "authority",
+      "id": "workspace.write",
+      "phase": "before",
+      "status": "satisfied"
+    },
+    {
+      "kind": "requirement",
+      "id": "target-observable",
+      "phase": "before",
+      "status": "satisfied"
+    },
+    {
+      "kind": "limit",
+      "id": "preserve-unmarked",
+      "phase": "before",
+      "status": "satisfied"
+    },
+    {
+      "kind": "execution",
+      "id": "tidy",
+      "phase": "after",
+      "status": "satisfied"
+    },
+    {
+      "kind": "telemetry",
+      "id": "workspace-state",
+      "phase": "after",
+      "status": "observed",
+      "value": {
+        "build/keep.json": {
+          "sha256": "e1e8315dcdc2e93fd74b3083d7ea3d848fe019aad66975243cb180c1d38b5f7f",
+          "disposable": false
+        },
+        "notes.txt": {
+          "sha256": "482f22bb838d45d8f795b20277cc427d029d867ed166e7909cdcec7d9f73adbd",
+          "disposable": false
+        }
+      },
+      "source": "filesystem",
+      "freshness_ms": 0
+    },
+    {
+      "kind": "requirement",
+      "id": "disposable-absent",
+      "phase": "after",
+      "status": "satisfied"
+    },
+    {
+      "kind": "limit",
+      "id": "preserve-unmarked",
+      "phase": "after",
+      "status": "satisfied"
+    }
+  ],
+  "outcome": "resolved",
+  "residuals": [],
+  "result": {
+    "removed": [
+      "build/artifact.agentspells-disposable",
+      "cache.agentspells-disposable"
+    ]
+  }
+}
