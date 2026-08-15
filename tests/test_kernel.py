@@ -2,6 +2,7 @@ import json
 import subprocess
 import sys
 import unittest
+from copy import deepcopy
 from pathlib import Path
 
 from kernel.spell_kernel import SpellKernel, load_spell_md, validate_cast_record, validate_familiar
@@ -48,10 +49,13 @@ def guide(fam, spell, effect_id, context):
     return {"dialect": fam["dialect"]["description"], "attention": fam["attention"]}
 
 
-def kernel(executor=execute, authority_resolver=authority, scope_resolver=None):
+def kernel(executor=execute, authority_resolver=authority, scope_resolver=None, requirements=None):
+    requirement_map = {"target-observable": target_observable, "tidy-confirmed": tidy_confirmed}
+    if requirements:
+        requirement_map.update(requirements)
     return SpellKernel(
         observers={"workspace-state": observer},
-        requirements={"target-observable": target_observable, "tidy-confirmed": tidy_confirmed},
+        requirements=requirement_map,
         limits={"preserve-authored": preserve_authored},
         authority_resolver=authority_resolver,
         executor=executor,
@@ -176,6 +180,37 @@ class KernelTests(unittest.TestCase):
         self.assertEqual(target, scope["value"]["target"])
         self.assertEqual(3, scope["value"]["count"])
         self.assertEqual(2, scope["value"]["max_items"])
+
+    def test_domain_gate_is_expressible_as_before_requirement(self):
+        calls = []
+        spell = deepcopy(self.spell)
+        spell["effects"][0]["requirements"].append({
+            "id": "domain-compatible",
+            "phase": "before",
+            "description": "The target is a filesystem workspace.",
+        })
+
+        def domain_compatible(phase, context):
+            target = context.get("target") or {}
+            return isinstance(target, dict) and target.get("domain") == "filesystem"
+
+        def spy(spell, effect_id, context, execution_max_ms):
+            calls.append("executed")
+            return {"finished": True}
+
+        record = kernel(
+            executor=spy,
+            requirements={"domain-compatible": domain_compatible},
+        ).cast(
+            spell,
+            effect_id="tidy",
+            caster={"id": "caster-1", "kind": "human"},
+            target={"domain": "queue", "id": "queue-a"},
+        )
+        self.assertEqual([], calls)
+        self.assertEqual("refused", record["closure"]["decision"])
+        domain = next(o for o in record["observations"] if o["id"] == "domain-compatible")
+        self.assertEqual("violated", domain["status"])
 
     def test_machine_caster_with_json_familiar_receives_machine_record(self):
         machine = familiar("familiar-json.json")
