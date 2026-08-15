@@ -1,0 +1,159 @@
+{
+  "spell_protocol": "0.1",
+  "identity": {
+    "id": "familiar",
+    "name": "Familiar",
+    "version": "0.1.0",
+    "description": "Form and maintain a persistent expressive mediator between a caster and their use of Spells.",
+    "inherent_ability": "Give persistent, recognizable form to a holder's systemic pull so their expression, preferences, history, attention, stake, and characteristic ways of acting can participate coherently across casts."
+  },
+  "invocation": {
+    "magic_words": [
+      "Summon Familiar",
+      "Summon my Familiar",
+      "Summon the Owl"
+    ],
+    "expressions": [
+      {
+        "id": "summon",
+        "name": "Summon",
+        "description": "Resolve an existing Familiar or draw a provisional candidate from authorized evidence when none is adopted."
+      },
+      {
+        "id": "register",
+        "name": "Register",
+        "description": "Persist a holder-recognized Familiar form and its current expressive contract."
+      },
+      {
+        "id": "consult",
+        "name": "Consult",
+        "description": "Let a Familiar contribute its systemic pull to a concrete situation without overriding reality or authority."
+      },
+      {
+        "id": "recall",
+        "name": "Recall",
+        "description": "Resolve a registered Familiar and its attributable history for later casting."
+      }
+    ]
+  },
+  "telemetry": {
+    "required": [
+      {
+        "id": "holder_context",
+        "description": "Current evidence identifying who or what the Familiar belongs to and the scope in which it is being summoned.",
+        "coverage": "holder-and-cast-scope"
+      },
+      {
+        "id": "holder_authority",
+        "description": "Current evidence of the holder or authorized commissioner controlling adoption and form replacement.",
+        "coverage": "requested-familiar-operation"
+      }
+    ],
+    "optional": [
+      {
+        "id": "preferences",
+        "description": "Explicit current preferences attributable to the holder."
+      },
+      {
+        "id": "history",
+        "description": "Authorized attributable history that can inform expression without being mistaken for current identity."
+      },
+      {
+        "id": "domain_context",
+        "description": "Current domain, role, project, or environment context relevant to this summoning."
+      },
+      {
+        "id": "registered_familiar",
+        "description": "Existing Familiar registration, when one already exists for the holder and scope."
+      }
+    ]
+  },
+  "requirements": [
+    {
+      "id": "holder-resolved",
+      "description": "The holder and requested Familiar scope are sufficiently resolved for the effect being attempted."
+    },
+    {
+      "id": "evidence-attributed",
+      "description": "Material used to form or advise through the Familiar is attributable to an authorized source rather than invented as holder history."
+    }
+  ],
+  "limits": [
+    {
+      "id": "holder-controls-form",
+      "kind": "identity",
+      "description": "After adoption, a Familiar may develop its form but may not autonomously replace that form; replacement requires holder-authorized identity change or reassignment."
+    },
+    {
+      "id": "candidate-before-recognition",
+      "kind": "identity",
+      "description": "An inferred Familiar remains a candidate until the holder recognizes or adopts it; the Spell must not pronounce unsupported identity as fact."
+    },
+    {
+      "id": "metaphor-yields-to-reality",
+      "kind": "consequence",
+      "description": "Familiar language and systemic pull may guide attention and expression but cannot manufacture telemetry, authority, evidence, or truth."
+    },
+    {
+      "id": "stake-bounds-reach",
+      "kind": "scope",
+      "description": "A Familiar may influence only scopes where its holder or role has relevant stake and authority."
+    }
+  ],
+  "energy": {
+    "resources": [
+      {
+        "id": "holder-participation",
+        "description": "Recognition, correction, stories, examples, and explicit expression supplied by the holder."
+      },
+      {
+        "id": "authorized-history",
+        "description": "Amount and quality of attributable history available for study."
+      },
+      {
+        "id": "runtime-context",
+        "description": "Current project, domain, role, and environment observations available to ground the summoning."
+      },
+      {
+        "id": "study",
+        "description": "Effort spent comparing candidates, strengths, shadows, language, and systemic pull before adoption."
+      }
+    ]
+  },
+  "effect": {
+    "description": "A provisional or registered Familiar representation that can be inspected, recognized, recalled, and used as a bounded participant in later Spell casting."
+  },
+  "evidence": {
+    "required": [
+      {
+        "id": "effect-record",
+        "description": "Inspectable record of the Familiar effect produced by this cast: candidate, registration, recall, or consultation result with provenance appropriate to the expression."
+      }
+    ]
+  },
+  "evaluation": {
+    "claimed_level": 0,
+    "trials": [
+      {
+        "id": "provisional-not-pronounced",
+        "description": "With evidence but no holder recognition, Summon produces a provisional candidate and does not claim adopted identity.",
+        "proves": ["telemetry-sensitive", "limits"]
+      },
+      {
+        "id": "adoption-persists",
+        "description": "After explicit holder adoption, Register produces inspectable persistent state that Recall can resolve later.",
+        "proves": ["effect", "requirements", "evidence"]
+      },
+      {
+        "id": "form-change-blocked",
+        "description": "A later model preference cannot replace an adopted Familiar form without holder authorization.",
+        "proves": ["limits", "graceful-blocking"]
+      },
+      {
+        "id": "later-cast-influence",
+        "description": "A registered Familiar changes an appropriate later casting through its systemic pull while telemetry and hard limits remain authoritative.",
+        "proves": ["effect", "telemetry-sensitive"]
+      }
+    ]
+  }
+}
