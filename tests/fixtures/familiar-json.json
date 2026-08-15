@@ -1,0 +1,10 @@
+{
+  "familiar_format": "0.2",
+  "id": "agent-1-json",
+  "caster": {"id": "agent-1", "kind": "agent"},
+  "dialect": {"description": "Strict JSON guidance for machine consumption.", "schema": {"type": "object", "properties": {"attention": {"type": "array", "items": {"type": "string"}}}, "required": ["attention"]}},
+  "attention": ["authority", "effect confirmation"],
+  "preferences": ["machine-consumable records"],
+  "stake": ["automated workspace maintenance"],
+  "authority": ["workspace.read"]
+}

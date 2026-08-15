@@ -1,163 +1,39 @@
 ---
 name: spellcraft
-description: "Study, design, structure, test, migrate, and improve Spell candidates. Use when creating a new Spell candidate, upgrading a Skill or Trick toward Spell behavior, analyzing cast receipts or residuals, designing Trials, separating Spell properties from caster preferences or implementation details, or repairing a candidate after fizzles or wild magic. Spellcraft is a Skill, not a Spell: it may be used with no Spell Runtime at all, and it may optionally use Familiars, libraries, tools, other casters, and independently cast Spells as evidence or assistance. Never assign demonstrated Spell standing from design intent; runtime impacts, evidence, residuals, and Trials determine whether a candidate is a Trick or Spell."
+description: Author, inspect, repair, and migrate Agent Spells SPELL.md declarations. Use when turning an existing Skill or MCP-backed capability into a portable effect declaration, separating caster preferences from runtime requirements, writing effect checks, or revising a declaration from CAST records. Spellcraft is an Agent Skill, not a Spell, and it is not present at cast time.
 ---
 
 # Spellcraft
 
-Spellcraft studies an ability and produces the smallest castable Spell candidate worth testing. It improves candidates from observed casts rather than improving their apparent standing by description.
+Spellcraft authors and repairs `SPELL.md`. It may work with no Agent Spells Kernel. When CAST records exist, use them as evidence; never copy standing or success claims into the declaration.
 
-> Craft from effects backward. Learn from casts forward.
+## Study the capability
+Identify the smallest effects that a runtime could actually attempt and observe. Reuse existing Skills and MCP tools as implementation material rather than rewriting working competence.
 
-Spellcraft is a **Skill**. It does not cast Spells, require a Spell Runtime, or declare that a candidate is a demonstrated Spell. When Spellcraft uses a Familiar or another Spell, that assistance is a separate cast governed by its own runtime contract and receipt.
+A Familiar may assist the crafter with dialect, attention, preferences, and judgment. Familiar guidance is craft material, not a Spell requirement unless an independently checkable runtime requirement justifies the same constraint.
 
-## Keep these distinctions sharp
+## Write only portable contract fields
+Follow `../format/SPECIFICATION.md` and validate frontmatter against `../format/spell.schema.json`.
 
-- **Skill:** reusable competence or procedure.
-- **Trick:** bounded recognizable effect without demonstrated Spell governance.
-- **Spell candidate:** crafted portable definition that can be offered to a Spell Runtime.
-- **Spell:** runtime-demonstrated capability whose valid effects are governed by relevant telemetry, requirements, limits, energy, evidence, and residuals.
-- **Technique:** a known way to realize part or all of a Spell's ability; an existing Skill may become a Technique rather than the Spell itself.
-- **Cast:** one runtime application of a Spell candidate or demonstrated Spell.
+A declaration contains only name, version, description, telemetry declarations, limits, and effects; each effect declares required telemetry, before/after requirements, limits, and caster authority.
 
-A Spell candidate is an artifact of Spellcraft. A Spell is a classification earned from casting evidence.
+Do not add implementation bindings, magic words, caster preferences, standing, level, grade, energy, trial results, or execution receipts to `SPELL.md`.
 
-## Gather only useful materials
+## Distinguish before writing
+- If the capability is primarily instructions or expertise, it stays a Skill.
+- If it is one implementation procedure used to realize a larger effect, treat it as a Technique.
+- If it only improves another cast and has no independently declared effect, treat it as a Buff.
+- If it is caster-authored dialect/judgment configuration, it is a Familiar.
+- Only write a SPELL declaration when there is an effect whose valid execution materially depends on runtime observations, authority, requirements, or limits and whose result can at least be investigated post hoc.
 
-Use whatever is available and authorized; none is mandatory except enough subject matter to craft honestly:
+## Use CAST records to revise
+A CAST record is the runtime receipt. Read closure reasons, observations, outcome, and residuals. Change `SPELL.md` only when runtime evidence shows the declaration is missing or misstating a real condition.
 
-- the crafter's intent and domain knowledge;
-- existing Skills, scripts, tools, MCP capabilities, or Techniques;
-- a Familiar, when the caster wants its help;
-- a library or pattern commons of candidates, Tricks, Spells, Trials, receipts, and lessons;
-- prior cast receipts, impacts, fizzles, disturbances, wild magic, and residuals;
-- another caster or reviewer who can expose hidden assumptions;
-- direct investigation of the environment when runtime behavior is unclear.
+Do not improve apparent capability by changing description text. Improve the declaration by making its effects more falsifiable and its gates more accurate.
 
-A no-runtime environment can still produce a valid **candidate** and Trial plan. State its standing as untested rather than inventing runtime evidence.
-
-## Work the craft
-
-### Study
-
-Identify the inherent ability before naming a bag of effects. Ask what all proposed Expressions have in common and what existing competence already works.
-
-Study examples and failures. Prefer real effects, receipts, and observed constraints over fantasy wording.
-
-### Distinguish
-
-Separate:
-
-- properties of the Spell from preferences of its first caster;
-- Spell requirements from requirements of one implementation;
-- live telemetry from user input, inference, and assumption;
-- inherent ability from individual Tricks or Techniques;
-- expected effects from evidence that an effect actually occurred;
-- residuals from disturbances and wild magic.
-
-A Familiar may strongly influence the caster's preferred expression without becoming a universal law of the Spell.
-
-### Craft
-
-Produce the smallest coherent candidate that specifies:
-
-- stable identity and inherent ability;
-- known Expressions and optional magic words;
-- telemetry that must be observed;
-- requirements that must hold;
-- limits that may not be crossed;
-- energy/resources that materially affect the cast;
-- expected effect class;
-- evidence appropriate to claimed effects;
-- explicit handling for partial effects, fizzles, disturbances, wild magic, and residuals;
-- falsifying Trials.
-
-Do not inflate the candidate with concepts that belong only to one implementation or one Familiar.
-
-### Prepare
-
-Identify Techniques that could realize the candidate. Reuse existing Skills and MCP tools instead of rewriting working competence.
-
-Prepare contrastive Trials where relevant conditions differ. At minimum, test the boundaries the candidate claims to govern.
-
-Every candidate intended to interoperate with Familiars should include a **foreign Familiar Trial**: at least one valid Familiar other than the one used during authoring must be able to assist without changing the Spell's inherent ability, widening authority, fabricating telemetry, or waiving limits.
-
-### Cast
-
-If a Spell Runtime is available, use it for Trial casts. Casting is outside Spellcraft itself.
-
-Treat every assisting Spell as a separate cast. For example, `Summon Familiar` during Spellcraft may produce advice that becomes craft material, but that Familiar cast retains its own contract and receipt.
-
-### Read
-
-After a cast, inspect the complete runtime story:
-
-```text
-before state / telemetry
-        -> casting decision
-        -> actions
-        -> runtime impact
-        -> evidence
-        -> residuals
-        -> disturbances / wild magic
-```
-
-Do not rationalize surprising impacts into the expected effect after the fact.
-
-### Redraw
-
-Use Marks from receipts and Trials to revise the candidate, Techniques, requirements, limits, evidence model, or Trial set.
-
-Choose the right repair path:
-
-- use **Spellcraft** when the candidate itself appears malformed;
-- use the **Familiar** when caster expression, stake, interpretation, or preferred technique is the issue;
-- use **another Casting** when the Spell is sound and a separate bounded effect remains;
-- use **another Caster** when independent expertise, authority, or reproduction matters;
-- investigate the **environment** when causality of a disturbance is unresolved.
-
-### Release honestly
-
-Leave the work in the strongest state the evidence earns:
-
-- untested Spell candidate;
-- Novice / Practiced / Master Trick;
-- demonstrated Spell with runtime-assigned Level and Grade.
-
-A Master Trick can be a successful outcome. Do not add telemetry theater merely to force it over the Level 0 line.
-
-## Familiar-assisted Spellcraft
-
-A Familiar can help the crafter notice non-obvious Expressions, choose proportionate energy, identify meaningful limits, expose caster-specific preferences, and interpret residuals. The Owl is especially useful for completion, continuity, malformed metaphors, and detecting spell-shaped documentation that has not become an effect.
-
-Familiars advise from their form and stake. They cannot manufacture authority, telemetry, evidence, or runtime standing.
-
-Spellcraft MUST remain usable without a Familiar.
-
-## Failure vocabulary
-
-Use these terms precisely when reading casts:
-
-- **Fizzle:** the casting cannot validly resolve its intended effect because a required part of the casting contract is absent, invalid, incompatible, or breaks during execution.
-- **Residual:** intended effect that remains unresolved, unverified, or intentionally untouched.
-- **Disturbance:** unexpected environmental observation whose causal relation to the cast is not yet established.
-- **Wild magic:** a materially unexpected effect attributable or strongly linked to the casting and outside the expected effect model.
-
-A fizzle does not prove that nothing happened. Preserve and investigate unexpected impacts.
-
-## Quality test
-
-A Spellcraft pass is good when it makes the candidate easier to falsify, cast, inspect, and improve.
-
-Before finishing, check:
-
-- Is there one coherent inherent ability?
-- Can the candidate be cast by a compatible runtime without relying on hidden author context?
-- Would relevant telemetry actually change valid casting behavior?
-- Are requirements and limits distinct and enforceable?
-- Are Spell properties separated from Familiar/caster preferences and implementation details?
-- Can any valid structured Familiar assist without corrupting the cast?
-- Can an effect be distinguished from its residuals and unexpected impacts?
-- Do the Trials have a realistic chance to prove the candidate is only a Trick?
-
-If not, keep crafting rather than declaring magic.
+## Spellcraft forbids
+- declaring level, grade, or standing;
+- treating a Skill description as proof of runtime effect;
+- encoding one caster's Familiar preferences as universal Spell requirements;
+- encoding one implementation's dependencies as properties of the Spell unless every valid implementation requires them;
+- adding a field that neither gates execution nor improves portable effect inspection.

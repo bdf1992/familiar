@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentspells.dev/schema/familiar-0.2.json",
+  "title": "Agent Spells Familiar",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["familiar_format", "id", "caster", "dialect", "attention", "preferences", "stake", "authority"],
+  "properties": {
+    "familiar_format": {"const": "0.2"},
+    "id": {"type": "string", "minLength": 1},
+    "caster": {"type": "object", "additionalProperties": false, "required": ["id", "kind"], "properties": {"id": {"type": "string", "minLength": 1}, "kind": {"enum": ["human", "agent", "service", "system", "other"]}}},
+    "dialect": {"type": "object", "additionalProperties": false, "required": ["description"], "properties": {"description": {"type": "string", "minLength": 1}, "schema": {"type": "object"}}},
+    "attention": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "preferences": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "stake": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "authority": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+  }
+}
