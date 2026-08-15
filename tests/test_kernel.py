@@ -22,7 +22,7 @@ def observer(phase, context):
 
 
 def target_observable(phase, context):
-    return context.get("target") == "fixture-workspace"
+    return context.get("target") == "fixture-workspace" or isinstance(context.get("target"), dict)
 
 
 def tidy_confirmed(phase, context):
@@ -48,8 +48,16 @@ def guide(fam, spell, effect_id, context):
     return {"dialect": fam["dialect"]["description"], "attention": fam["attention"]}
 
 
-def kernel(executor=execute, authority_resolver=authority):
-    return SpellKernel(observers={"workspace-state": observer}, requirements={"target-observable": target_observable, "tidy-confirmed": tidy_confirmed}, limits={"preserve-authored": preserve_authored}, authority_resolver=authority_resolver, executor=executor, guide=guide)
+def kernel(executor=execute, authority_resolver=authority, scope_resolver=None):
+    return SpellKernel(
+        observers={"workspace-state": observer},
+        requirements={"target-observable": target_observable, "tidy-confirmed": tidy_confirmed},
+        limits={"preserve-authored": preserve_authored},
+        authority_resolver=authority_resolver,
+        executor=executor,
+        guide=guide,
+        scope_resolver=scope_resolver,
+    )
 
 
 class KernelTests(unittest.TestCase):
@@ -141,6 +149,33 @@ class KernelTests(unittest.TestCase):
         self.assertEqual(1, execution["value"]["cost"]["used"]["tool_calls"])
         self.assertEqual(1, execution["value"]["cost"]["max"]["tool_calls"])
         self.assertTrue(any("cost exceeded" in residual for residual in record["residuals"]))
+
+    def test_scope_bound_refuses_before_technique_runs(self):
+        calls = []
+
+        def spy(spell, effect_id, context, execution_max_ms):
+            calls.append("executed")
+            return {"finished": True}
+
+        target = {"id": "batch-a", "items": ["a", "b", "c"]}
+        record = kernel(
+            executor=spy,
+            scope_resolver=lambda target, context: target["items"],
+        ).cast(
+            self.spell,
+            effect_id="tidy",
+            caster={"id": "caster-1", "kind": "human"},
+            target=target,
+            scope_max_items=2,
+        )
+        self.assertEqual([], calls)
+        self.assertEqual("refused", record["closure"]["decision"])
+        self.assertIsNone(record["outcome"])
+        scope = next(o for o in record["observations"] if o["id"] == "scope-max-items")
+        self.assertEqual("violated", scope["status"])
+        self.assertEqual(target, scope["value"]["target"])
+        self.assertEqual(3, scope["value"]["count"])
+        self.assertEqual(2, scope["value"]["max_items"])
 
     def test_machine_caster_with_json_familiar_receives_machine_record(self):
         machine = familiar("familiar-json.json")
