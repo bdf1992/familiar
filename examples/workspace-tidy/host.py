@@ -54,8 +54,6 @@ class WorkspaceTidyHost:
         before = ((context.get("telemetry") or {}).get("workspace-state") or {}).get("value")
         if not isinstance(before, dict):
             return False
-        if phase == "before":
-            return True
         after = ((context.get("telemetry_after") or {}).get("workspace-state") or {}).get("value")
         if not isinstance(after, dict):
             return False
@@ -92,8 +90,8 @@ class WorkspaceTidyHost:
             requirements={
                 "target-observable": self.target_observable,
                 "disposable-absent": self.disposable_absent,
+                "preserve-unmarked": self.preserve_unmarked,
             },
-            limits={"preserve-unmarked": self.preserve_unmarked},
             authority_resolver=self.resolve_authority,
             executor=self.execute,
         )
