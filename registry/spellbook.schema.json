@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentspells.dev/schema/spellbook-0.1.json",
+  "title": "Agent Spells Spellbook 0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spellbook_format", "id", "spells"],
+  "properties": {
+    "spellbook_format": {"const": "0.1"},
+    "id": {"type": "string", "minLength": 1},
+    "spells": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "version", "digest", "source_scroll"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "version": {"type": "string", "minLength": 1},
+          "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+          "source_scroll": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}
