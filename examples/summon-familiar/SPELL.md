@@ -1,5 +1,5 @@
 ---
-spell_format: "0.3"
+spell_format: "0.3-candidate"
 name: summon-familiar
 version: "0.1.0"
 description: Establish bounded Presence of an independently existing Familiar in the current casting context.
