@@ -75,16 +75,28 @@ Checker = Callable[[str, dict[str, Any]], bool]
 AuthorityResolver = Callable[[dict[str, Any], str, dict[str, Any]], bool]
 Executor = Callable[[dict[str, Any], str, dict[str, Any], int | None], Any]
 Guide = Callable[[dict[str, Any], dict[str, Any], str, dict[str, Any]], Any]
+ScopeResolver = Callable[[Any, dict[str, Any]], list[Any]]
 
 
 class SpellKernel:
-    def __init__(self, *, observers=None, requirements=None, limits=None, authority_resolver=None, executor=None, guide=None):
+    def __init__(
+        self,
+        *,
+        observers=None,
+        requirements=None,
+        limits=None,
+        authority_resolver=None,
+        executor=None,
+        guide=None,
+        scope_resolver=None,
+    ):
         self.observers = observers or {}
         self.requirements = requirements or {}
         self.limits = limits or {}
         self.authority_resolver = authority_resolver
         self.executor = executor
         self.guide = guide
+        self.scope_resolver = scope_resolver
 
     def _effect(self, spell: dict[str, Any], effect_id: str) -> dict[str, Any]:
         for effect in spell["effects"]:
@@ -133,6 +145,7 @@ class SpellKernel:
         cast_id: str | None = None,
         execution_max_ms: int | None = None,
         cost_max: dict[str, int] | None = None,
+        scope_max_items: int | None = None,
     ) -> dict[str, Any]:
         validate_spell(spell)
         if execution_max_ms is not None and (not isinstance(execution_max_ms, int) or execution_max_ms <= 0):
@@ -145,6 +158,8 @@ class SpellKernel:
                     raise ValueError("cost_max resource names must be non-empty strings")
                 if not isinstance(ceiling, int) or ceiling < 0:
                     raise ValueError("cost_max ceilings must be non-negative integers")
+        if scope_max_items is not None and (not isinstance(scope_max_items, int) or scope_max_items < 0):
+            raise ValueError("scope_max_items must be a non-negative integer when provided")
         effect = self._effect(spell, effect_id)
         cast_id = cast_id or f"cast-{uuid.uuid4().hex[:12]}"
         context = {"spell": spell, "effect": effect, "caster": caster, "target": target}
@@ -183,6 +198,34 @@ class SpellKernel:
             context.setdefault("telemetry", {})[telemetry_id] = observation
             if observation["status"] != "observed":
                 reasons.append(f"telemetry-unavailable: {telemetry_id}")
+        if scope_max_items is not None:
+            if self.scope_resolver is None:
+                observations.append({"kind": "requirement", "id": "scope-max-items", "phase": "before", "status": "unavailable", "detail": "no scope resolver registered"})
+                reasons.append("requirement-unsatisfied: scope-max-items")
+            else:
+                try:
+                    resolved_items = list(self.scope_resolver(target, context))
+                except Exception as exc:
+                    observations.append({"kind": "requirement", "id": "scope-max-items", "phase": "before", "status": "unavailable", "detail": f"scope resolution failed: {type(exc).__name__}: {exc}"})
+                    reasons.append("requirement-unsatisfied: scope-max-items")
+                else:
+                    count = len(resolved_items)
+                    context["scope"] = {"target": target, "items": resolved_items, "max_items": scope_max_items}
+                    status = "satisfied" if count <= scope_max_items else "violated"
+                    observations.append({
+                        "kind": "requirement",
+                        "id": "scope-max-items",
+                        "phase": "before",
+                        "status": status,
+                        "value": {
+                            "target": target,
+                            "items": resolved_items,
+                            "count": count,
+                            "max_items": scope_max_items,
+                        },
+                    })
+                    if status != "satisfied":
+                        reasons.append("requirement-unsatisfied: scope-max-items")
         for authority in effect["authority"]:
             allowed = False
             if self.authority_resolver is not None:
