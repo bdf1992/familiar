@@ -17,6 +17,7 @@ effects:
         - id: bounded-scope
           scope:
             max_items: 2
+      during:
         - id: tool-budget
           cost:
             resource: tool_calls
@@ -33,4 +34,6 @@ effects:
 
 This declaration is an experimental structural fixture. FORMAT 0.2 remains normative.
 
-The experiment asks whether Authority, Scope, Cost, and Duration need peer Spell fields, or whether they can be machine-readable forms of Requirements while retaining their dedicated Kernel enforcement mechanisms.
+The experiment asks whether Authority, Scope, Cost, and Duration need peer Spell fields, or whether they can be machine-readable forms of Requirements while retaining dedicated Kernel enforcement mechanisms.
+
+Cost and Duration are deliberately `during` Requirements: their budgets are established before execution, but compliance is governed while execution is occurring.
