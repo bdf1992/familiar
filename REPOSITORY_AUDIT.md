@@ -30,6 +30,7 @@ Absence of root `SPELL.md` and `.Binding` is intentional: the repository itself 
 | `spell/format/0.3-draft/SPECIFICATION.md` | Requirement-centered candidate format. | Work / Knowledge |
 | `spell/format/0.3-draft/spell.schema.json` | Candidate schema for 0.3 draft declarations. | Work / Code |
 | `spell/spellcraft/SKILL.md` | Skill for authoring, inspecting, repairing, and migrating Spell declarations. | Current Skill |
+| `spell/alignment.py` | Semantic alignment evidence for autonomous Spellcraft: Effect invariants, trials with provenance, and fail-closed promotion. | Current Code |
 | `spell/migration/LEDGER.md` | Five-domain reassembly reasoning, ownership findings, unresolved crossings. | Work / Knowledge |
 | `spell/migration/agent-skills.md` | Migration notes relating Agent Skills to Spell/Technique boundaries. | Work / Knowledge |
 | `spell/migration/draw-the-owl.md` | Migration notes relating Draw the Owl to Familiar/Technique work. | Work / Knowledge |
