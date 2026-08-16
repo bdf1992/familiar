@@ -5,6 +5,7 @@ from collections.abc import Mapping
 from copy import deepcopy
 from pathlib import Path
 
+from environment.authority import RecordingHostCredential, attenuated_credential_enforcer
 from environment.scope import mapping_scope_enforcer
 from kernel.spell_kernel import SpellKernel
 from validation.candidate_adapter import load_candidate_spell
@@ -45,6 +46,7 @@ def make_kernel(executor, *, authorized=True):
             "effect-confirmed": effect_confirmed,
         },
         authority_resolver=lambda caster, permission, context: authorized and permission == "workspace.write",
+        authority_enforcer=attenuated_credential_enforcer(RecordingHostCredential()),
         scope_resolver=lambda target, context: list(target["items"]),
         scope_enforcer=mapping_scope_enforcer(ADMISSIBLE_KEYS),
         executor=executor,
@@ -281,6 +283,7 @@ class Casting04Tests(unittest.TestCase):
         unbounded = SpellKernel(
             requirements={"target-observable": target_observable, "effect-confirmed": effect_confirmed},
             authority_resolver=lambda caster, permission, context: permission == "workspace.write",
+            authority_enforcer=attenuated_credential_enforcer(RecordingHostCredential()),
             scope_resolver=lambda target, context: list(target["items"]),
             executor=execute_honest,
         )

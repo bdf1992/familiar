@@ -30,6 +30,7 @@ Absence of root `SPELL.md` and `.Binding` is intentional: the repository itself 
 | `spell/format/0.3-draft/SPECIFICATION.md` | Requirement-centered candidate format. | Work / Knowledge |
 | `spell/format/0.3-draft/spell.schema.json` | Candidate schema for 0.3 draft declarations. | Work / Code |
 | `spell/spellcraft/SKILL.md` | Skill for authoring, inspecting, repairing, and migrating Spell declarations. | Current Skill |
+| `spell/alignment.py` | Semantic alignment evidence for autonomous Spellcraft: Effect invariants, trials with provenance, and fail-closed promotion. | Current Code |
 | `spell/migration/LEDGER.md` | Five-domain reassembly reasoning, ownership findings, unresolved crossings. | Work / Knowledge |
 | `spell/migration/agent-skills.md` | Migration notes relating Agent Skills to Spell/Technique boundaries. | Work / Knowledge |
 | `spell/migration/draw-the-owl.md` | Migration notes relating Draw the Owl to Familiar/Technique work. | Work / Knowledge |
@@ -44,9 +45,11 @@ Audit note: the active `find-familiar` example uses the 0.3 candidate declaratio
 | `familiar/README.md` | Ownership and persistence/security boundary. | Current orientation |
 | `familiar/familiar.schema.json` | Source-of-truth structural contract for a Familiar. | Current Code |
 | `familiar/validation.py` | Familiar-owned validator; removes the former reverse dependency on Cast. | Current Code |
-| `familiar/store.py` | Exact Familiar persistence. In-memory by default; restart-safe when supplied a local root. | Current Code |
+| `familiar/store.py` | Exact Familiar persistence. In-memory by default; restart-safe when supplied a local root. Retains immutable revisions addressable by `FamiliarRef`, with a latest pointer as a convenience index only. | Current Code |
 | `familiar/find-familiar/SKILL.md` | Practitioner skill for creating, inspecting, repairing, or validating caster-owned Familiars. | Current Skill |
 | `familiar/owl/owl.json` | Canonical system Familiar used to advise protocol/Familiar quality. | Current Knowledge artifact |
+| `familiar/view/familiar-view.schema.json` | Contract for a bounded representation of one exact accepted Familiar revision. Accounts for every source guidance category exactly once. | Current Code |
+| `familiar/view/builder.py` | Builds a View from a store-resolved `FamiliarRef` and validates omission accounting. | Current Code |
 
 A Familiar is guidance identity, not a persona or authority token. Owl may advise the first finding but cannot accept a Familiar for the practitioner.
 
@@ -61,6 +64,7 @@ A Familiar is guidance identity, not a persona or authority token. Owl may advis
 | `registry/scroll.schema.json` | Contract for non-executable exact Spell carriers. | Current Code |
 | `registry/spellbook.schema.json` | Contract for Spellbook registration metadata. | Current Code |
 | `registry/library.schema.json` | Contract for Libraries and their directed relations. | Current Code |
+| `registry/attestation.py` | Optional attestation envelope above content digests, one local/offline signing path, and consumer-local trust policy. | Current Code |
 
 Audit residual: `registry/core.py` still parses Spell frontmatter itself. The migration ledger identifies a future narrow Spell identity API as cleaner ownership. This does not block the first local cast because exact identity/digest behavior is tested.
 
@@ -73,6 +77,8 @@ Audit residual: `registry/core.py` still parses Spell frontmatter itself. The mi
 | `environment/presence/store.py` | Host-owned session Presence store with identity preservation checks. | Current Code |
 | `environment/scope.py` | Environment-owned effect-path boundaries for Scope enforcement, plus one reference filtered object capability. | Current Code |
 | `environment/blast_radius.py` | Direct, declared, observed and unknown reactive reach; reactive dependency graph and downstream observation. | Current Code |
+| `environment/authority.py` | Environment-owned attenuated credentials for Authority enforcement, plus one reference host credential. | Current Code |
+| `environment/consequence.py` | Consequence classification for irreversible external effects, and compensation as a separate attributable record. | Current Code |
 
 Audit residual: broader capability receipts still live in `cast/practitioner/situation.py`; the migration ledger proposes eventual Environment ownership. Not required by the first Find Familiar Effect beyond exposing the concrete persistence capability.
 
@@ -86,10 +92,13 @@ Audit residual: broader capability receipts still live in `cast/practitioner/sit
 | `cast/kernel/cast.schema.json` | Compatibility CAST record schema. | Current Code |
 | `cast/kernel/__init__.py` | Kernel public exports. | Current Code |
 | `cast/practitioner/cast_session.py` | Resumable practitioner preparation state; acceptance gates closure. | Current Code |
-| `cast/practitioner/situation.py` | Situation, capability receipt, CastPlan, requirement-to-capability compilation. | Current Code with future ownership split noted |
+| `cast/practitioner/situation.py` | Situation, capability receipt, typed Requirement demand, capacity relations, attenuation, CastPlan, requirement-to-capability compilation. | Current Code with future ownership split noted |
+| `cast/practitioner/obligations.py` | Typed Runtime Obligations, discharge mechanisms, obligation plan, and four-status evaluation. | Current Code |
+| `cast/practitioner/concurrency.py` | Observed pre-state identity, conflict detection, optimistic commit validation, and reservations with deterministic acquisition order. | Current Code |
 | `cast/practitioner/__init__.py` | Practitioner public exports. | Current Code |
+| `cast/kernel/resources.py` | Canonical cross-domain resource resolution from the repository root. | Current Code |
 
-The `cast/familiar`, `cast/format`, and `cast/owl` symlinks are transitional composition aids after the domain move, not duplicate authorities.
+The `cast/familiar`, `cast/format`, and `cast/owl` symlinks were transitional composition aids after the domain move. They were removed under #17: runtime code resolves another domain's artifacts through `cast/kernel/resources.py` by canonical repository path, so the supported test command no longer depends on whether the checkout can materialize symlinks.
 
 ## Cast domain — candidate/draft runtime
 

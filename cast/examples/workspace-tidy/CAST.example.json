@@ -50,6 +50,23 @@
       "status": "satisfied"
     },
     {
+      "kind": "authority",
+      "id": "authority-enforcement",
+      "phase": "before",
+      "status": "satisfied",
+      "value": {
+        "resolved": [
+          "workspace.write"
+        ],
+        "enforcement": {
+          "mechanism": "environment.attenuated-credential",
+          "granted": [
+            "workspace.write"
+          ]
+        }
+      }
+    },
+    {
       "kind": "requirement",
       "id": "target-observable",
       "phase": "before",
@@ -78,6 +95,21 @@
       },
       "source": "filesystem",
       "freshness_ms": 0
+    },
+    {
+      "kind": "authority",
+      "id": "authority-enforcement",
+      "phase": "after",
+      "status": "satisfied",
+      "value": {
+        "enforcement": {
+          "mechanism": "environment.attenuated-credential",
+          "granted": [
+            "workspace.write"
+          ]
+        },
+        "violations": []
+      }
     },
     {
       "kind": "requirement",

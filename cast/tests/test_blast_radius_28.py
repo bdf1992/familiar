@@ -20,6 +20,7 @@ from environment.blast_radius import (
     ReactiveGraph,
     characterize,
 )
+from environment.authority import RecordingHostCredential, attenuated_credential_enforcer
 from environment.scope import mapping_scope_enforcer
 from kernel.spell_kernel import SpellKernel
 from validation.candidate_adapter import load_candidate_spell
@@ -85,6 +86,7 @@ def make_kernel(observer=None):
         authority_resolver=lambda caster, permission, context: permission == "workspace.write",
         scope_resolver=lambda target, context: list(target["items"]),
         scope_enforcer=mapping_scope_enforcer(ADMISSIBLE_KEYS),
+        authority_enforcer=attenuated_credential_enforcer(RecordingHostCredential()),
         blast_radius_observer=observer,
         executor=execute,
     )
@@ -298,6 +300,7 @@ class ClosureAndOutcomeTests(unittest.TestCase):
             authority_resolver=lambda caster, permission, context: permission == "workspace.write",
             scope_resolver=lambda target, context: list(target["items"]),
             scope_enforcer=mapping_scope_enforcer(ADMISSIBLE_KEYS),
+            authority_enforcer=attenuated_credential_enforcer(RecordingHostCredential()),
             blast_radius_observer=lambda s, e, c, b: characterize(["a.txt"], ReactiveGraph([], complete=True)),
             executor=dishonest,
         )

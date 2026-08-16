@@ -27,7 +27,27 @@ A View MUST identify the exact `FamiliarRef` it represents. Construct a View onl
 
 A View MAY select, omit, summarize, translate, or rearrange Familiar guidance for a named perspective. It MUST NOT add observations, performance claims, compatibility history, inferred preferences, or other knowledge that is not source Familiar state.
 
+Schema validity does not establish that provenance. A hand-built object can carry any `subject` block it likes. `build_view()` takes a store and a ref and resolves the artifact through it, so a stale, forged, or unretained reference fails before a View exists to be trusted.
+
 Omitted source material remains unknown to the consumer. Omission must not be rewritten as an empty source field.
+
+## Accounting
+
+`omission != absence` only holds if the consumer can tell the two apart. Every source guidance category is therefore accounted for exactly once:
+
+```text
+dialect
+attention
+preferences
+stake
+advisory_authority
+```
+
+Each is either represented in `guidance` or named in `omitted`. A category MUST NOT appear in both, and a View that leaves one unaccounted is invalid. `omitted` is required, so a fully represented View carries an explicit empty array rather than saying nothing at all.
+
+All five are required by `familiar.schema.json`, so a valid Familiar always carries all of them. "The source did not have one" is never an explanation for a gap in a View.
+
+`build_view()` derives `omitted` as the complement of what the caller chose to represent, so a View that silently drops a category cannot be constructed — only hand-assembled, and then validation refuses it naming the category.
 
 ## Perspective
 

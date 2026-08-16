@@ -1,3 +1,17 @@
+from .attestation import (
+    ATTESTATION_FORMAT,
+    ROLES,
+    Attestation,
+    AttestationError,
+    KeyResolver,
+    LocalKey,
+    TrustDecision,
+    TrustPolicy,
+    Verification,
+    attest,
+    digest_of,
+    verify,
+)
 from .core import (
     Library,
     LibraryRelation,
@@ -11,13 +25,25 @@ from .core import (
 from .local import LocalRegistry
 
 __all__ = [
+    "ATTESTATION_FORMAT",
+    "Attestation",
+    "AttestationError",
+    "KeyResolver",
     "Library",
     "LibraryRelation",
+    "LocalKey",
     "LocalRegistry",
+    "ROLES",
     "Registration",
     "ResolvedSpell",
     "Scroll",
     "Spellbook",
     "RegistryError",
+    "TrustDecision",
+    "TrustPolicy",
+    "Verification",
+    "attest",
+    "digest_of",
     "seal_scroll",
+    "verify",
 ]

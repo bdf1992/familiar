@@ -103,6 +103,27 @@ Closure refuses when a declared blast-radius condition requires downstream conta
 
 This does not weaken direct Scope enforcement. The direct path must still be attenuated, and this layer observes rather than contains.
 
+### Consequence classification
+
+The casting law can observe a local mutation. It cannot assume the world can be put back. A successful HTTP call, a sent message, or a charged card is not undone by writing pre-state bytes.
+
+Without an explicit model, a failed postcondition collapses three materially different outcomes into one. They are distinguished:
+
+```text
+none           no effectful consequence observed
+reversed       exact mutation, restoration independently verified
+residual       persistent mutation, no compensation path declared
+compensatable  persistent mutation with a declared compensation path
+```
+
+`residual` is not a worse `reversed`. It is a different fact, and a runtime that cannot say which occurred cannot be trusted about either.
+
+**A provider may not certify its own rollback.** An inverse-looking API is not evidence that state was restored, so a `reversed` finding requires an observer distinct from the effect path — the same independence rule settlement already uses.
+
+**Compensation is a new attributable consequence-bearing operation, not deletion of history.** It produces its own record linked to the original Cast. The original CAST keeps its consequence and its residual whether compensation succeeds, fails, or is never attempted. Compensation failure stays visible and rewrites nothing.
+
+**Closure refuses when compensation is required and no path exists**, rather than discovering afterwards that the world kept something with no way back. Compensation is opt-in: an ordinary Cast declares nothing and closes normally. Not every Effect must be reversible.
+
 ## Closure support matching
 
 Before effectful execution, the Kernel derives the mechanisms demanded by the selected Effect and compares them against the current host/environment and Technique Binding.
@@ -129,6 +150,26 @@ Authority requires both:
 Missing either -> refuse closure.
 
 This forbids checking authorization with one identity and then executing with broader credentials.
+
+The same three-way split Scope needs applies here:
+
+```text
+authority resolution     whether the caster may attempt the declared effect
+authority attenuation    the credential granted to the execution path
+authority observation    the CAST evidence identifying which boundary participated
+```
+
+The Kernel takes an **authority enforcer** and calls it once every declared Authority resolves, injecting the attenuated credential as `context["authority"]`. A Technique that must act under authority acts through that credential. It is not handed the host's ambient token because a resolver returned true.
+
+**Closure refuses when an Authority Requirement exists and no attenuated execution capability can be supplied.** `runtime-authority-enforcer-missing` is a closure gap.
+
+The reference mechanism narrows a host credential to exactly the permissions that closed the Cast, and optionally to a resource set. A request outside either raises and is recorded, so an attempt the Technique caught is still attributable. After execution the Kernel reads the boundary rather than the Technique's account of itself.
+
+The attenuated credential holds the host credential privately. `act()` is the only way through, so a Technique cannot widen back to what the host holds.
+
+A scoped API token, an assumed role with a narrowed policy, or a per-cast service identity conform equally. The protocol specifies the contract, not one implementation.
+
+**What this does not claim.** In-process attenuation bounds what a Technique reaches *through the injected credential*. A Technique that ignores it and opens its own client against ambient host credentials is outside what the reference implementation can prevent, and remains the case for the hard environmental isolation named above. What the runtime now guarantees is that it never *hands over* more authority than it resolved.
 
 ### Scope
 

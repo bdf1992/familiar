@@ -167,7 +167,7 @@ $env:PYTHONPATH = "cast;environment;."
 python -m unittest discover -s cast/tests -v
 ```
 
-Windows checkout portability is tracked by #17 until the runtime no longer depends on transitional symlink behavior and CI proves the documented path.
+The repository tracks no symlinks. Runtime code resolves another domain's artifacts by canonical repository path through `cast/kernel/resources.py`, so a checkout with `core.symlinks=false` runs the same command with the same result. CI proves both documented paths: the test matrix runs on `ubuntu-latest` and `windows-latest`, and a third job checks out with symlink support disabled.
 
 ## Source baselines
 

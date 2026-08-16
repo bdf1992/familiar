@@ -9,10 +9,9 @@ from typing import Any, Callable
 import jsonschema
 import yaml
 
+from kernel.resources import CAST_SCHEMA, FAMILIAR_SCHEMA, SPELL_SCHEMA
+
 ROOT = Path(__file__).resolve().parents[1]
-SPELL_SCHEMA = ROOT / "format" / "spell.schema.json"
-FAMILIAR_SCHEMA = ROOT / "familiar" / "familiar.schema.json"
-CAST_SCHEMA = ROOT / "kernel" / "cast.schema.json"
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -91,6 +90,10 @@ class SpellKernel:
         scope_resolver=None,
         scope_enforcer=None,
         blast_radius_observer=None,
+        authority_enforcer=None,
+        consequence_classifier=None,
+        compensation_provider=None,
+        executor_id=None,
     ):
         self.observers = observers or {}
         self.requirements = requirements or {}
@@ -107,6 +110,17 @@ class SpellKernel:
         # what the Technique invokes directly; it says nothing about watchers,
         # CI, webhooks, or anything else that reacts to the mutation.
         self.blast_radius_observer = blast_radius_observer
+        # The same split at the Authority boundary. Resolution says the caster
+        # may attempt; only attenuation constrains what the executor can reach.
+        self.authority_enforcer = authority_enforcer
+        # Environment-owned classification of what the world kept. The Kernel
+        # can observe a local mutation; only the Environment can say whether an
+        # external consequence was undone, persists, or can be compensated.
+        self.consequence_classifier = consequence_classifier
+        self.compensation_provider = compensation_provider
+        # Identity of the effect path, used to refuse a rollback claim the
+        # executor makes about itself.
+        self.executor_id = executor_id
 
     def _effect(self, spell: dict[str, Any], effect_id: str) -> dict[str, Any]:
         for effect in spell["effects"]:
@@ -157,6 +171,7 @@ class SpellKernel:
         cost_max: dict[str, int] | None = None,
         scope_max_items: int | None = None,
         downstream_containment_required: bool = False,
+        compensation_required: bool = False,
     ) -> dict[str, Any]:
         validate_spell(spell)
         if execution_max_ms is not None and (not isinstance(execution_max_ms, int) or execution_max_ms <= 0):
@@ -192,6 +207,7 @@ class SpellKernel:
         observations = []
         reasons = []
         scope_boundary = None
+        authority_boundary = None
         familiar_ref = None
         guidance = None
         if familiar is not None:
@@ -259,6 +275,7 @@ class SpellKernel:
                     })
                     if status != "satisfied":
                         reasons.append("requirement-unsatisfied: scope-max-items")
+        granted_authorities = []
         for authority in effect["authority"]:
             allowed = False
             if self.authority_resolver is not None:
@@ -267,8 +284,39 @@ class SpellKernel:
                 except Exception:
                     allowed = False
             observations.append({"kind": "authority", "id": authority, "phase": "before", "status": "satisfied" if allowed else "denied"})
-            if not allowed:
+            if allowed:
+                granted_authorities.append(authority)
+            else:
                 reasons.append(f"authority-denied: {authority}")
+        # Resolution is not enforcement. A resolved Authority binds the effect
+        # path only through a credential no broader than the one that closed the
+        # Cast, so closure refuses when none can be supplied rather than letting
+        # the executor keep whatever the host ambiently holds.
+        if effect["authority"] and len(granted_authorities) == len(effect["authority"]):
+            enforcement = {
+                "kind": "authority",
+                "id": "authority-enforcement",
+                "phase": "before",
+                "status": "satisfied",
+                "value": {"resolved": list(granted_authorities)},
+            }
+            if self.authority_enforcer is None:
+                enforcement["status"] = "unavailable"
+                enforcement["detail"] = "no authority enforcer registered; execution credential is ambient"
+                reasons.append("authority-unenforced: no attenuated execution capability")
+            else:
+                try:
+                    authority_boundary = self.authority_enforcer(caster, list(granted_authorities), context)
+                    credential = authority_boundary.handle()
+                except Exception as exc:
+                    authority_boundary = None
+                    enforcement["status"] = "unavailable"
+                    enforcement["detail"] = f"authority attenuation failed: {type(exc).__name__}: {exc}"
+                    reasons.append("authority-unenforced: attenuation failed")
+                else:
+                    context["authority"] = credential
+                    enforcement["value"]["enforcement"] = authority_boundary.describe()
+            observations.append(enforcement)
         for requirement in effect["requirements"]:
             if requirement["phase"] != "before":
                 continue
@@ -293,6 +341,17 @@ class SpellKernel:
                 "detail": "downstream containment required but no blast radius observer is registered",
             })
             reasons.append("downstream-unobservable: no blast radius observer")
+        # Where compensation is required, refuse before the effect rather than
+        # discovering afterwards that the world kept something with no path back.
+        if compensation_required and self.compensation_provider is None:
+            observations.append({
+                "kind": "execution",
+                "id": "compensation-support",
+                "phase": "before",
+                "status": "unavailable",
+                "detail": "compensation required but no compensation provider is registered",
+            })
+            reasons.append("compensation-unsupported: no compensation path available")
         record = {"cast_format": "0.2", "cast_id": cast_id, "spell": {"name": spell["name"], "version": spell["version"]}, "caster": {"id": caster["id"], "kind": caster["kind"]}, "familiar": familiar_ref, "guidance": guidance, "effect": effect_id, "closure": {"decision": "refused" if reasons else "closed", "reasons": reasons}, "observations": observations, "outcome": None, "residuals": []}
         if reasons:
             validate_cast_record(record)
@@ -398,6 +457,69 @@ class SpellKernel:
                     )
                 if downstream_containment_required and not radius.contained:
                     blast_failed = True
+        # Classify what the world kept. Three outcomes a failed postcondition
+        # would otherwise collapse: nothing happened, it was undone, it persists.
+        if self.consequence_classifier is not None:
+            try:
+                finding = self.consequence_classifier(spell, effect_id, context, execution_failed)
+                # An inverse-looking API is not evidence that state was
+                # restored. The Kernel reads the finding structurally and
+                # imports nothing from the Environment to do it.
+                if (
+                    self.executor_id is not None
+                    and finding.kind == "reversed"
+                    and finding.observer == self.executor_id
+                ):
+                    raise ValueError(
+                        f"exact reversal requires an observer independent of the executor; "
+                        f"{self.executor_id!r} cannot certify its own rollback"
+                    )
+            except Exception as exc:
+                observations.append({
+                    "kind": "execution",
+                    "id": "consequence",
+                    "phase": "after",
+                    "status": "unavailable",
+                    "detail": f"consequence classification failed: {type(exc).__name__}: {exc}",
+                })
+                record["residuals"].append(
+                    f"consequence unclassified: {type(exc).__name__}: {exc}"
+                )
+            else:
+                observations.append({
+                    "kind": "execution",
+                    "id": "consequence",
+                    "phase": "after",
+                    "status": "violated" if finding.persistent else "satisfied",
+                    "value": finding.as_dict(),
+                })
+                if finding.persistent:
+                    detail = (
+                        f"compensatable via {finding.compensation}"
+                        if finding.kind == "compensatable"
+                        else "no compensation path declared"
+                    )
+                    record["residuals"].append(
+                        f"persistent world mutation ({finding.kind}): {detail}"
+                    )
+        authority_failed = False
+        if authority_boundary is not None:
+            breaches = authority_boundary.violations()
+            observations.append({
+                "kind": "authority",
+                "id": "authority-enforcement",
+                "phase": "after",
+                "status": "violated" if breaches else "satisfied",
+                "value": {
+                    "enforcement": authority_boundary.describe(),
+                    "violations": [item.as_dict() for item in breaches],
+                },
+            })
+            if breaches:
+                authority_failed = True
+                record["residuals"].append(
+                    f"authority violated during execution: {len(breaches)} attempt(s) beyond resolved authority"
+                )
         post_failed = False
         for requirement in [r for r in effect["requirements"] if r["phase"] == "after"]:
             obs = self._check("requirement", requirement["id"], "after", self.requirements.get(requirement["id"]), context)
@@ -412,7 +534,13 @@ class SpellKernel:
             if obs["status"] != "satisfied":
                 limit_failed = True
                 record["residuals"].append(f"limit violated after execution: {limit_id}")
-        if execution_failed or limit_failed or scope_failed or blast_failed:
+        if (
+            execution_failed
+            or limit_failed
+            or scope_failed
+            or authority_failed
+            or blast_failed
+        ):
             record["outcome"] = "failed"
         elif post_failed:
             record["outcome"] = "partial"
