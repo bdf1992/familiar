@@ -104,42 +104,35 @@ class FindFamiliarFirstCast05Tests(unittest.TestCase):
     def test_unaccepted_candidate_refuses_before_persistence(self):
         spell = load_candidate_spell(EXAMPLE / "SPELL.md")
         binding = json.loads((EXAMPLE / "binding.json").read_text(encoding="utf-8"))
-        accepted = candidate()
+        executions: list[str] = []
 
-        with tempfile.TemporaryDirectory() as tmp:
-            store = FamiliarStore(Path(tmp) / "familiars")
-            executions: list[str] = []
+        def execute(spell_value, effect_id, context, execution_max_ms):
+            executions.append("entered")
+            return {}
 
-            def execute(spell_value, effect_id, context, execution_max_ms):
-                executions.append("entered")
-                return {}
+        kernel = SpellKernel(
+            requirements={
+                "caster-resolved": lambda phase, context: True,
+                "familiar-store-supported": lambda phase, context: True,
+                "familiar-valid": lambda phase, context: True,
+                "caster-accepted": lambda phase, context: context.get("target", {}).get("accepted") is True,
+                "familiar-persisted": lambda phase, context: False,
+            },
+            executor=execute,
+        )
 
-            kernel = SpellKernel(
-                requirements={
-                    "caster-resolved": lambda phase, context: True,
-                    "familiar-store-supported": lambda phase, context: True,
-                    "familiar-valid": lambda phase, context: True,
-                    "caster-accepted": lambda phase, context: context.get("target", {}).get("accepted") is True,
-                    "familiar-persisted": lambda phase, context: False,
-                },
-                executor=execute,
-            )
+        record = cast_with_binding(
+            kernel,
+            spell,
+            binding,
+            effect_id="establish",
+            caster={"id": "bdo", "kind": "human"},
+            target={"caster": "bdo", "accepted": False},
+        )
 
-            record = cast_with_binding(
-                kernel,
-                spell,
-                binding,
-                effect_id="establish",
-                caster={"id": "bdo", "kind": "human"},
-                target={"caster": "bdo", "accepted": False},
-            )
-
-            # caster-accepted is an after Requirement in the current declaration,
-            # so execution may occur but the Effect must not resolve. This test
-            # makes that current semantics explicit rather than pretending
-            # acceptance is a before-closure gate in the runtime declaration.
-            self.assertNotEqual("resolved", record["outcome"])
-            self.assertEqual(["entered"], executions)
+        self.assertEqual("refused", record["closure"]["decision"])
+        self.assertEqual([], executions)
+        self.assertTrue(any("caster-accepted" in reason for reason in record["closure"]["reasons"]))
 
 
 if __name__ == "__main__":
