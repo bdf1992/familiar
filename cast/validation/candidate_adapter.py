@@ -201,6 +201,7 @@ def cast_candidate(
     target: Any,
     familiar: dict[str, Any] | None = None,
     cast_id: str | None = None,
+    downstream_containment_required: bool = False,
 ) -> dict[str, Any]:
     validate_candidate_spell(spell)
     effect = _effect(spell, effect_id)
@@ -220,5 +221,6 @@ def cast_candidate(
         execution_max_ms=execution_max_ms,
         cost_max=cost_max,
         scope_max_items=scope_max_items,
+        downstream_containment_required=downstream_containment_required,
     )
     return _candidate_record(record, target=target, plan=plan)

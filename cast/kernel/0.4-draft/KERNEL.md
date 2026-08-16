@@ -82,7 +82,26 @@ An attenuated filesystem view, a scoped API token, or a sandbox namespace confor
 
 CAST retains the resolved Scope Requirement, the enforcing mechanism that participated, and any violations it recorded.
 
-Issue #28 owns the separate problem of ambient reactive consequences that a correctly attenuated direct mutation can still trigger. Direct containment is necessary and is not sufficient.
+### Ambient reactive reach
+
+Attenuation bounds what the Technique invokes **directly**. The Environment may still contain machinery outside that handle hierarchy: watchers, CI, webhooks, deployments, subscriptions. A scoped mutation can trigger all of them without the Technique invoking any.
+
+Four reaches, and the fourth is the one usually missing:
+
+```text
+direct     consequences the injected handle can invoke
+declared   Environment mechanisms known to react to those mutations
+observed   downstream effects independently attributable after execution
+unknown    consequence space this Environment cannot prove absent
+```
+
+**A Cast must not claim a smaller blast radius because the Technique held a narrow handle.** An Environment that cannot enumerate its own reactive machinery reports `unknown`, not an empty set. Silently treating unenumerated reach as absent is how a runtime comes to report a blast radius of one file for a commit that triggered a deployment.
+
+Containment therefore requires *both* that nothing observed escaped the direct reach *and* that nothing is unknown. Observing no escape is not containment; it is not having seen anything.
+
+Closure refuses when a declared blast-radius condition requires downstream containment and no observer can characterize reach. Where containment is not declared, reach is still observed and recorded — it simply does not gate the outcome.
+
+This does not weaken direct Scope enforcement. The direct path must still be attenuated, and this layer observes rather than contains.
 
 ## Closure support matching
 
