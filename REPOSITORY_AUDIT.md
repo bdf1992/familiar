@@ -205,6 +205,7 @@ Broader capability receipts still live in `cast/practitioner/situation.py`. `spe
 | `cast/kernel/__init__.py` | Kernel public exports. | Code | Current | — |
 | `cast/practitioner/cast_session.py` | Resumable practitioner preparation state; acceptance gates closure. | Code | Current | — |
 | `cast/practitioner/situation.py` | Situation, capability receipt, typed Requirement demand, capacity relations, attenuation, CastPlan, requirement-to-capability compilation. | Code | Current | #13 closed by #43. Ownership split still proposed in `spell/migration/LEDGER.md` |
+| `cast/practitioner/handle_situation.py` | Read-only HandleView-to-Situation evidence seam; verifies Handle source identity, compares charted claims with attributable Environment observations, and reuses exact capability matching without Closure or execution. | Code | Work | #69 |
 | `cast/practitioner/obligations.py` | Typed Runtime Obligations, discharge mechanisms, obligation plan, and four-status evaluation. | Code | Current | Added by #47 (issue #32). Obligations do not compile to capability demands; the firewall is structural |
 | `cast/practitioner/concurrency.py` | Observed pre-state identity, conflict detection, optimistic commit validation, and reservations with deterministic acquisition order. | Code | Current | Added by #49 (issue #30). Retry is a new attempt, never a resumed closure |
 | `cast/practitioner/crossing.py` | CrossingPlan, Brink observation, Closure, canonical `plan_digest`, and post-Closure verification. Couples Capacity, Obligations and Mana by composition without flattening them. | Code | Work | Added under #34. Plans and seals only — it moves no Mana and discharges no obligation |
@@ -271,6 +272,7 @@ All files under `cast/tests/` are **Current Code** because CI depends on them. T
 | `cast/tests/fixtures/SPELL.md` | Compatibility Spell fixture. |
 | `cast/tests/fixtures/familiar-casual.json` | Familiar dialect and interchangeability fixture. |
 | `cast/tests/fixtures/familiar-json.json` | Second dialect fixture, paired with the above. |
+| `cast/tests/fixtures/domain-handle-environment-69.json` | Synthetic attributable Environment observations plus one concrete capability receipt for the #69 Situation seam. |
 | `cast/tests/test_kernel.py` | Compatibility Kernel mechanics: closure, authority refusal, cost, duration, scope bound. |
 | `cast/tests/test_candidate_requirements.py` | Requirement-centered candidate behavior through the adapter. |
 | `cast/tests/test_casting_04.py` | 0.4 binding and enforcement mechanics. Formerly carried the Scope containment defect as an `expectedFailure`; #44 closed it and the specimen now passes. |
@@ -290,6 +292,7 @@ All files under `cast/tests/` are **Current Code** because CI depends on them. T
 | `cast/tests/test_format_generations_55.py` | The two incompatible FORMAT 0.3 generations, pinned as running code. Documents a defect; every assertion is expected to change when #55 closes. |
 | `cast/tests/test_crossing_plan_34.py` | Closure refusal at an unclean Brink, canonical plan identity, and adversarial post-Closure swaps of target, Technique, binding, authority, obligation, evidence contract, residual bounds and Mana. |
 | `cast/tests/test_domain_handle_67.py` | Read-only Domain Handle resolution: source identity, disagreement/unknown preservation, participant-relative projection, copy isolation, and no Cast/Environment dependency. |
+| `cast/tests/test_handle_situation_69.py` | Domain Handle re-resolution against Environment evidence: source-digest verification, drift/unknown preservation, exact capability matching, participant invariance, and no Closure/execution path. |
 | `cast/tests/test_resource_resolution_17.py` | Canonical cross-domain resolution without composition symlinks, including a symlink-free checkout. |
 | `cast/tests/test_familiar_revisions_15.py` | Immutable Familiar revisions addressable by `FamiliarRef`; a newer write does not destroy an older revision. |
 | `cast/tests/test_familiar_view_14.py` | Every source guidance category accounted for exactly once; a silently dropped category fails. |
