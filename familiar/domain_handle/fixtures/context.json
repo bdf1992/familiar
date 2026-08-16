@@ -1,0 +1,36 @@
+{
+  "identity": {
+    "id": "context:familiar-repository",
+    "anchor": "b3518f70e674501e29f241376400fcd3a972ae1b"
+  },
+  "scope": "Tracked repository structure and selected root/domain contracts at the named commit; not practitioner-local host state.",
+  "domains": {
+    "spell": "declared possibility and Effect semantics",
+    "cast": "situated attempt and runtime composition",
+    "familiar": "participant-associated advisory guidance and representations",
+    "registry": "identity, addressability, registration, exact resolution and provenance",
+    "environment": "concrete runtime state and mechanisms"
+  },
+  "standing": [
+    "0.2 remains the only Current format/kernel specification generation",
+    "later 0.3/0.4/0.5/0.6 material remains Work until explicit lifecycle crossings",
+    "CrossingPlan/Brink/Closure contract exists as 0.7-draft Work and is not attached to Kernel execution"
+  ],
+  "disagreements": [
+    {
+      "id": "readme-crossing-plan-staleness",
+      "older": "README says the whole #34 crossing-plan contract is not established",
+      "newer": "merged PR #63 and cast/practitioner/crossing.py establish the contract as Work while explicitly not executing it",
+      "interpretation": "contract exists != runtime attachment exists; Work != Current"
+    }
+  ],
+  "unknown": [
+    "canonical artifact kind and schema for Domain Familiarity",
+    "future Current placement of CONTEXT.md or FAMILIAR.md"
+  ],
+  "unobserved": [
+    "live practitioner host state",
+    "local practitioner Spellbooks, Familiars and CAST records",
+    "exhaustive external side effects"
+  ]
+}
