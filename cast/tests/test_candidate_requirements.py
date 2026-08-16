@@ -12,7 +12,6 @@ from validation.candidate_adapter import cast_candidate, load_candidate_spell
 
 ROOT = Path(__file__).resolve().parents[1]
 CANDIDATE = ROOT / "validation" / "candidate" / "SPELL.md"
-SPELL_DRAFT_SCHEMA = ROOT / "format" / "0.3-draft" / "spell.schema.json"
 CAST_DRAFT_SCHEMA = ROOT / "kernel" / "0.3-draft" / "cast.schema.json"
 
 
@@ -62,6 +61,7 @@ class CandidateRequirementTests(unittest.TestCase):
             cast_id="candidate-pass",
         )
 
+        self.assertEqual("0.3-candidate", self.spell["spell_format"])
         self.assertEqual("0.3-candidate", record["cast_format"])
         self.assertEqual("closed", record["closure"]["decision"])
         self.assertEqual("resolved", record["outcome"])
@@ -76,10 +76,10 @@ class CandidateRequirementTests(unittest.TestCase):
         self.assertEqual("during", by_id["execution-time"]["phase"])
         self.assertEqual("satisfied", by_id["effect-confirmed"]["status"])
 
-        draft_spell = deepcopy(self.spell)
-        draft_spell["spell_format"] = "0.3"
-        jsonschema.validate(instance=draft_spell, schema=load_json(SPELL_DRAFT_SCHEMA))
-
+        # 0.3-candidate is retained as evidence for the experiment that produced
+        # structured Requirements. It is no longer promoted to FORMAT 0.3 by
+        # changing only the version string; the adopted draft has stronger
+        # binding and protocol contracts with its own fixtures/tests.
         draft_cast = deepcopy(record)
         draft_cast["cast_format"] = "0.3"
         jsonschema.validate(instance=draft_cast, schema=load_json(CAST_DRAFT_SCHEMA))
