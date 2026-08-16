@@ -87,6 +87,7 @@ Audit residual: broader capability receipts still live in `cast/practitioner/sit
 | `cast/kernel/__init__.py` | Kernel public exports. | Current Code |
 | `cast/practitioner/cast_session.py` | Resumable practitioner preparation state; acceptance gates closure. | Current Code |
 | `cast/practitioner/situation.py` | Situation, capability receipt, typed Requirement demand, capacity relations, attenuation, CastPlan, requirement-to-capability compilation. | Current Code with future ownership split noted |
+| `cast/practitioner/obligations.py` | Typed Runtime Obligations, discharge mechanisms, obligation plan, and four-status evaluation. | Current Code |
 | `cast/practitioner/__init__.py` | Practitioner public exports. | Current Code |
 | `cast/kernel/resources.py` | Canonical cross-domain resource resolution from the repository root. | Current Code |
 
