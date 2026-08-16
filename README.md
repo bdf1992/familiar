@@ -156,7 +156,9 @@ The audit's completeness is checked by `cast/tests/test_repository_audit_18.py` 
 
 The suite no longer reports an expected failure. The Scope containment defect is closed by #10: a resolved Scope binds the effect path through a concrete Environment boundary, closure refuses when no such boundary can be supplied, and a violation the Technique swallowed is still recorded by the mechanism and still fails the Cast. Direct containment is necessary and not sufficient, and the ambient reactive reach beyond it is now observed under #28 — a Cast does not get to claim a small radius because its handle was narrow.
 
-What is **not** established: Mana participation in the Cast lifecycle (#16), the Mana state shape (#26), and the whole 0.7 crossing — its plan contract (#34), observation seam (#35), sealing contract (#36), conformance suite (#37), and integration (#38). The lifecycle standing of the 0.3, 0.4, 0.5, and 0.6 draft generations relative to Current 0.2 is unrecorded and owned by #53.
+What is **not** established: Mana participation in the Cast lifecycle (#16), the Mana state shape (#26), and the whole 0.7 crossing — its plan contract (#34), observation seam (#35), sealing contract (#36), conformance suite (#37), and integration (#38).
+
+The 0.3, 0.4, 0.5 and 0.6 draft generations are each **retained as Work** under #53; none is adopted, superseded, or archived, and every one of them says in its own header that it extends or sits beneath what came before rather than replacing it. **0.2 remains the only Current specification, and the running Kernel exceeds it** — see [REPOSITORY_AUDIT.md](REPOSITORY_AUDIT.md) § *Lifecycle generations*.
 
 ## Test
 

@@ -4,11 +4,11 @@ Purpose: make every repository surface legible before architectural change. `AGE
 
 This is an audit, not a claim that every Work artifact is Current doctrine, and not a release.
 
-**Audited commit `c6969ac`** — *"Merge pull request #52 from bdf1992/feat/28-ambient-blast-radius"*, `main`, 130 tracked files.
+**Audited commit `efd9e0c`** — *"Merge pull request #46 from bdf1992/docs/18-repository-audit-refresh"*, `main`, 131 tracked files.
 
-**Attributable evidence:** `Agent Spells CI` run [31963822527](https://github.com/bdf1992/familiar/actions/runs/31963822527) on `c6969ac` concluded **success**, running **298 tests, OK** across ubuntu-latest, windows-latest, and a symlink-disabled checkout. That is the evidence this audit rests on. Saying tests exist is not evidence; a named run against a named commit is.
+**Attributable evidence:** `Agent Spells CI` run [31964388423](https://github.com/bdf1992/familiar/actions/runs/31964388423) on `efd9e0c` concluded **success**, running **301 tests, OK** across ubuntu-latest, windows-latest, and a symlink-disabled checkout. That is the evidence this audit rests on. Saying tests exist is not evidence; a named run against a named commit is.
 
-This audit is cut against `c6969ac`, the state of `main` after the fourteen pull requests closing #10 through #32 landed. The commit that merges this audit will necessarily be one commit later; the completeness check covers the tree, and the named run covers the behavior.
+The commit that merges any change to this file is necessarily one commit later than the one it names. That is not drift: the completeness check covers the tree mechanically on every run, and the named run covers the behavior at a commit that actually existed.
 
 Lifecycle vocabulary follows `FOUNDATIONS.md`: **Current**, **Work**, **Archive**. Test source is Code; an attributable test run is Evidence.
 
@@ -44,17 +44,36 @@ Five generations coexist. **None is archived by this audit, and none has ever be
 
 **Read that table as parallel drafts beside a Current 0.2, not as a ladder that has been climbed.** 0.6 does not build on 0.5; it builds on the 0.3 format and the existing casting law and skips 0.5 entirely, which is coherent once you notice 0.5 was never a kernel generation. `spell/format/0.3-draft/SPECIFICATION.md` still says so in its own header: *"FORMAT 0.2 remains Current until an explicit adoption crossing."*
 
-**Recording a standing for each generation is owned by #53, and it blocks #38.** 0.7 cannot be promoted to Current while four undispositioned Work generations sit behind it, because that is exactly the silent promotion the crossing rule forbids.
+### Recorded standing
 
-What the generations mean concretely:
+Under #53, each generation now carries exactly one disposition. The available dispositions are those `FOUNDATIONS.md` already defines — **adopted**, **superseded**, **retired**, **retained** — and no new vocabulary is introduced.
 
-- `spell/format/spell.schema.json` and `cast/kernel/cast.schema.json` are what the running Kernel validates. They are **Current**.
-- The 0.3 candidate is exercised in CI through `cast/validation/candidate_adapter.py`, which normalizes a candidate declaration into the compatibility Kernel. It is not a second Kernel.
-- The 0.4 draft governs Technique Binding and closure support matching, and is exercised by `cast/validation/casting_04.py`. It has its own CAST schema, which the adapter emits into.
-- The 0.5 material is practitioner and registry integration narrative — `cast/work/docs/PRACTITIONER_LOOP_0_5.md` and `cast/work/docs/REGISTRY_AND_SUMMONING_0_5.md`. There is no 0.5 kernel draft.
-- The 0.6 draft adds Magic participation. Its Environment-owned definition is `environment/MAGIC.md` and its runtime is `environment/magic.py`. **It is not integrated with the Cast lifecycle** — issue #16 owns that crossing, and issue #26 owns the Mana state shape as open design work rather than as a gate.
+**Every generation is `retained` as Work.** Nothing is adopted, superseded, retired, or archived by this record. That is not a deferral: it is what the material itself says, and the evidence is in the documents rather than in anyone's memory.
 
-**The code never forked.** There is one `cast/kernel/spell_kernel.py`, still titled for the 0.2 compatibility Kernel, and every merged correctness and architecture change lands in it. The runtime converged while the documentation branched five ways and never merged back. A reader cannot currently tell from the tree which generation governs the running code; that is the defect #53 exists to close.
+| Generation | Artifacts | Disposition | Why |
+|---|---|---|---|
+| 0.3 format | `spell/format/0.3-draft/SPECIFICATION.md`, `spell/format/0.3-draft/spell.schema.json`, `spell/format/0.3-draft/models.py`, `spell/format/0.3-draft/examples/find-familiar.SPELL.md` | **retained** | Its own header states *"FORMAT 0.2 remains Current until an explicit adoption crossing."* No adoption has occurred, so 0.2 remains Current and this remains the candidate. |
+| 0.3 kernel | `cast/kernel/0.3-draft/KERNEL.md`, `cast/kernel/0.3-draft/cast.schema.json` | **retained** | Its own header states it *"does not replace the current reference Kernel yet."* Not superseded — see the ledger answer below. |
+| 0.4 | `cast/kernel/0.4-draft/CASTING.md`, `cast/kernel/0.4-draft/KERNEL.md`, `cast/kernel/0.4-draft/cast.schema.json`, `cast/kernel/0.4-draft/technique-binding.schema.json` | **retained** | Declares itself *"a development draft"* that *"extends the requirement-centered 0.3 work"* and *"does not establish Spell standing."* Extension is not replacement. |
+| 0.5 | `cast/work/docs/PRACTITIONER_LOOP_0_5.md`, `cast/work/docs/REGISTRY_AND_SUMMONING_0_5.md` | **retained** | Practitioner and registry integration narrative. **There is no 0.5 kernel generation**, so there is nothing here that could be adopted as a runtime specification. |
+| 0.6 | `cast/kernel/0.6-draft/KERNEL.md`, `environment/MAGIC.md`, `environment/magic.py` | **retained** | Declares that it *"adds Magic participation beneath the existing invariant casting law"* and *"does not change the 0.3 Spell format."* It is not integrated with the Cast lifecycle at all — #16 owns that crossing. |
+
+**The ledger's open question is answered.** `spell/migration/LEDGER.md` asks whether the 0.3 kernel draft remains active Work or has been explicitly superseded by 0.4. (It asks this using the pre-reassembly relative path, which is why the path is not cited here: `cast/kernel/0.3-draft/` is where that material actually lives.) It remains active Work. 0.4 states in its own header that it **extends** the 0.3 work, and `cast/kernel/0.4-draft/CASTING.md` describes itself as *"derived from the 0.3 FORMAT/KERNEL validation work."* Derivation and extension are not supersession. Nothing archives 0.3, and no crossing is recorded because none occurred.
+
+**Read the generations as layers, not as a ladder.** Each one explicitly declines to replace what came before: 0.4 extends 0.3, 0.6 sits *beneath* the casting law 0.4 describes and preserves the 0.3 format, and 0.5 is not a kernel generation at all. That is why no supersession can be recorded — not because the decision is being avoided, but because every document in the chain says it is additive.
+
+### The generations and the running code
+
+**The code never forked.** There is one `cast/kernel/spell_kernel.py`, still titled for the 0.2 compatibility Kernel, and every merged correctness and architecture change lands in it. What runs is best described this way:
+
+- `spell/format/spell.schema.json` and `cast/kernel/cast.schema.json` are what the Kernel actually validates against. They are **Current**, and they are 0.2.
+- The 0.3 candidate reaches that Kernel through `cast/validation/candidate_adapter.py`, which normalizes a candidate declaration into the compatibility shape. It is an adapter, not a second Kernel.
+- The 0.4 casting law and Technique Binding boundary are implemented and exercised — `cast/validation/casting_04.py`, `cast/tests/test_casting_04.py`, `cast/tests/test_casting_order_04.py` — and the adapter emits into 0.4's CAST schema.
+- The 0.6 Magic runtime exists and passes its own tests, but no Cast reaches it. `cast/kernel/spell_kernel.py` contains no Mana participation; #16 owns that.
+
+**So the running Kernel implements substantial parts of 0.3, 0.4, and 0.6 while none of those drafts is its specification.** The implementation ran ahead of the lifecycle record. A reader asking *"which generation governs this code?"* gets the honest answer: **0.2 is the only Current specification, and the code exceeds it.** Closing that gap means either adopting a generation as the Kernel's specification or writing a specification that describes what the Kernel now does — and both are lifecycle crossings that require an explicit decision. This record does not take one.
+
+That decision is not owned by this section. Recording the standing is what #53 required, and silence is what it forbade.
 
 `AGENT_SPELLS.md` predates the five-domain split and carries historical 0.2 framing. It is **Current/Historical Knowledge**: still referenced, not authoritative where it disagrees with `FOUNDATIONS.md`. Its explicit lifecycle decision remains untaken.
 
@@ -106,7 +125,7 @@ Added by the work-metadata line and **absent from every previous audit**.
 | `spell/format/0.3-draft/examples/find-familiar.SPELL.md` | Candidate-format example declaration. | Knowledge | Work | — |
 | `spell/spellcraft/SKILL.md` | Skill for authoring, inspecting, repairing, and migrating Spell declarations. | Code | Current | — |
 | `spell/alignment.py` | Effect invariants, semantic trials carrying evaluator provenance, and fail-closed promotion for autonomous Spellcraft. | Code | Current | Added by #51 (issue #29). Evidence never confers authority: a candidate cannot supply the trial that promotes itself |
-| `spell/migration/LEDGER.md` | Five-domain reassembly reasoning, ownership findings, unresolved crossings. | Knowledge | Work | Proposes ownership moves not yet taken; its open 0.3-versus-0.4 question is owned by #53 |
+| `spell/migration/LEDGER.md` | Five-domain reassembly reasoning, ownership findings, unresolved crossings. | Knowledge | Work | Proposes ownership moves not yet taken. Its 0.3-versus-0.4 question is answered and struck under #53; the remaining open decisions stand |
 | `spell/migration/agent-skills.md` | Relates Agent Skills to Spell and Technique boundaries. | Knowledge | Work | — |
 | `spell/migration/draw-the-owl.md` | Relates Draw the Owl to Familiar and Technique work. | Knowledge | Work | — |
 | `spell/migration/mcp.md` | Relates MCP capability surfaces to Cast and Environment. | Knowledge | Work | — |
@@ -154,7 +173,7 @@ Content addressing gives integrity and exact identity. It does not establish who
 | `environment/README.md` | Defines Environment as concrete mechanisms and observations rather than declaration truth. | Knowledge | Current | — |
 | `environment/presence/__init__.py` | Public Presence exports. | Code | Current | — |
 | `environment/presence/store.py` | Host-owned session Presence store with identity preservation checks. | Code | Current | — |
-| `environment/MAGIC.md` | Environment-owned 0.6 Magic runtime semantics: conservation, dispositions, participation, maintenance. | Knowledge | Work | Added by PR #8; **absent from every previous audit**. Its lifecycle standing relative to Current 0.2 is unrecorded — #53 |
+| `environment/MAGIC.md` | Environment-owned 0.6 Magic runtime semantics: conservation, dispositions, participation, maintenance. | Knowledge | Work | Added by PR #8; **absent from every previous audit**. Retained as Work under #53 — see § *Lifecycle generations* |
 | `environment/magic.py` | Conserved Mana runtime with a digest-chained event ledger and restart replay. | Code | Work | Replay guards closed by #41. State shape — #26; Cast integration — #16 |
 | `environment/MANA_TENSOR.md` | Candidate boundary for Mana as typed sparse relations over situated Spell participation. | Knowledge | Work | Added by #33 (issue #26). Explicitly a candidate: it does not replace `MAGIC.md` and is not integrated into `MagicRuntime` |
 | `environment/mana_tensor.py` | Immutable sparse `ManaCoordinate` / `ManaTerm` / `ManaTensor`, projection, contraction, and conservation-preserving transitions. | Code | Work | State shape remains open design work — #26 |
@@ -305,6 +324,7 @@ These are different kinds of statement and the distinction is load-bearing.
 | #30 | #49 | Concurrent Cast isolation and conflict semantics |
 | #31 | #50 | Portable attestation and signer provenance above digests |
 | #32 | #47 | Requirements compiled into typed runtime obligations |
+| #53 | #54 | Recorded lifecycle standing for the 0.3, 0.4, 0.5 and 0.6 generations |
 
 **Ticket-owned residuals** — places where the implementation does not yet meet an invariant above, or where a required decision has not been recorded. Each is a live GitHub issue and none is restated here:
 
@@ -313,7 +333,6 @@ These are different kinds of statement and the distinction is load-bearing.
 | #16 | Conserved Mana integrated with the invariant Cast lifecycle |
 | #18 | This audit |
 | #26 | Mana as typed sparse relations versus tensor product — open design work, not a gate on #16 |
-| #53 | Recorded lifecycle standing for the 0.3, 0.4, 0.5, and 0.6 generations. **Blocks #38** |
 | #34 · #35 · #36 · #37 · #38 | Milestone 0.7 proof-carrying crossing: closed-plan contract, observation seam, CAST sealing, adversarial conformance suite, and integration |
 
 **Deferred by explicit decision, not by oversight:** remote Library transport and subscription, semantic-version range resolution, Presence lifetimes beyond a session, a Dismiss Spell, Level 0 semantics, portable Mana fields in `SPELL.md`, a universal sandbox implementation, a mandatory theorem prover, external PKI, and distributed consensus.
@@ -331,5 +350,5 @@ Since the previous audit, the effect path itself became enforceable rather than 
 - that the Mana runtime participates in the Cast lifecycle at all — #16;
 - that the Mana state shape is settled — #26, now open design work rather than a gate;
 - that the 0.7 crossing exists in any form — its plan contract (#34), observation seam (#35), sealing contract (#36), conformance suite (#37), and integration (#38) are all open;
-- that any of 0.3, 0.4, 0.5, or 0.6 is Current, Archive, or superseded by any other — **no lifecycle crossing has ever been recorded**, and #53 owns that;
+- that any of 0.3, 0.4, 0.5, or 0.6 is Current, Archive, or superseded by any other. Each is **retained as Work** under #53, which records their standing without taking a crossing. 0.2 remains the only Current specification, and the running Kernel exceeds it;
 - that observation is exhaustive. Unknown reactive reach is representable and is recorded as unknown; it is not treated as absent.
