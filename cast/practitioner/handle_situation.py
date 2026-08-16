@@ -47,6 +47,19 @@ _DRIFT_KINDS = frozenset(
         "changed-value",
     }
 )
+_SITUATED_EVIDENCE_KEYS = (
+    "situation_view_format",
+    "intent_id",
+    "handle_sources",
+    "situation",
+    "environment",
+    "comparisons",
+    "drift",
+    "uncertain",
+    "capability_matching",
+    "runtime_authority",
+    "effectful",
+)
 
 
 def _require_mapping(name: str, value: Any) -> Mapping[str, Any]:
@@ -176,8 +189,6 @@ def _charted_side(handle_view: Mapping[str, Any], expectation: Mapping[str, Any]
         result["path"] = deepcopy(list(path))
         result["value"] = deepcopy(value)
     else:
-        # An explicit absence/unknown claim needs words naming the claim. This
-        # prevents an omitted Handle field from being smuggled in as absence.
         claim = raw.get("claim")
         _require_text(f"charted {status} claim", claim)
         result["claim"] = claim
@@ -262,6 +273,28 @@ def _match_snapshot(match: Any) -> dict[str, Any]:
     }
 
 
+def situation_evidence_material(view: Mapping[str, Any]) -> dict[str, Any]:
+    """Authoritative situated material; participant projection is excluded.
+
+    Subject Familiar projection may change how the Situation is presented or
+    attended to, but it may not change situated capability/evidence identity.
+    """
+
+    view = _require_mapping("situation view", view)
+    material: dict[str, Any] = {}
+    for key in _SITUATED_EVIDENCE_KEYS:
+        if key not in view:
+            raise HandleSituationError(f"situation view is missing authoritative field {key}")
+        material[key] = deepcopy(view[key])
+    return material
+
+
+def situation_evidence_digest(view: Mapping[str, Any]) -> str:
+    """Integrity identity for #69 situated evidence; not provenance or truth."""
+
+    return _canonical_digest(situation_evidence_material(view))
+
+
 def resolve_handle_situation(
     handle_view: Mapping[str, Any],
     intent: Mapping[str, Any],
@@ -328,8 +361,6 @@ def resolve_handle_situation(
         or item["result"].startswith("charted-unknown/")
     )
 
-    # Situation is constructed only from explicit situated inputs and concrete
-    # Environment receipts. Handle claims never enter its capability tuple.
     situation = Situation(
         id=situation_id,
         session_id=session_id,
@@ -341,7 +372,7 @@ def resolve_handle_situation(
     )
     plan = compile_cast_plan(requirements, situation)
 
-    return {
+    view = {
         "situation_view_format": "0.1-work",
         "intent_id": intent_id,
         "handle_sources": deepcopy(dict(sources)),
@@ -372,3 +403,5 @@ def resolve_handle_situation(
         "runtime_authority": [],
         "effectful": False,
     }
+    view["situation_evidence_digest"] = situation_evidence_digest(view)
+    return view
