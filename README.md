@@ -150,6 +150,10 @@ The historical seals remain evidence of prior crossings; they are not silently r
 
 Current `main` retains successful CI coverage of the complete `cast/tests` suite, including the 0.6 Magic runtime. Passing tests are mechanics evidence, not universal Spell standing.
 
+[REPOSITORY_AUDIT.md](REPOSITORY_AUDIT.md) inventories every tracked surface against an exact commit and names the attributable CI run it rests on. Its § *What this commit actually proves* is the authoritative statement of what is and is not established, and this section does not restate it. In short: the Find Familiar path, registration, Presence, and conserved Mana accounting each pass their own tests; Scope and Authority effect-path containment, Mana participation in the Cast lifecycle, and the documented Windows path are **not** established at that commit and are owned by #10, #11, #16, and #17.
+
+The audit's completeness is checked by `cast/tests/test_repository_audit_18.py` rather than asserted, so a surface added without being inventoried fails CI.
+
 The Scope containment defect remains an executable expected-failure specimen until #10 closes; it is not considered resolved merely because the rest of CI is green.
 
 ## Test
