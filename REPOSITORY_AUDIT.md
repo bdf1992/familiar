@@ -337,8 +337,9 @@ These are different kinds of statement and the distinction is load-bearing.
 | #16 | Conserved Mana integrated with the invariant Cast lifecycle |
 | #18 | This audit |
 | #26 | Mana as typed sparse relations versus tensor product — open design work, not a gate on #16 |
-| #55 | **FORMAT 0.3 exists in two incompatible generations** and the runtime casts against the older one. Neither is a superset of the other; the Cast domain owns an admission schema the Spell domain does not generate |
-| #56 · #57 · #58 · #59 | The ladder rungs — FORMAT 0.3, KERNEL 0.4, 0.6 Magic participation, and the 0.5 disposition. See `LIFECYCLE_LADDER.md` |
+
+| #56 | Adopt FORMAT 0.3 — including resolving **which of two incompatible 0.3 generations** it is, absorbed from #55. The Cast domain owns an admission schema the Spell domain does not generate |
+| #57 · #58 · #59 | The remaining ladder rungs — KERNEL 0.4, 0.6 Magic participation, and the 0.5 disposition. See `LIFECYCLE_LADDER.md` |
 | #34 · #35 · #36 · #37 · #38 | Milestone 0.7 proof-carrying crossing: closed-plan contract, observation seam, CAST sealing, adversarial conformance suite, and integration |
 
 **Deferred by explicit decision, not by oversight:** remote Library transport and subscription, semantic-version range resolution, Presence lifetimes beyond a session, a Dismiss Spell, Level 0 semantics, portable Mana fields in `SPELL.md`, a universal sandbox implementation, a mandatory theorem prover, external PKI, and distributed consensus.
