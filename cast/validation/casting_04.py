@@ -74,6 +74,11 @@ def binding_support_gaps(
         if "authority" in item:
             if kernel.authority_resolver is None:
                 gaps.append(f"runtime-authority-resolver-missing: {requirement_id}")
+            # A resolver decides whether the caster may attempt. It does not
+            # constrain what the executor reaches, so an unattenuated execution
+            # path is a closure gap in its own right.
+            if kernel.authority_enforcer is None:
+                gaps.append(f"runtime-authority-enforcer-missing: {requirement_id}")
             if not mechanisms["authority"]:
                 gaps.append(f"binding-authority-boundary-missing: {requirement_id}")
         elif "scope" in item:

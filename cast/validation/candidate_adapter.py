@@ -138,6 +138,11 @@ def _candidate_record(
 
     authority_by_permission = {item["authority"]: item for item in plan["authority"]}
     for observation in result["observations"]:
+        # The enforcement observation is about the effect path rather than one
+        # declared permission, so it carries no permission id to map. It is
+        # still Requirement evidence in the candidate shape.
+        if observation["kind"] == "authority" and observation["id"] == "authority-enforcement":
+            observation["kind"] = "requirement"
         if observation["kind"] == "authority" and observation["id"] in authority_by_permission:
             declaration = authority_by_permission[observation["id"]]
             permission = observation["id"]
