@@ -13,7 +13,8 @@ class FamiliarFoundationTests(unittest.TestCase):
         owl = json.loads((ROOT / "owl" / "owl.json").read_text(encoding="utf-8"))
         validate_familiar(owl)
         self.assertEqual("0.3", owl["familiar_format"])
-        self.assertEqual("system", owl["caster"]["kind"])
+        self.assertEqual("owl.agent", owl["caster"]["id"])
+        self.assertEqual("agent", owl["caster"]["kind"])
         self.assertIn("advisory_authority", owl)
         self.assertNotIn("authority", owl)
 
