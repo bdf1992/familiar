@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 ID_PATTERN = r"^[a-z0-9][a-z0-9_.-]*$"
 SPELL_NAME_PATTERN = r"^[a-z0-9]+(?:-[a-z0-9]+)*$"
-SEMVER_PATTERN = r"^[0-9]+\.[0-9]+\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$"
+SEMVER_PATTERN = r"^[0-9]+[.][0-9]+[.][0-9]+(?:[-+][0-9A-Za-z.-]+)?$"
 
 
 class StrictModel(BaseModel):
