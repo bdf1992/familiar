@@ -8,10 +8,12 @@ from .core import (
     RegistryError,
     seal_scroll,
 )
+from .local import LocalRegistry
 
 __all__ = [
     "Library",
     "LibraryRelation",
+    "LocalRegistry",
     "Registration",
     "ResolvedSpell",
     "Scroll",

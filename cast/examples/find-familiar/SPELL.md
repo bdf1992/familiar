@@ -14,12 +14,12 @@ effects:
           description: The practitioner/caster whose Familiar is being found is explicitly resolved.
         - id: familiar-store-supported
           description: The environment can persist and resolve an exact Familiar artifact.
+        - id: caster-accepted
+          description: The caster explicitly accepted the complete Familiar candidate selected for persistence.
       during: []
       after:
         - id: familiar-valid
           description: The resulting artifact validates against the Familiar contract.
-        - id: caster-accepted
-          description: The caster explicitly accepted the resulting Familiar candidate.
         - id: familiar-persisted
           description: The exact accepted Familiar can be resolved from its returned FamiliarRef.
 ---
