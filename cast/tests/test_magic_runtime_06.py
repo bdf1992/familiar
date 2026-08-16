@@ -5,12 +5,17 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from environment.magic import MagicLimits, MagicRuntime, MagicRuntimeError, MaintenanceEvidence
+from environment.magic import (
+    MagicLimits,
+    MagicRuntime,
+    MagicRuntimeError,
+    MaintenanceDecision,
+    MaintenanceEvidence,
+)
 
 
 def limits(**overrides):
     value = dict(
-        total_mana=10,
         max_network=6,
         max_local=5,
         max_personal=3,
@@ -24,24 +29,37 @@ def limits(**overrides):
     return MagicLimits(**value)
 
 
-def evidence(*, domain="environment", source_kind="skill", mechanism="mana-drain"):
+def evidence(
+    *,
+    source_id="maintain-1",
+    domain="environment",
+    source_kind="skill",
+    mechanism="mana-drain",
+    observer="independent-probe",
+):
     return MaintenanceEvidence(
         source_kind=source_kind,
-        source_id="maintain-1",
+        source_id=source_id,
         domain=domain,
         mechanism=mechanism,
         before={"healthy": False},
         after={"healthy": True},
-        observer="independent-probe",
+        observer=observer,
     )
 
 
 class MagicRuntime06Tests(unittest.TestCase):
     def runtime(self, **kwargs):
+        allowed = kwargs.pop("allowed", {"bdo", "owl", "a", "b", "c"})
         return MagicRuntime(
+            10,
             limits(),
+            access_resolver=lambda actor, operation, locality: actor in allowed and locality in {"network", "lab"},
+            route_resolver=lambda source, target: (source, target) in {("network", "lab"), ("lab", "network")},
             role_resolver=lambda actor, role, domain: actor == "owl" and role == "domains-maintainer",
-            maintenance_verifier=lambda proof: 2 if proof.after.get("healthy") else 0,
+            maintenance_verifier=lambda proof: MaintenanceDecision(
+                confirmed=bool(proof.after.get("healthy")), restorable=2, reason="mechanism restored"
+            ),
             **kwargs,
         )
 
@@ -52,33 +70,63 @@ class MagicRuntime06Tests(unittest.TestCase):
         runtime.settle("cast-1", spent=1)
         runtime.release("bdo", "network", 2)
         self.assertEqual(10, runtime.total())
-        self.assertEqual({"ambient": 9, "claimed": 0, "subject_claimed": 0}, runtime.sense("network", subject="bdo"))
+        self.assertEqual(
+            {"ambient": 9, "claimed": 0, "subject_claimed": 0},
+            runtime.sense("bdo", "network", subject="bdo"),
+        )
+        self.assertEqual(1, runtime.spent_total(locality="network"))
+
+    def test_magic_participation_and_reach_are_required_for_sense_and_claim(self):
+        runtime = self.runtime()
+        with self.assertRaisesRegex(MagicRuntimeError, "magic access unavailable"):
+            runtime.sense("stranger", "network")
+        with self.assertRaisesRegex(MagicRuntimeError, "magic access unavailable"):
+            runtime.claim("stranger", "network", 1)
+        with self.assertRaisesRegex(MagicRuntimeError, "magic access unavailable"):
+            runtime.claim("bdo", "elsewhere", 1)
+
+    def test_ambient_mana_flows_only_over_environment_route(self):
+        runtime = self.runtime()
+        runtime.flow("network", "lab", 4)
+        self.assertEqual({"ambient": 4, "claimed": 0}, runtime.sense("bdo", "lab"))
+        self.assertEqual({"ambient": 6, "claimed": 0}, runtime.sense("bdo", "network"))
+        self.assertEqual(10, runtime.total())
+        with self.assertRaisesRegex(MagicRuntimeError, "route unavailable"):
+            runtime.flow("network", "moon", 1)
 
     def test_shared_sense_and_personal_claim_limit(self):
         runtime = self.runtime()
         runtime.claim("bdo", "network", 2)
         runtime.claim("owl", "network", 1)
-        self.assertEqual({"ambient": 7, "claimed": 3, "subject_claimed": 2}, runtime.sense("network", subject="bdo"))
+        self.assertEqual(
+            {"ambient": 7, "claimed": 3, "subject_claimed": 2},
+            runtime.sense("owl", "network", subject="bdo"),
+        )
         with self.assertRaisesRegex(MagicRuntimeError, "max_personal"):
             runtime.claim("bdo", "network", 2)
 
-    def test_network_and_local_limits_prevent_double_claim_pressure(self):
+    def test_network_and_local_limits_bound_active_mana_not_ambient_mana(self):
         runtime = self.runtime()
         runtime.claim("a", "network", 3)
         runtime.claim("b", "network", 2)
         with self.assertRaisesRegex(MagicRuntimeError, "max_local"):
             runtime.claim("c", "network", 1)
+        runtime.flow("network", "lab", 3)
         self.assertEqual(10, runtime.total())
+        self.assertEqual(3, runtime.sense("a", "lab")["ambient"])
 
     def test_drain_returns_claimed_mana_to_same_ambient_locality(self):
         runtime = self.runtime()
         runtime.claim("bdo", "network", 3)
         runtime.drain(ticks=2)
-        self.assertEqual({"ambient": 9, "claimed": 1, "subject_claimed": 1}, runtime.sense("network", subject="bdo"))
+        self.assertEqual(
+            {"ambient": 9, "claimed": 1, "subject_claimed": 1},
+            runtime.sense("bdo", "network", subject="bdo"),
+        )
         self.assertEqual("drain", runtime.events[-1].operation)
         self.assertEqual(10, runtime.total())
 
-    def test_commit_requires_claim_and_level_admission(self):
+    def test_commit_requires_claim_access_and_level_admission(self):
         runtime = self.runtime()
         runtime.claim("bdo", "network", 2)
         with self.assertRaisesRegex(MagicRuntimeError, "max_level"):
@@ -87,7 +135,27 @@ class MagicRuntime06Tests(unittest.TestCase):
         with self.assertRaisesRegex(MagicRuntimeError, "insufficient claimed"):
             runtime.commit("cast-no-mana", "bdo", "network", 1)
 
-    def test_maintenance_restores_spent_mana_only_to_ambient_and_applies_ceiling(self):
+    def test_cast_id_cannot_be_reused_after_settlement(self):
+        runtime = self.runtime()
+        runtime.claim("bdo", "network", 2)
+        runtime.commit("cast-1", "bdo", "network", 1)
+        runtime.settle("cast-1", spent=0)
+        with self.assertRaisesRegex(MagicRuntimeError, "cast id already used"):
+            runtime.commit("cast-1", "bdo", "network", 1)
+
+    def test_spent_mana_retains_cast_provenance_through_restoration(self):
+        runtime = self.runtime()
+        runtime.claim("bdo", "network", 2)
+        runtime.commit("cast-1", "bdo", "network", 1)
+        runtime.settle("cast-1", spent=1)
+        runtime.commit("cast-2", "bdo", "network", 1)
+        runtime.settle("cast-2", spent=1)
+        event = runtime.restore("owl", "network", evidence())
+        self.assertEqual([{"cast_id": "cast-1", "amount": 1}], event.details["restored_from"])
+        self.assertEqual(1, runtime.spent_total(locality="network"))
+        self.assertEqual(10, runtime.total())
+
+    def test_maintenance_restores_spent_only_to_ambient_and_applies_ceiling(self):
         runtime = self.runtime()
         runtime.claim("bdo", "network", 2)
         runtime.commit("cast-1", "bdo", "network", 2)
@@ -95,17 +163,35 @@ class MagicRuntime06Tests(unittest.TestCase):
         event = runtime.restore("owl", "network", evidence())
         self.assertEqual(1, event.amount)
         self.assertEqual(0, runtime.claimed_by("owl"))
-        self.assertEqual({"ambient": 9, "claimed": 0}, runtime.sense("network"))
+        self.assertEqual({"ambient": 9, "claimed": 0}, runtime.sense("owl", "network"))
         self.assertEqual(10, runtime.total())
 
-    def test_maintenance_requires_role_and_independent_verifier(self):
+    def test_one_maintenance_act_can_restore_at_most_once(self):
+        runtime = self.runtime()
+        runtime.claim("bdo", "network", 2)
+        runtime.commit("cast-1", "bdo", "network", 2)
+        runtime.settle("cast-1", spent=2)
+        proof = evidence(source_id="unique-act")
+        runtime.restore("owl", "network", proof)
+        with self.assertRaisesRegex(MagicRuntimeError, "already applied"):
+            runtime.restore("owl", "network", proof)
+        self.assertEqual(1, runtime.spent_total(locality="network"))
+
+    def test_maintenance_requires_role_independent_observer_and_structured_verifier(self):
         runtime = self.runtime()
         runtime.claim("bdo", "network", 1)
         runtime.commit("cast-1", "bdo", "network", 1)
         runtime.settle("cast-1", spent=1)
         with self.assertRaisesRegex(MagicRuntimeError, "Domains Maintainer"):
             runtime.restore("bdo", "network", evidence())
-        no_verifier = MagicRuntime(limits(), role_resolver=lambda *_: True)
+        with self.assertRaisesRegex(MagicRuntimeError, "independent observer"):
+            runtime.restore("owl", "network", evidence(observer="owl"))
+        no_verifier = MagicRuntime(
+            10,
+            limits(),
+            access_resolver=lambda *_: True,
+            role_resolver=lambda *_: True,
+        )
         no_verifier.claim("bdo", "network", 1)
         no_verifier.commit("cast-1", "bdo", "network", 1)
         no_verifier.settle("cast-1", spent=1)
@@ -122,33 +208,64 @@ class MagicRuntime06Tests(unittest.TestCase):
             self.assertEqual(source_kind, event.details["evidence"]["source_kind"])
             self.assertEqual(10, runtime.total())
 
-    def test_domains_maintainer_can_change_runtime_setting_but_not_total_mana(self):
+    def test_maintenance_domain_is_exactly_one_of_current_five_domains(self):
+        proof = evidence(domain="shadow")
+        with self.assertRaisesRegex(MagicRuntimeError, "five repository domains"):
+            proof.validate()
+
+    def test_domains_maintainer_can_change_runtime_setting_but_not_conservation_law(self):
         runtime = self.runtime()
-        event = runtime.configure("owl", {"max_personal": 4, "max_cast": 3}, evidence())
+        proof = evidence(source_id="config-1", mechanism=MagicRuntime.SETTINGS_MECHANISM)
+        event = runtime.configure("owl", {"max_personal": 4, "max_cast": 3}, proof)
         self.assertEqual(4, runtime.limits.max_personal)
         self.assertEqual("configure", event.operation)
+        with self.assertRaisesRegex(MagicRuntimeError, "already applied"):
+            runtime.configure("owl", {"max_level": 4}, proof)
         with self.assertRaisesRegex(MagicRuntimeError, "total_mana is conserved"):
-            runtime.configure("owl", {"total_mana": 11}, evidence())
+            runtime.configure(
+                "owl",
+                {"total_mana": 11},
+                evidence(source_id="config-2", mechanism=MagicRuntime.SETTINGS_MECHANISM),
+            )
+
+    def test_configuration_requires_exact_runtime_settings_mechanism(self):
+        runtime = self.runtime()
+        with self.assertRaisesRegex(MagicRuntimeError, "magic-runtime.settings"):
+            runtime.configure("owl", {"max_level": 4}, evidence(source_id="config-1", mechanism="some-service"))
 
     def test_runtime_refuses_setting_change_that_invalidates_live_claim(self):
         runtime = self.runtime()
         runtime.claim("bdo", "network", 3)
+        before = runtime.limits
         with self.assertRaisesRegex(MagicRuntimeError, "max_personal"):
-            runtime.configure("owl", {"max_personal": 2, "max_cast": 2}, evidence())
+            runtime.configure(
+                "owl",
+                {"max_personal": 2, "max_cast": 2},
+                evidence(source_id="config-1", mechanism=MagicRuntime.SETTINGS_MECHANISM),
+            )
+        self.assertEqual(before, runtime.limits)
+        self.assertEqual(3, runtime.claimed_by("bdo"))
 
-    def test_restart_replays_exact_conserved_state(self):
+    def test_restart_replays_exact_conserved_state_and_maintenance_replay_guard(self):
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp) / "magic.json"
             runtime = self.runtime(path=path)
             runtime.claim("bdo", "network", 2)
             runtime.commit("cast-1", "bdo", "network", 1)
             runtime.settle("cast-1", spent=1)
+            proof = evidence(source_id="restore-once")
+            runtime.restore("owl", "network", proof)
             reopened = self.runtime(path=path)
             self.assertEqual(10, reopened.total())
-            self.assertEqual(runtime.sense("network", subject="bdo"), reopened.sense("network", subject="bdo"))
+            self.assertEqual(
+                runtime.sense("bdo", "network", subject="bdo"),
+                reopened.sense("bdo", "network", subject="bdo"),
+            )
             self.assertEqual(len(runtime.events), len(reopened.events))
+            with self.assertRaisesRegex(MagicRuntimeError, "already applied"):
+                reopened.restore("owl", "network", proof)
 
-    def test_tampered_ledger_refuses_open(self):
+    def test_tampered_ledger_event_refuses_open(self):
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp) / "magic.json"
             runtime = self.runtime(path=path)
