@@ -262,9 +262,25 @@ def _receipt_snapshot(receipt: CapabilityReceipt) -> dict[str, Any]:
     return snapshot
 
 
+def _demand_snapshot(demand: Demand) -> dict[str, Any]:
+    return {
+        "operation": demand.operation,
+        "relation": demand.relation,
+        "capability": demand.capability,
+        "protocol": demand.protocol,
+        "environment": demand.environment,
+        "authority": demand.authority,
+        "subject": demand.subject,
+        "locator": demand.locator,
+        "capacity": deepcopy(dict(demand.capacity)),
+        "attenuate": demand.attenuate,
+    }
+
+
 def _match_snapshot(match: Any) -> dict[str, Any]:
     return {
         "requirement_id": match.requirement_id,
+        "demand": _demand_snapshot(match.demand),
         "relation": match.relation,
         "detail": deepcopy(dict(match.detail)),
         "receipt": _receipt_snapshot(match.receipt),
