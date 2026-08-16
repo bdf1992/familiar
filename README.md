@@ -6,9 +6,9 @@ The repository is organized around five subject domains:
 
 - **Spell** — portable Effect declarations, Requirements, Telemetry, and Spellcraft.
 - **Cast** — situated invocation, closure, governed execution, observation, residuals, and CAST records.
-- **Familiar** — dialect, attention, preferences, stake, advisory authority, validation, and persistence.
+- **Familiar** — dialect, attention, preferences, stake, advisory authority, validation, views, and persistence.
 - **Registry** — Scrolls, Spellbooks, Libraries, exact resolution, provenance, and local registration storage.
-- **Environment** — concrete host mechanisms such as Presence, observability, authority, scope, meters, clocks, and containment.
+- **Environment** — concrete host mechanisms such as Presence, observability, authority, scope, meters, clocks, containment, and conserved Mana.
 
 The root is the assembly over those domains. See [FOUNDATIONS.md](FOUNDATIONS.md) for the distinctions that must survive composition.
 
@@ -37,7 +37,7 @@ bound to a valid Familiar -> Practitioner
 
 ## First Familiar path
 
-The intended first-user path is now:
+The intended first-user path is:
 
 ```text
 owl.agent + owl.system
@@ -50,31 +50,22 @@ Owl casts find-familiar@0.1.0 for an unbound subject
     -> closure
     -> persist the exact accepted Familiar for that subject
     -> return FamiliarRef
-
-Resolve FamiliarRef after restart
-    -> exact accepted Familiar is recovered
 ```
 
-The current executable proof now uses `owl.agent` as the caster and `owl.system` as Owl's Familiar. The subject whose Familiar is being found is **not** treated as the caster merely to bootstrap the protocol.
+The executable proof uses `owl.agent` as the caster and `owl.system` as Owl's Familiar. The subject whose Familiar is being found is not treated as the caster merely to bootstrap the protocol.
 
-`subject-accepted` is a **before Requirement** for Find Familiar: persistence may not begin until the subject has accepted the complete candidate.
+`subject-accepted` is a **before Requirement** for Find Familiar: persistence may not begin until the subject accepts the complete candidate.
 
-### Important current boundary
-
-This branch proves the corrected first-cast roles, but it does **not yet** claim that the generic Cast runtime enforces the full relation-derived practitioner law for every Spell. Generic binding resolution and fail-closed `Practitioner` enforcement remain the next runtime hardening step.
-
-That residual is intentionally visible rather than hidden behind a special-case claim.
+The generic relation-derived Practitioner law is still explicitly deferred; the first-cast proof does not claim that every Spell currently enforces it.
 
 ## Owl, Spellcraft, and Find Familiar
-
-These are different responsibilities:
 
 ```text
 Owl            = Agent conducting the bootstrap interaction
 owl.system     = Owl's Familiar
 Spellcraft     = Skill for understanding / inspecting / repairing Spell declarations
 Find Familiar  = Spell whose first-user path establishes the accepted Familiar for the subject
-Technique      = interactive drawing / preparation used to reach an accepted Whole
+Technique      = implementation used to attempt an Effect
 SpellCast      = runtime that closes, executes, observes, and records the Cast
 ```
 
@@ -85,7 +76,8 @@ Spellcraft does not cast Spells. Owl can use Spellcraft while conducting Find Fa
 A personal Spellbook does **not** need to be published.
 
 - `registry.LocalRegistry(root)` persists existing `Spellbook` objects and re-verifies exact declarations when reopened.
-- `familiar.FamiliarStore(root)` persists exact Familiar artifacts and resolves them by revision + digest.
+- `familiar.FamiliarStore(root)` persists the current exact Familiar artifact and verifies revision + digest on resolution.
+- Current `FamiliarStore` storage does not retain older immutable revisions after a newer revision is written; that active defect is tracked in [#15](https://github.com/bdf1992/familiar/issues/15).
 - Writes use atomic replacement; IDs are hashed before becoming filenames; private POSIX permissions are applied where supported.
 - The host filesystem remains the confidentiality/access-control boundary. Full-disk encryption and account authorization are Environment responsibilities.
 - SHA-256 digests provide integrity detection, not authenticated issuer identity. Signature/trust chains remain deferred.
@@ -102,46 +94,27 @@ AgentSpells/
   familiars/
 ```
 
-If repository-local storage is used for development, keep it under `.agent-spells-local/`, which is ignored by Git.
+Repository-local development data belongs under `.agent-spells-local/`, which is ignored by Git.
 
-## Repository map
+## Active non-deferred work
 
-```text
-README.md                 orientation and current practitioner path
-FOUNDATIONS.md            meaning, invariants, domains, lifecycle crossings
-AGENT_SPELLS.md           earlier structural baseline and validation history
-AGENTS.md                  repository participation rules for agents
-CLAUDE.md                  Claude-oriented adaptation of AGENTS.md
-REPOSITORY_AUDIT.md        file-by-file purpose and lifecycle audit
-FIRST_FAMILIAR_SEAL.md     previous frozen first-cast seal
-MIDNIGHT_FIRST_FAMILIAR.md corrected Owl-led midnight candidate and procedure
+GitHub Issues are the backlog source of truth. Do not duplicate these as free-floating TODO prose in code or specifications.
 
-spell/                     declared possibility and Spellcraft
-cast/                      invariant casting runtime, practitioner loop, tests, examples
-familiar/                  Familiar contract, Owl, Find Familiar, validation, persistence
-registry/                  Scroll / Spellbook / Library / local registration
-environment/               host mechanisms such as Presence
-```
+- [#10 — Enforce Scope at the effect path, not only at preflight](https://github.com/bdf1992/familiar/issues/10)
+- [#11 — Enforce Authority through attenuated execution capabilities](https://github.com/bdf1992/familiar/issues/11)
+- [#12 — Prevent maintenance replay by source identity and accepted receipt](https://github.com/bdf1992/familiar/issues/12)
+- [#13 — Bind Cast Requirements to exact capability receipts](https://github.com/bdf1992/familiar/issues/13)
+- [#14 — Make Familiar View omission semantics mechanically complete](https://github.com/bdf1992/familiar/issues/14)
+- [#15 — Retain immutable Familiar revisions addressable by FamiliarRef](https://github.com/bdf1992/familiar/issues/15)
+- [#16 — Integrate conserved Mana with the invariant Cast lifecycle](https://github.com/bdf1992/familiar/issues/16)
+- [#17 — Remove runtime dependence on transitional Git symlinks](https://github.com/bdf1992/familiar/issues/17)
+- [#18 — Refresh repository audit and lifecycle after 0.6 and Familiar View](https://github.com/bdf1992/familiar/issues/18)
 
-Detailed file purposes live in [REPOSITORY_AUDIT.md](REPOSITORY_AUDIT.md). The previous seal remains historical evidence; it is not silently rewritten.
+Normative invariants remain in domain documents. Executable defect specimens remain in tests. The issue owns the repair specification, acceptance criteria, and implementation backlog.
 
-## Status
+## Explicitly deferred
 
-The current midnight candidate proves or retains:
-
-- exact Spell name/version/digest registration and resolution;
-- local Spellbook persistence across restart;
-- Familiar validation owned by the Familiar domain;
-- exact Familiar persistence across restart;
-- tamper detection for local Spellbook and Familiar storage;
-- explicit subject acceptance before Find Familiar persistence;
-- `owl.agent` occupying the caster role while `bdo` remains the subject of the first Find Familiar proof;
-- `owl.system` participating as Owl's Familiar in that proof;
-- refusal before effectful persistence when the subject has not accepted the candidate;
-- bounded session Presence and Summon Familiar mechanics;
-- CI execution of the complete `cast/tests` suite.
-
-Explicitly deferred:
+These are outside the current active backlog above:
 
 - generic Binding-backed Practitioner resolution and cast refusal when that relation is absent;
 - renaming the historical `caster` ownership field inside the Familiar schema/store to a durable bound-subject relation;
@@ -150,9 +123,38 @@ Explicitly deferred:
 - semantic-version ranges;
 - Presence lifetimes beyond session;
 - a Dismiss Spell;
-- standing / reliability grades derived from broader CAST evidence.
+- standing / reliability grades derived from broader CAST evidence;
+- Level 0 Spell semantics and portable Mana/level fields;
+- wall-clock drain scheduling;
+- external signatures/seals for the Mana ledger;
+- multi-host consensus/concurrent mutation.
 
-No example is granted universal Spell standing merely because tests pass. Tests and CAST evidence support or defeat claims; they do not become doctrine by existing.
+## Repository map
+
+```text
+README.md                 orientation, current status, issue/defer boundary
+FOUNDATIONS.md            meaning, invariants, domains, lifecycle crossings
+AGENT_SPELLS.md           earlier structural baseline and validation history
+AGENTS.md                  repository participation rules for agents
+CLAUDE.md                  Claude-oriented adaptation of AGENTS.md
+REPOSITORY_AUDIT.md        lifecycle audit; refresh tracked by issue #18
+FIRST_FAMILIAR_SEAL.md     previous frozen first-cast seal
+MIDNIGHT_FIRST_FAMILIAR.md corrected Owl-led first-cast candidate and procedure
+
+spell/                     declared possibility and Spellcraft
+cast/                      invariant casting runtime, practitioner loop, tests, examples
+familiar/                  Familiar contract, Owl, guidance, view/report work, persistence
+registry/                  Scroll / Spellbook / Library / local registration
+environment/               Presence and conserved Magic runtime mechanisms
+```
+
+The historical seals remain evidence of prior crossings; they are not silently rewritten.
+
+## Status and evidence
+
+Current `main` retains successful CI coverage of the complete `cast/tests` suite, including the 0.6 Magic runtime. Passing tests are mechanics evidence, not universal Spell standing.
+
+The Scope containment defect remains an executable expected-failure specimen until #10 closes; it is not considered resolved merely because the rest of CI is green.
 
 ## Test
 
@@ -168,6 +170,8 @@ python -m pip install PyYAML jsonschema
 $env:PYTHONPATH = "cast;environment;."
 python -m unittest discover -s cast/tests -v
 ```
+
+Windows checkout portability is tracked by #17 until the runtime no longer depends on transitional symlink behavior and CI proves the documented path.
 
 ## Source baselines
 
