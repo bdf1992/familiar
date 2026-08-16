@@ -33,21 +33,40 @@ class SchemaDeclaration(StrictModel):
         return self
 
 
+class InterfaceSlot(StrictModel):
+    schema_: str = Field(alias="schema", pattern=ID_PATTERN)
+    description: str | None = Field(default=None, min_length=1)
+
+
+class ProtocolOperation(StrictModel):
+    id: str = Field(pattern=ID_PATTERN)
+    description: str | None = Field(default=None, min_length=1)
+    input: InterfaceSlot | None = None
+    result: InterfaceSlot | None = None
+
+
 class ProtocolContract(StrictModel):
     id: str = Field(pattern=ID_PATTERN)
     ref: str = Field(min_length=1)
     version: str = Field(min_length=1)
-    roles: list[str] = Field(min_length=1)
+    operations: list[ProtocolOperation] = Field(min_length=1)
 
     @model_validator(mode="after")
-    def unique_roles(self) -> "ProtocolContract":
-        if len(self.roles) != len(set(self.roles)):
-            raise ValueError("protocol roles must be unique")
+    def unique_operations(self) -> "ProtocolContract":
+        ids = [item.id for item in self.operations]
+        if len(ids) != len(set(ids)):
+            raise ValueError("protocol operation ids must be unique")
         return self
 
 
 class RuntimeContract(StrictModel):
     protocols: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def unique_protocols(self) -> "RuntimeContract":
+        if len(self.protocols) != len(set(self.protocols)):
+            raise ValueError("runtime protocol references must be unique")
+        return self
 
 
 class BindingSelector(StrictModel):
@@ -66,11 +85,6 @@ class BindingSelector(StrictModel):
                 "binding selector must identify at least one capability, protocol, or locator"
             )
         return self
-
-
-class InterfaceSlot(StrictModel):
-    schema_: str = Field(alias="schema", pattern=ID_PATTERN)
-    description: str | None = Field(default=None, min_length=1)
 
 
 class EffectInterface(StrictModel):
@@ -196,6 +210,7 @@ class SpellDeclaration(StrictModel):
         self._require_unique("effect", effect_ids)
 
         schema_set = set(schema_ids)
+        protocols_by_id = {item.id: item for item in self.protocols}
         protocol_set = set(protocol_ids)
         telemetry_set = set(telemetry_ids)
         effect_set = set(effect_ids)
@@ -205,6 +220,16 @@ class SpellDeclaration(StrictModel):
             raise ValueError(
                 f"runtime protocol references do not resolve: {sorted(missing_runtime_protocols)}"
             )
+
+        for protocol in self.protocols:
+            for operation in protocol.operations:
+                for slot_name in ("input", "result"):
+                    slot = getattr(operation, slot_name)
+                    if slot and slot.schema_ not in schema_set:
+                        raise ValueError(
+                            f"protocol {protocol.id}.{operation.id} {slot_name} schema "
+                            f"does not resolve: {slot.schema_}"
+                        )
 
         for effect in self.effects:
             missing_telemetry = set(effect.telemetry) - telemetry_set
@@ -249,11 +274,20 @@ class SpellDeclaration(StrictModel):
             self._require_unique(f"cost resource in effect {effect.id}", cost_resources)
 
             for requirement in all_requirements:
-                if requirement.binding.protocol and requirement.binding.protocol not in protocol_set:
-                    raise ValueError(
-                        f"requirement {effect.id}.{requirement.id} protocol does not resolve: "
-                        f"{requirement.binding.protocol}"
-                    )
+                binding = requirement.binding
+                if binding.protocol:
+                    protocol = protocols_by_id.get(binding.protocol)
+                    if protocol is None:
+                        raise ValueError(
+                            f"requirement {effect.id}.{requirement.id} protocol does not resolve: "
+                            f"{binding.protocol}"
+                        )
+                    operations = {item.id for item in protocol.operations}
+                    if binding.operation not in operations:
+                        raise ValueError(
+                            f"requirement {effect.id}.{requirement.id} operation "
+                            f"{binding.operation!r} is not declared by protocol {binding.protocol}"
+                        )
 
         for implementation in self.implementations:
             missing_effects = set(implementation.effects) - effect_set
