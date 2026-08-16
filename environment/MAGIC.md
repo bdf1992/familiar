@@ -7,14 +7,14 @@ This document defines the Environment-owned runtime semantics introduced by the 
 ## Core definitions
 
 - **Magic System** — the whole situated system in which magical participation can occur.
-- **Magic Network** — the Environment mechanisms that make localities, reach, routes, sensing, claims, casting, and maintenance available. The network carries Mana; it is not Mana.
+- **Magic Network** — the Environment mechanisms that make localities, reach, routes, sensing, claims, casting, observation, and maintenance available. The network carries Mana; it is not Mana.
 - **Mana** — conserved magical potential. One runtime begins with a fixed integer quantity `N` that cannot be created or destroyed.
 - **Locality** — an Environment-resolved place or context in which Mana may be ambient, claimed, committed, spent, sensed, or restored.
 - **Participant** — an actor for whom the Environment resolves the requested Magic operation in the current locality.
 - **Claim** — a temporary relation between a participant and Mana. A claim is not ownership.
-- **Practice** — participation that attempts consequence through Cast. Mana-bearing practice may commit claimed Mana and settle some or all of it as Spent.
+- **Practice** — participation that attempts consequence through Cast. Mana-bearing practice may commit claimed Mana; an Environment consequence decision determines settlement.
 - **Domains Maintainer** — a situated role authorized to maintain concrete mechanisms in one or more of the five repository domains.
-- **Maintenance Act** — one attributable Skill or Cast act against a concrete mechanism, with before/after evidence and independent observation.
+- **Maintenance Act** — one attributable Skill or Cast act against a concrete mechanism whose candidate evidence is independently evaluated by the Environment.
 
 ## Load-bearing distinctions
 
@@ -28,6 +28,7 @@ Claim != Ownership
 Claim != Commitment
 Commitment != Spend
 Spend != Destruction
+Assertion != Observation
 Role != Act
 Maintenance Act != Restoration
 Evidence != Consequence
@@ -51,19 +52,17 @@ Ambient + Claimed + Committed + Spent = N
 
 A runtime that cannot account for exactly `N` fails closed.
 
+Runtime quantities are exact integers. Language-level boolean values do not count as Mana quantities, levels, limits, ticks, or restoration amounts merely because a host language treats booleans as integer subclasses.
+
 ## Mana dispositions
 
 ### Ambient
 
-Mana present in an Environment locality and not currently claimed. Ambient Mana is part of the shared magical commons.
-
-Ambient does not mean globally reachable. Reach is supplied by the Magic Network and current Situation.
+Mana present in an Environment locality and not currently claimed. Ambient Mana is part of the shared magical commons. Ambient does not mean globally reachable.
 
 ### Claimed
 
-Mana temporarily held by one participant in one locality.
-
-Claims are bounded and may drain. They are not durable property rights.
+Mana temporarily held by one participant in one locality. Claims are bounded and may drain. They are not durable property rights.
 
 ### Committed
 
@@ -71,9 +70,7 @@ Claimed Mana bound exclusively to one Cast after runtime admission. Committed Ma
 
 ### Spent
 
-Mana made unavailable to ordinary claiming by consequence.
-
-Spent does not mean destroyed. The runtime retains the Cast provenance of Spent Mana until verified maintenance returns some of it to Ambient.
+Mana made unavailable to ordinary claiming by observed consequence. Spent does not mean destroyed. The runtime retains the Cast provenance of Spent Mana until verified maintenance returns some of it to Ambient.
 
 ## Legal movement
 
@@ -85,12 +82,12 @@ Ambient         -> Claimed           claim
 Claimed         -> Ambient           release
 Claimed         -> Ambient           drain
 Claimed         -> Committed         Cast commitment
-Committed       -> Claimed           unspent settlement
-Committed       -> Spent             spent settlement
+Committed       -> Claimed           observed unspent settlement
+Committed       -> Spent             observed spent settlement
 Spent           -> Ambient           verified maintenance restoration
 ```
 
-Every transition is evidence-bearing runtime activity. No operation directly edits an arbitrary balance.
+Every transition is runtime activity. No operation directly edits an arbitrary balance.
 
 ## Participation and reach
 
@@ -137,7 +134,9 @@ Settlement determines how much Committed Mana became Spent and how much returned
 Committed = Spent + Returned-to-Claim
 ```
 
-Executor success alone does not determine Mana spending. Consequence accounting does.
+The caller does not supply the settlement amount as trusted truth. The Environment invokes a consequence verifier for the committed Cast. A confirmed decision carries the observed `spent` amount, an independent observer identity, a receipt identity, and an optional reason. Self-observed settlement refuses.
+
+Executor success alone does not determine Mana spending. Environment-observed consequence accounting does.
 
 A Cast id may participate in Mana commitment only once so replay cannot duplicate or rewrite its Mana history.
 
@@ -155,27 +154,31 @@ Registry
 Environment
 ```
 
-The role authorizes an attempt. Only a Maintenance Act can become maintenance evidence.
+The role authorizes an attempt. Only a verified Maintenance Act becomes runtime maintenance evidence.
 
 ### Maintenance Act
 
-A candidate Maintenance Act identifies its Skill-or-Cast source, a unique source id, one repository domain, one concrete mechanism, before and after observations, and an independent observer.
+Candidate Maintenance Evidence identifies its Skill-or-Cast source, a unique source id, one repository domain, one concrete mechanism, and candidate before/after observations.
 
-The Act is independently evaluated by a runtime verifier. The verifier returns a structured decision:
+The candidate does **not** certify its own independent observer. The Environment verifier returns a structured decision:
 
 ```text
 confirmed
 restorable
+observer
+receipt_id
 reason
 ```
 
-`confirmed` says whether the maintenance Effect is accepted by the runtime evidence. `restorable` says how much existing Spent Mana the verified Act makes eligible to return to Ambient before runtime ceilings are applied. The Maintainer does not set either value directly.
+`confirmed` says whether the maintenance Effect is accepted. `restorable` says how much existing Spent Mana the verified Act makes eligible to return to Ambient before runtime ceilings are applied. `observer` and `receipt_id` bind the accepted independent observation. The Maintainer does not set those accepted values directly, and a self-observed decision refuses.
 
-### One Act, one consequence
+### One Act, one consequence boundary
 
-One admitted Maintenance Act may produce a runtime maintenance consequence at most once.
+One confirmed Maintenance Act is recorded at most once.
 
-Replaying the same Skill run, CAST, receipt, or source id cannot restore more Mana or reapply a configuration change. This rule survives restart because applied Maintenance Act identities are replayed from the runtime ledger.
+Replaying the same Skill run, CAST, source id, or accepted receipt cannot restore more Mana or reapply a configuration change. This rule survives restart because applied Maintenance Act identities are replayed from the runtime ledger.
+
+A confirmed Maintenance Act remains a real Act even when it restores zero Mana. Zero restoration therefore consumes the Act rather than creating a deferred restoration credit that can be replayed after unrelated Mana is spent later.
 
 ### Restoration
 
@@ -191,7 +194,7 @@ Restored Mana returns to the ambient commons. It is not directly awarded to the 
 
 The runtime retains which prior Cast Spent lots supplied each restoration, so restoration does not erase provenance.
 
-Maintenance may legitimately confirm work while restoring zero Mana. Restoration is a consequence of some Maintenance Acts, not the definition of maintenance itself.
+Restoration is a consequence of some Maintenance Acts, not the definition of maintenance itself.
 
 ## Laws and maintained settings
 
@@ -222,9 +225,11 @@ A Domains Maintainer may change maintained settings only through independently c
 
 The reference implementation records an append-only, digest-chained event ledger and derives current Mana state by replay.
 
+Digest-bearing event material is detached from caller-owned mutable objects before hashing, persistence, and exposure through the public event view. A caller mutating its original input or a returned event copy cannot rewrite already-hashed runtime history.
+
 Restart must reproduce the same conserved `N`, Ambient distribution, Claims, active Commitments, Spent Cast provenance, maintained settings, and already-applied Maintenance Acts.
 
-Sequence breaks, broken digest links, or edits to an individual recorded event refuse open.
+Sequence breaks, broken digest links, invalid ledger quantities, or edits to an individual recorded event refuse open.
 
 The digest chain is an integrity mechanism, not an external trust anchor. A party able to replace the whole ledger and recompute every digest is outside the protection supplied by this candidate. Signatures, external seals, and distributed consensus remain separate concerns.
 
@@ -232,8 +237,8 @@ The 0.6 reference ledger is single-writer. A shared Magic Network is a semantic 
 
 ## Spellcraft boundary
 
-Mana state, runtime limits, participant access, Domains Maintainer role, maintenance decisions, and restoration are situated runtime truth.
+Mana state, runtime limits, participant access, Domains Maintainer role, consequence decisions, maintenance decisions, and restoration are situated runtime truth.
 
-Spellcraft may discover that a portable Effect requires or interacts with those mechanisms. It must not manufacture current Mana, role, level, restoration, or capacity as author-declared truth.
+Spellcraft may discover that a portable Effect requires or interacts with those mechanisms. It must not manufacture current Mana, role, level, restoration, capacity, observer identity, or consequence as author-declared truth.
 
 No Level 0 Spell is defined by this candidate.
