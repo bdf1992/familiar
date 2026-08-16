@@ -201,6 +201,7 @@ Broader capability receipts still live in `cast/practitioner/situation.py`. `spe
 | `cast/practitioner/situation.py` | Situation, capability receipt, typed Requirement demand, capacity relations, attenuation, CastPlan, requirement-to-capability compilation. | Code | Current | #13 closed by #43. Ownership split still proposed in `spell/migration/LEDGER.md` |
 | `cast/practitioner/obligations.py` | Typed Runtime Obligations, discharge mechanisms, obligation plan, and four-status evaluation. | Code | Current | Added by #47 (issue #32). Obligations do not compile to capability demands; the firewall is structural |
 | `cast/practitioner/concurrency.py` | Observed pre-state identity, conflict detection, optimistic commit validation, and reservations with deterministic acquisition order. | Code | Current | Added by #49 (issue #30). Retry is a new attempt, never a resumed closure |
+| `cast/practitioner/crossing.py` | CrossingPlan, Brink observation, Closure, canonical `plan_digest`, and post-Closure verification. Couples Capacity, Obligations and Mana by composition without flattening them. | Code | Work | Added under #34. Plans and seals only — it moves no Mana and discharges no obligation |
 | `cast/practitioner/__init__.py` | Practitioner public exports. | Code | Current | — |
 
 The three transitional composition symlinks under cast — pointing at the Familiar domain, the Spell format, and Owl — were aids after the domain move, never duplicate authorities. They were removed under #17: runtime code resolves another domain's artifacts through `cast/kernel/resources.py` by canonical repository path, so the supported test command no longer depends on whether the checkout can materialize symlinks. Their paths are named without backticks here deliberately, so the completeness check does not read a historical note as a live inventory claim.
@@ -281,6 +282,7 @@ All files under `cast/tests/` are **Current Code** because CI depends on them. T
 | `cast/tests/test_magic_runtime_06.py` | Conserved Mana runtime: conservation, participation, settlement, maintenance, restart replay. **Absent from every previous audit.** |
 | `cast/tests/test_repository_audit_18.py` | This file's completeness against the tracked tree. |
 | `cast/tests/test_format_generations_55.py` | The two incompatible FORMAT 0.3 generations, pinned as running code. Documents a defect; every assertion is expected to change when #55 closes. |
+| `cast/tests/test_crossing_plan_34.py` | Closure refusal at an unclean Brink, canonical plan identity, and adversarial post-Closure swaps of target, Technique, binding, authority, obligation, evidence contract, residual bounds and Mana. |
 | `cast/tests/test_resource_resolution_17.py` | Canonical cross-domain resolution without composition symlinks, including a symlink-free checkout. |
 | `cast/tests/test_familiar_revisions_15.py` | Immutable Familiar revisions addressable by `FamiliarRef`; a newer write does not destroy an older revision. |
 | `cast/tests/test_familiar_view_14.py` | Every source guidance category accounted for exactly once; a silently dropped category fails. |
@@ -340,7 +342,8 @@ These are different kinds of statement and the distinction is load-bearing.
 
 | #56 | Adopt FORMAT 0.3 — including resolving **which of two incompatible 0.3 generations** it is, absorbed from #55. The Cast domain owns an admission schema the Spell domain does not generate |
 | #57 · #58 · #59 | The remaining ladder rungs — KERNEL 0.4, 0.6 Magic participation, and the 0.5 disposition. See `LIFECYCLE_LADDER.md` |
-| #34 · #35 · #36 · #37 · #38 | Milestone 0.7 proof-carrying crossing: closed-plan contract, observation seam, CAST sealing, adversarial conformance suite, and integration |
+| #34 | The closed-plan contract. `cast/practitioner/crossing.py` lands the shape; the Kernel does not yet close through it |
+| #35 · #36 · #37 · #38 | Milestone 0.7 proof-carrying crossing: observation seam, CAST sealing, adversarial conformance suite, and integration |
 
 **Deferred by explicit decision, not by oversight:** remote Library transport and subscription, semantic-version range resolution, Presence lifetimes beyond a session, a Dismiss Spell, Level 0 semantics, portable Mana fields in `SPELL.md`, a universal sandbox implementation, a mandatory theorem prover, external PKI, and distributed consensus.
 
