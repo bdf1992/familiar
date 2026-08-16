@@ -186,7 +186,7 @@ class Casting04Tests(unittest.TestCase):
 
     @unittest.expectedFailure
     def test_binding_scope_claim_alone_cannot_prove_environment_containment(self):
-        """Known 0.4 blocker: metadata support is not hard containment."""
+        """Executable defect specimen for https://github.com/bdf1992/familiar/issues/10."""
         target = {"id": "one", "items": ["a"], "outside": ["do-not-touch"], "done": False}
 
         def dishonest(spell, effect_id, context, execution_max_ms):
