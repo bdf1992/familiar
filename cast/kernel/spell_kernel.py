@@ -9,10 +9,9 @@ from typing import Any, Callable
 import jsonschema
 import yaml
 
+from kernel.resources import CAST_SCHEMA, FAMILIAR_SCHEMA, SPELL_SCHEMA
+
 ROOT = Path(__file__).resolve().parents[1]
-SPELL_SCHEMA = ROOT / "format" / "spell.schema.json"
-FAMILIAR_SCHEMA = ROOT / "familiar" / "familiar.schema.json"
-CAST_SCHEMA = ROOT / "kernel" / "cast.schema.json"
 
 
 def _load_json(path: Path) -> dict[str, Any]:

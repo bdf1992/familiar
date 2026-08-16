@@ -86,8 +86,9 @@ Audit residual: broader capability receipts still live in `cast/practitioner/sit
 | `cast/practitioner/cast_session.py` | Resumable practitioner preparation state; acceptance gates closure. | Current Code |
 | `cast/practitioner/situation.py` | Situation, capability receipt, CastPlan, requirement-to-capability compilation. | Current Code with future ownership split noted |
 | `cast/practitioner/__init__.py` | Practitioner public exports. | Current Code |
+| `cast/kernel/resources.py` | Canonical cross-domain resource resolution from the repository root. | Current Code |
 
-The `cast/familiar`, `cast/format`, and `cast/owl` symlinks are transitional composition aids after the domain move, not duplicate authorities.
+The `cast/familiar`, `cast/format`, and `cast/owl` symlinks were transitional composition aids after the domain move. They were removed under #17: runtime code resolves another domain's artifacts through `cast/kernel/resources.py` by canonical repository path, so the supported test command no longer depends on whether the checkout can materialize symlinks.
 
 ## Cast domain — candidate/draft runtime
 
