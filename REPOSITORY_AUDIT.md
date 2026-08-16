@@ -280,6 +280,7 @@ All files under `cast/tests/` are **Current Code** because CI depends on them. T
 | `cast/tests/test_spell_format_03.py` | 0.3 candidate Pydantic contract and generated schema agreement. |
 | `cast/tests/test_magic_runtime_06.py` | Conserved Mana runtime: conservation, participation, settlement, maintenance, restart replay. **Absent from every previous audit.** |
 | `cast/tests/test_repository_audit_18.py` | This file's completeness against the tracked tree. |
+| `cast/tests/test_format_generations_55.py` | The two incompatible FORMAT 0.3 generations, pinned as running code. Documents a defect; every assertion is expected to change when #55 closes. |
 | `cast/tests/test_resource_resolution_17.py` | Canonical cross-domain resolution without composition symlinks, including a symlink-free checkout. |
 | `cast/tests/test_familiar_revisions_15.py` | Immutable Familiar revisions addressable by `FamiliarRef`; a newer write does not destroy an older revision. |
 | `cast/tests/test_familiar_view_14.py` | Every source guidance category accounted for exactly once; a silently dropped category fails. |
@@ -336,7 +337,7 @@ These are different kinds of statement and the distinction is load-bearing.
 | #16 | Conserved Mana integrated with the invariant Cast lifecycle |
 | #18 | This audit |
 | #26 | Mana as typed sparse relations versus tensor product — open design work, not a gate on #16 |
-| #55 | Two divergent 0.3 candidate schemas; the Cast domain shadows the Spell domain's format |
+| #55 | **FORMAT 0.3 exists in two incompatible generations** and the runtime casts against the older one. Neither is a superset of the other; the Cast domain owns an admission schema the Spell domain does not generate |
 | #56 · #57 · #58 · #59 | The ladder rungs — FORMAT 0.3, KERNEL 0.4, 0.6 Magic participation, and the 0.5 disposition. See `LIFECYCLE_LADDER.md` |
 | #34 · #35 · #36 · #37 · #38 | Milestone 0.7 proof-carrying crossing: closed-plan contract, observation seam, CAST sealing, adversarial conformance suite, and integration |
 
