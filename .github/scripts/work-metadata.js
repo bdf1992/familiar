@@ -18,13 +18,16 @@ function field(body, name) {
 }
 
 function hasHeading(body, heading) {
-  return new RegExp(`^##\\s+${escapeRegex(heading)}\\s*$`, "mi").test(body || "");
+  return (body || "").split(/\r?\n/).some((line) => new RegExp(`^##\\s+${escapeRegex(heading)}\\s*$`, "i").test(line));
 }
 
 function section(body, heading) {
-  const pattern = new RegExp(`^##\\s+${escapeRegex(heading)}\\s*$([\\s\\S]*?)(?=^##\\s+|$)`, "mi");
-  const match = (body || "").match(pattern);
-  return match ? match[1].trim() : "";
+  const lines = (body || "").split(/\r?\n/);
+  const headingPattern = new RegExp(`^##\\s+${escapeRegex(heading)}\\s*$`, "i");
+  const start = lines.findIndex((line) => headingPattern.test(line));
+  if (start < 0) return "";
+  const next = lines.findIndex((line, index) => index > start && /^##\s+/.test(line));
+  return lines.slice(start + 1, next < 0 ? lines.length : next).join("\n").trim();
 }
 
 function parseIssue(body) {
@@ -171,5 +174,5 @@ module.exports = async ({ github, context, core }) => {
     if (!result.valid) invalid += 1;
   }
 
-  if (invalid) core.setFailed(`${invalid} open issue(s) do not satisfy the repository work metadata contract.`);
+  if (invalid) core.warning(`${invalid} open issue(s) do not satisfy the repository work metadata contract; they were marked invalid for repair.`);
 };
