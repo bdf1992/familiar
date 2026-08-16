@@ -90,6 +90,7 @@ class SpellKernel:
         guide=None,
         scope_resolver=None,
         scope_enforcer=None,
+        authority_enforcer=None,
     ):
         self.observers = observers or {}
         self.requirements = requirements or {}
@@ -102,6 +103,9 @@ class SpellKernel:
         # constructs one: a runtime that supplies its own containment is
         # attesting to its own honesty.
         self.scope_enforcer = scope_enforcer
+        # The same split at the Authority boundary. Resolution says the caster
+        # may attempt; only attenuation constrains what the executor can reach.
+        self.authority_enforcer = authority_enforcer
 
     def _effect(self, spell: dict[str, Any], effect_id: str) -> dict[str, Any]:
         for effect in spell["effects"]:
@@ -186,6 +190,7 @@ class SpellKernel:
         observations = []
         reasons = []
         scope_boundary = None
+        authority_boundary = None
         familiar_ref = None
         guidance = None
         if familiar is not None:
@@ -253,6 +258,7 @@ class SpellKernel:
                     })
                     if status != "satisfied":
                         reasons.append("requirement-unsatisfied: scope-max-items")
+        granted_authorities = []
         for authority in effect["authority"]:
             allowed = False
             if self.authority_resolver is not None:
@@ -261,8 +267,39 @@ class SpellKernel:
                 except Exception:
                     allowed = False
             observations.append({"kind": "authority", "id": authority, "phase": "before", "status": "satisfied" if allowed else "denied"})
-            if not allowed:
+            if allowed:
+                granted_authorities.append(authority)
+            else:
                 reasons.append(f"authority-denied: {authority}")
+        # Resolution is not enforcement. A resolved Authority binds the effect
+        # path only through a credential no broader than the one that closed the
+        # Cast, so closure refuses when none can be supplied rather than letting
+        # the executor keep whatever the host ambiently holds.
+        if effect["authority"] and len(granted_authorities) == len(effect["authority"]):
+            enforcement = {
+                "kind": "authority",
+                "id": "authority-enforcement",
+                "phase": "before",
+                "status": "satisfied",
+                "value": {"resolved": list(granted_authorities)},
+            }
+            if self.authority_enforcer is None:
+                enforcement["status"] = "unavailable"
+                enforcement["detail"] = "no authority enforcer registered; execution credential is ambient"
+                reasons.append("authority-unenforced: no attenuated execution capability")
+            else:
+                try:
+                    authority_boundary = self.authority_enforcer(caster, list(granted_authorities), context)
+                    credential = authority_boundary.handle()
+                except Exception as exc:
+                    authority_boundary = None
+                    enforcement["status"] = "unavailable"
+                    enforcement["detail"] = f"authority attenuation failed: {type(exc).__name__}: {exc}"
+                    reasons.append("authority-unenforced: attenuation failed")
+                else:
+                    context["authority"] = credential
+                    enforcement["value"]["enforcement"] = authority_boundary.describe()
+            observations.append(enforcement)
         for requirement in effect["requirements"]:
             if requirement["phase"] != "before":
                 continue
@@ -342,6 +379,24 @@ class SpellKernel:
                 record["residuals"].append(
                     f"scope violated during execution: {len(breaches)} attempt(s) outside resolved Scope"
                 )
+        authority_failed = False
+        if authority_boundary is not None:
+            breaches = authority_boundary.violations()
+            observations.append({
+                "kind": "authority",
+                "id": "authority-enforcement",
+                "phase": "after",
+                "status": "violated" if breaches else "satisfied",
+                "value": {
+                    "enforcement": authority_boundary.describe(),
+                    "violations": [item.as_dict() for item in breaches],
+                },
+            })
+            if breaches:
+                authority_failed = True
+                record["residuals"].append(
+                    f"authority violated during execution: {len(breaches)} attempt(s) beyond resolved authority"
+                )
         post_failed = False
         for requirement in [r for r in effect["requirements"] if r["phase"] == "after"]:
             obs = self._check("requirement", requirement["id"], "after", self.requirements.get(requirement["id"]), context)
@@ -356,7 +411,7 @@ class SpellKernel:
             if obs["status"] != "satisfied":
                 limit_failed = True
                 record["residuals"].append(f"limit violated after execution: {limit_id}")
-        if execution_failed or limit_failed or scope_failed:
+        if execution_failed or limit_failed or scope_failed or authority_failed:
             record["outcome"] = "failed"
         elif post_failed:
             record["outcome"] = "partial"

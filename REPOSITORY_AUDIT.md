@@ -72,6 +72,7 @@ Audit residual: `registry/core.py` still parses Spell frontmatter itself. The mi
 | `environment/presence/__init__.py` | Public Presence exports. | Current Code |
 | `environment/presence/store.py` | Host-owned session Presence store with identity preservation checks. | Current Code |
 | `environment/scope.py` | Environment-owned effect-path boundaries for Scope enforcement, plus one reference filtered object capability. | Current Code |
+| `environment/authority.py` | Environment-owned attenuated credentials for Authority enforcement, plus one reference host credential. | Current Code |
 
 Audit residual: broader capability receipts still live in `cast/practitioner/situation.py`; the migration ledger proposes eventual Environment ownership. Not required by the first Find Familiar Effect beyond exposing the concrete persistence capability.
 

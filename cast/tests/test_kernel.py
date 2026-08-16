@@ -5,10 +5,14 @@ import unittest
 from copy import deepcopy
 from pathlib import Path
 
+from environment.authority import RecordingHostCredential, attenuated_credential_enforcer
 from kernel.spell_kernel import SpellKernel, load_spell_md, validate_cast_record, validate_familiar
 
 ROOT = Path(__file__).resolve().parents[1]
 FIX = ROOT / "tests" / "fixtures"
+
+#: Sentinel so a test can ask for *no* enforcer, which None cannot express here.
+_DEFAULT = object()
 
 
 def familiar(name):
@@ -49,15 +53,24 @@ def guide(fam, spell, effect_id, context):
     return {"dialect": fam["dialect"]["description"], "attention": fam["attention"]}
 
 
-def kernel(executor=execute, authority_resolver=authority, scope_resolver=None, requirements=None):
+def kernel(
+    executor=execute,
+    authority_resolver=authority,
+    scope_resolver=None,
+    requirements=None,
+    authority_enforcer=_DEFAULT,
+):
     requirement_map = {"target-observable": target_observable, "tidy-confirmed": tidy_confirmed}
     if requirements:
         requirement_map.update(requirements)
+    if authority_enforcer is _DEFAULT:
+        authority_enforcer = attenuated_credential_enforcer(RecordingHostCredential())
     return SpellKernel(
         observers={"workspace-state": observer},
         requirements=requirement_map,
         limits={"preserve-authored": preserve_authored},
         authority_resolver=authority_resolver,
+        authority_enforcer=authority_enforcer,
         executor=executor,
         guide=guide,
         scope_resolver=scope_resolver,

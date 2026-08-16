@@ -8,6 +8,7 @@ from pathlib import Path
 
 import jsonschema
 
+from environment.authority import RecordingHostCredential, attenuated_credential_enforcer
 from environment.scope import mapping_scope_enforcer
 from kernel.spell_kernel import SpellKernel
 from validation.candidate_adapter import cast_candidate, load_candidate_spell
@@ -35,6 +36,7 @@ def build_kernel(executor, *, authorized=True):
             "effect-confirmed": effect_confirmed,
         },
         authority_resolver=lambda caster, permission, context: authorized and permission == "workspace.write",
+        authority_enforcer=attenuated_credential_enforcer(RecordingHostCredential()),
         scope_resolver=lambda target, context: target["items"],
         scope_enforcer=mapping_scope_enforcer(("id", "items", "done", "valid")),
         executor=executor,
