@@ -1,12 +1,12 @@
 # Agent Spells
 
-Agent Spells is an experimental local-first protocol for declaring **Spells**, attempting their **Effects** through one invariant casting law, preserving exact runtime evidence as **CAST** records, and keeping caster-owned guidance in **Familiars** without confusing guidance with authority.
+Agent Spells is an experimental local-first protocol for declaring **Spells**, attempting their **Effects** through one invariant casting law, preserving exact runtime evidence as **CAST** records, and keeping Familiar guidance distinct from runtime authority.
 
 The repository is organized around five subject domains:
 
 - **Spell** — portable Effect declarations, Requirements, Telemetry, and Spellcraft.
 - **Cast** — situated invocation, closure, governed execution, observation, residuals, and CAST records.
-- **Familiar** — caster-owned dialect, attention, preferences, stake, advisory authority, validation, and persistence.
+- **Familiar** — dialect, attention, preferences, stake, advisory authority, validation, and persistence.
 - **Registry** — Scrolls, Spellbooks, Libraries, exact resolution, provenance, and local registration storage.
 - **Environment** — concrete host mechanisms such as Presence, observability, authority, scope, meters, clocks, and containment.
 
@@ -27,31 +27,58 @@ Familiar guidance != Runtime authority
 
 A Spell declares a possible Effect and the Requirements under which it may count. A Cast is one situated attempt. Scrolls, Spellbooks, Libraries, registration, publication, and resolution may change knowledge or addressability; only casting may attempt an Effect.
 
-## Current practitioner path
-
-The first practitioner-facing path is intentionally small:
+For the current bootstrap work, one additional relation matters:
 
 ```text
-Summon owl.system
-    -> Owl is Present for the session
+bound to a valid Familiar -> Practitioner
+```
 
-Cast find-familiar@0.1.0
+`Practitioner` is a derived condition, not a durable type. `Caster` is the role a Practitioner occupies in one Cast.
+
+## First Familiar path
+
+The intended first-user path is now:
+
+```text
+owl.agent + owl.system
+    -> Owl is the acting Agent with its system Familiar
+
+Owl casts find-familiar@0.1.0 for an unbound subject
     -> prepare complete Familiar candidates
-    -> practitioner Marks / corrections
-    -> practitioner explicitly accepts one complete candidate
+    -> subject Marks / corrections
+    -> subject explicitly accepts one complete candidate
     -> closure
-    -> persist the exact accepted Familiar
+    -> persist the exact accepted Familiar for that subject
     -> return FamiliarRef
 
 Resolve FamiliarRef after restart
     -> exact accepted Familiar is recovered
-
-Optional later:
-Cast summon-familiar@0.1.0(target = FamiliarRef)
-    -> caster Familiar becomes Present for the session
 ```
 
-`caster-accepted` is a **before Requirement** for Find Familiar: persistence may not begin until the caster has accepted the complete candidate.
+The current executable proof now uses `owl.agent` as the caster and `owl.system` as Owl's Familiar. The subject whose Familiar is being found is **not** treated as the caster merely to bootstrap the protocol.
+
+`subject-accepted` is a **before Requirement** for Find Familiar: persistence may not begin until the subject has accepted the complete candidate.
+
+### Important current boundary
+
+This branch proves the corrected first-cast roles, but it does **not yet** claim that the generic Cast runtime enforces the full relation-derived practitioner law for every Spell. Generic binding resolution and fail-closed `Practitioner` enforcement remain the next runtime hardening step.
+
+That residual is intentionally visible rather than hidden behind a special-case claim.
+
+## Owl, Spellcraft, and Find Familiar
+
+These are different responsibilities:
+
+```text
+Owl            = Agent conducting the bootstrap interaction
+owl.system     = Owl's Familiar
+Spellcraft     = Skill for understanding / inspecting / repairing Spell declarations
+Find Familiar  = Spell whose first-user path establishes the accepted Familiar for the subject
+Technique      = interactive drawing / preparation used to reach an accepted Whole
+SpellCast      = runtime that closes, executes, observes, and records the Cast
+```
+
+Spellcraft does not cast Spells. Owl can use Spellcraft while conducting Find Familiar.
 
 ## Local-first storage
 
@@ -86,34 +113,38 @@ AGENT_SPELLS.md           earlier structural baseline and validation history
 AGENTS.md                  repository participation rules for agents
 CLAUDE.md                  Claude-oriented adaptation of AGENTS.md
 REPOSITORY_AUDIT.md        file-by-file purpose and lifecycle audit
-FIRST_FAMILIAR_SEAL.md     frozen first-cast readiness statement and procedure
+FIRST_FAMILIAR_SEAL.md     previous frozen first-cast seal
+MIDNIGHT_FIRST_FAMILIAR.md corrected Owl-led midnight candidate and procedure
 
 spell/                     declared possibility and Spellcraft
 cast/                      invariant casting runtime, practitioner loop, tests, examples
 familiar/                  Familiar contract, Owl, Find Familiar, validation, persistence
 registry/                  Scroll / Spellbook / Library / local registration
- environment/              host mechanisms such as Presence
+environment/               host mechanisms such as Presence
 ```
 
-Detailed file purposes live in [REPOSITORY_AUDIT.md](REPOSITORY_AUDIT.md).
+Detailed file purposes live in [REPOSITORY_AUDIT.md](REPOSITORY_AUDIT.md). The previous seal remains historical evidence; it is not silently rewritten.
 
 ## Status
 
-The current first-cast candidate proves:
+The current midnight candidate proves or retains:
 
 - exact Spell name/version/digest registration and resolution;
 - local Spellbook persistence across restart;
 - Familiar validation owned by the Familiar domain;
 - exact Familiar persistence across restart;
 - tamper detection for local Spellbook and Familiar storage;
-- practitioner preparation + explicit acceptance before closure;
-- `find-familiar@0.1.0` through the current Technique Binding + invariant cast path;
-- refusal before effectful persistence when the candidate has not been accepted;
+- explicit subject acceptance before Find Familiar persistence;
+- `owl.agent` occupying the caster role while `bdo` remains the subject of the first Find Familiar proof;
+- `owl.system` participating as Owl's Familiar in that proof;
+- refusal before effectful persistence when the subject has not accepted the candidate;
 - bounded session Presence and Summon Familiar mechanics;
 - CI execution of the complete `cast/tests` suite.
 
-Explicitly deferred and not required for a local first Find Familiar cast:
+Explicitly deferred:
 
+- generic Binding-backed Practitioner resolution and cast refusal when that relation is absent;
+- renaming the historical `caster` ownership field inside the Familiar schema/store to a durable bound-subject relation;
 - issuer signatures / trust chains;
 - remote Library transport and polling;
 - semantic-version ranges;
