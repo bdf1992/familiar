@@ -160,6 +160,8 @@ What is **not** established: Mana participation in the Cast lifecycle (#16), the
 
 The 0.3, 0.4, 0.5 and 0.6 draft generations are each **retained as Work** under #53; none is adopted, superseded, or archived, and every one of them says in its own header that it extends or sits beneath what came before rather than replacing it. **0.2 remains the only Current specification, and the running Kernel exceeds it** — see [REPOSITORY_AUDIT.md](REPOSITORY_AUDIT.md) § *Lifecycle generations*.
 
+[LIFECYCLE_LADDER.md](LIFECYCLE_LADDER.md) specifies the route out: the ordered crossings from 0.2 Current to 0.7 Current, with an owning issue and required evidence for each rung. It takes none of them — a route is not a promotion.
+
 ## Test
 
 ```bash

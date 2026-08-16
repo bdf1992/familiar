@@ -75,6 +75,8 @@ Under #53, each generation now carries exactly one disposition. The available di
 
 That decision is not owned by this section. Recording the standing is what #53 required, and silence is what it forbade.
 
+**The route out is specified in `LIFECYCLE_LADDER.md`.** It states the ordered crossings from 0.2 Current to 0.7 Current — schema reconciliation (#55), FORMAT 0.3 (#56), KERNEL 0.4 (#57), the 0.5 disposition (#59), 0.6 Magic participation (#58), then 0.7 (#38) — with entry conditions and required evidence for each. It takes none of them. **Until a rung is actually taken, the standing recorded in this section remains authoritative**, and a route is not a promotion.
+
 `AGENT_SPELLS.md` predates the five-domain split and carries historical 0.2 framing. It is **Current/Historical Knowledge**: still referenced, not authoritative where it disagrees with `FOUNDATIONS.md`. Its explicit lifecycle decision remains untaken.
 
 `FIRST_FAMILIAR_SEAL.md` is a bounded readiness statement, frozen as evidence of the state at the first seal. `MIDNIGHT_FIRST_FAMILIAR.md` supersedes its **bootstrap roles** specifically — the first seal got the caster/subject relation wrong, and the correction is that the Agent casts while the human is the subject. The seal is not rewritten; it remains the record of what was true when it was written.
@@ -90,6 +92,7 @@ That decision is not owned by this section. Recording the standing is what #53 r
 | `CONTRIBUTING.md` | How repository work is represented as metadata over the five domains. | Knowledge | Current | Defers to `FOUNDATIONS.md` for domain semantics |
 | `AGENT_SPELLS.md` | Earlier structural baseline and accumulated protocol reasoning. | Knowledge | Current/Historical | Contains 0.2 framing; supersession decision untaken |
 | `REPOSITORY_AUDIT.md` | This inventory. | Knowledge | Current | Completeness checked by `cast/tests/test_repository_audit_18.py` |
+| `LIFECYCLE_LADDER.md` | The ordered sequence of crossings from 0.2 Current to 0.7 Current, with an owning issue per rung. | Knowledge | Work | Specifies a route, not a standing. Takes no crossing — #55, #56, #57, #58, #59 and #38 own the rungs |
 | `FIRST_FAMILIAR_SEAL.md` | Bounded pre-cast readiness statement and practitioner procedure. | Knowledge | Current for the seal | Bootstrap roles superseded by `MIDNIGHT_FIRST_FAMILIAR.md` |
 | `MIDNIGHT_FIRST_FAMILIAR.md` | Smallest corrected first-cast candidate after the seal exposed a bootstrap-role error. | Knowledge | Current | Supersedes the seal's caster/subject roles only |
 | `.gitignore` | Keeps repository-local practitioner data and Python caches out of Git. | Code | Current | — |
@@ -333,6 +336,8 @@ These are different kinds of statement and the distinction is load-bearing.
 | #16 | Conserved Mana integrated with the invariant Cast lifecycle |
 | #18 | This audit |
 | #26 | Mana as typed sparse relations versus tensor product — open design work, not a gate on #16 |
+| #55 | Two divergent 0.3 candidate schemas; the Cast domain shadows the Spell domain's format |
+| #56 · #57 · #58 · #59 | The ladder rungs — FORMAT 0.3, KERNEL 0.4, 0.6 Magic participation, and the 0.5 disposition. See `LIFECYCLE_LADDER.md` |
 | #34 · #35 · #36 · #37 · #38 | Milestone 0.7 proof-carrying crossing: closed-plan contract, observation seam, CAST sealing, adversarial conformance suite, and integration |
 
 **Deferred by explicit decision, not by oversight:** remote Library transport and subscription, semantic-version range resolution, Presence lifetimes beyond a session, a Dismiss Spell, Level 0 semantics, portable Mana fields in `SPELL.md`, a universal sandbox implementation, a mandatory theorem prover, external PKI, and distributed consensus.
