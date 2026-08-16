@@ -1,49 +1,71 @@
-# Familiar Report 0.1
+# Familiar Report — Work
 
-A Familiar Report is a bounded projection of one exact `FamiliarRef` for a particular audience or host.
+A Familiar Report is a candidate account *about* a Familiar. It is intentionally not frozen as a schema yet.
 
-It is not the Familiar, not a replacement persistence format, and not runtime authority.
+The current working model is:
 
 ```text
-Familiar
-  -> FamiliarStore.put()
-  -> FamiliarRef(id, caster_id, revision, digest)
-  -> report policy
-  -> Familiar Report
+Report = knowledge carrier + account bindings
 ```
 
-## Invariants
+For a Familiar Report, useful bindings include:
 
 ```text
+about       -> exact FamiliarRef
+based-on    -> Familiar state, CAST records, observations, corrections, or other attributable evidence
+reported-by -> reporter
+for         -> perspective / purpose / audience
+```
+
+## View is not Report
+
+A Familiar View represents source Familiar guidance for a perspective. It may select, omit, summarize, translate, or rearrange that source while remaining source-bounded.
+
+A Report goes further: it makes an accountable statement *about* the Familiar using a stated basis.
+
+```text
+Familiar View
+    represents Familiar
+
+Familiar Report
+    accounts for Familiar
+```
+
+A host-facing projection needed immediately after Find Familiar is therefore usually a View, not a Report.
+
+## Stake and evidence
+
+A Report ordinarily occupies **Knowledge** stake. The records and observations it cites may occupy **Evidence** stake. Referencing Evidence does not turn the Report itself into Evidence, and Evidence does not become doctrine merely by appearing in a Report.
+
+This follows the repository-wide distinction between artifact stake and lifecycle rather than inventing Report as a new domain.
+
+## Carrier and Binding
+
+`Scroll` remains the Registry-owned, Spell-specific carrier currently defined by `registry/scroll.schema.json`. Do not broaden Scroll merely to fit Reports.
+
+Report is instead treated as a recognizable carrier assembly: bounded content made situated and accountable by bindings such as `about`, `based-on`, `reported-by`, and `for`.
+
+Binding here is a compositional pattern, not a universal permission edge. A semantic or evidentiary binding does not grant runtime authority and is not sufficient for Cast closure unless the owning runtime explicitly recognizes an admissible mechanism.
+
+## Why no schema yet
+
+The previous `familiar-report.schema.json` mixed two operations:
+
+1. projecting Familiar guidance for a host; and
+2. reporting claims and evidence about that Familiar.
+
+The first operation now has the concrete `../view/familiar-view.schema.json` contract because it is needed immediately for portable host guidance.
+
+The second should wait for real evidence-backed Familiar Reports so the format can be derived from specimens rather than anticipated fields.
+
+## Candidate invariants
+
+```text
+Familiar != Familiar View
 Familiar != Familiar Report
-Projection != source
-Omission != absence
-Claim != observation
-Reported advisory authority != runtime authority
+View != Report
+Carrier != content
+Binding != authority
+Knowledge != Evidence
+Delivery != Closure
 ```
-
-A report MUST identify the exact Familiar revision it describes. If the source artifact cannot be resolved and its digest verified, `subject_digest_verified` must be false and the report must not claim to be an exact projection.
-
-A report MAY omit or summarize Familiar material according to a named projection policy. Omitted material stays unknown to the consumer; omission must never be rewritten as an empty source field.
-
-A report MAY include observations or claims derived from work history, CAST records, host evidence, or other attributable sources. Those are report evidence, not Familiar state. A claim must preserve whether it is merely asserted, supported, defeated, or unknown.
-
-A report MUST remain advisory. It cannot satisfy a Spell Requirement, grant authority, waive a limit, change an Effect, or determine CAST outcome.
-
-## Projection policies
-
-Policy names are host- or practitioner-defined in 0.1. Useful examples include:
-
-- `private` — owner-authorized projection;
-- `host` — guidance needed by a specific agent host;
-- `shareable` — collaboration guidance with private stake omitted;
-- `public` — safe identity/high-level guidance only;
-- `diagnostic` — compatibility, corrections, evidence, and defeated claims.
-
-The policy name does not itself prove that disclosure was authorized. The host or calling procedure remains responsible for authorization until a concrete Environment mechanism is bound.
-
-## Why this is separate
-
-The Familiar contract should stay small and caster-authored. Skills, capability scores, compatibility history, host configuration, and runtime evidence do not belong in the Familiar merely because they are useful to report.
-
-Reports let those facts evolve independently while remaining anchored to an exact accepted Familiar revision.
