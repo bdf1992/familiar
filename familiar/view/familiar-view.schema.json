@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentspells.dev/schema/familiar-view-0.1.json",
+  "title": "Agent Spells Familiar View",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["view_format", "subject", "perspective", "guidance"],
+  "properties": {
+    "view_format": {"const": "0.1"},
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "caster_id", "revision", "digest"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "caster_id": {"type": "string", "minLength": 1},
+        "revision": {"type": "integer", "minimum": 1},
+        "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    },
+    "perspective": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policy", "for"],
+      "properties": {
+        "policy": {"type": "string", "minLength": 1},
+        "for": {"type": "string", "minLength": 1}
+      }
+    },
+    "guidance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dialect": {"type": "string"},
+        "attention": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "preferences": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "stake": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "advisory_authority": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        }
+      }
+    },
+    "omitted": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    }
+  }
+}
