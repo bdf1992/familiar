@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from environment.authority import RecordingHostCredential, attenuated_credential_enforcer
 from kernel.spell_kernel import SpellKernel
 
 SUFFIX = ".agentspells-disposable"
@@ -93,5 +94,6 @@ class WorkspaceTidyHost:
                 "preserve-unmarked": self.preserve_unmarked,
             },
             authority_resolver=self.resolve_authority,
+            authority_enforcer=attenuated_credential_enforcer(RecordingHostCredential()),
             executor=self.execute,
         )

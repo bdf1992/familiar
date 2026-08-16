@@ -74,11 +74,20 @@ def binding_support_gaps(
         if "authority" in item:
             if kernel.authority_resolver is None:
                 gaps.append(f"runtime-authority-resolver-missing: {requirement_id}")
+            # A resolver decides whether the caster may attempt. It does not
+            # constrain what the executor reaches, so an unattenuated execution
+            # path is a closure gap in its own right.
+            if kernel.authority_enforcer is None:
+                gaps.append(f"runtime-authority-enforcer-missing: {requirement_id}")
             if not mechanisms["authority"]:
                 gaps.append(f"binding-authority-boundary-missing: {requirement_id}")
         elif "scope" in item:
             if kernel.scope_resolver is None:
                 gaps.append(f"runtime-scope-resolver-missing: {requirement_id}")
+            # A binding that claims Scope support without an enforceable effect
+            # path is claiming metadata. Refuse before execution, not after.
+            if kernel.scope_enforcer is None:
+                gaps.append(f"runtime-scope-enforcer-missing: {requirement_id}")
             if "max_items" not in mechanisms["scope"]:
                 gaps.append(f"binding-scope-boundary-missing: {requirement_id}")
         elif requirement_id not in kernel.requirements:
@@ -141,6 +150,8 @@ def cast_with_binding(
     target: Any,
     familiar: dict[str, Any] | None = None,
     cast_id: str | None = None,
+    downstream_containment_required: bool = False,
+    compensation_required: bool = False,
 ) -> dict[str, Any]:
     """Run the 0.3 candidate through the 0.4 binding/closure check."""
     gaps = binding_support_gaps(kernel, spell, effect_id, binding)
@@ -155,6 +166,8 @@ def cast_with_binding(
         target=target,
         familiar=familiar,
         cast_id=cast_id,
+        downstream_containment_required=downstream_containment_required,
+        compensation_required=compensation_required,
     )
     record["cast_format"] = "0.4-draft"
     record["technique"] = {"id": binding["id"], "version": binding["version"], "kind": binding["kind"]}

@@ -4,7 +4,8 @@
   "title": "Agent Spells Familiar View",
   "type": "object",
   "additionalProperties": false,
-  "required": ["view_format", "subject", "perspective", "guidance"],
+  "required": ["view_format", "subject", "perspective", "guidance", "omitted"],
+  "$comment": "Omission != absence. Every source guidance category is accounted for exactly once: represented in guidance, or named in omitted. A fully represented View carries an explicit empty omitted array.",
   "properties": {
     "view_format": {"const": "0.1"},
     "subject": {
@@ -31,7 +32,7 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "dialect": {"type": "string"},
+        "dialect": {"type": "string", "minLength": 1},
         "attention": {"type": "array", "items": {"type": "string", "minLength": 1}},
         "preferences": {"type": "array", "items": {"type": "string", "minLength": 1}},
         "stake": {"type": "array", "items": {"type": "string", "minLength": 1}},
@@ -44,8 +45,101 @@
     },
     "omitted": {
       "type": "array",
-      "items": {"type": "string", "minLength": 1},
-      "uniqueItems": true
+      "uniqueItems": true,
+      "items": {
+        "enum": ["dialect", "attention", "preferences", "stake", "advisory_authority"]
+      }
+    }
+  },
+  "allOf": [
+    {"$ref": "#/$defs/accountedFor/dialect"},
+    {"$ref": "#/$defs/accountedFor/attention"},
+    {"$ref": "#/$defs/accountedFor/preferences"},
+    {"$ref": "#/$defs/accountedFor/stake"},
+    {"$ref": "#/$defs/accountedFor/advisory_authority"}
+  ],
+  "$defs": {
+    "accountedFor": {
+      "dialect": {
+        "oneOf": [
+          {
+            "properties": {
+              "guidance": {"required": ["dialect"]},
+              "omitted": {"not": {"contains": {"const": "dialect"}}}
+            }
+          },
+          {
+            "properties": {
+              "guidance": {"not": {"required": ["dialect"]}},
+              "omitted": {"contains": {"const": "dialect"}}
+            }
+          }
+        ]
+      },
+      "attention": {
+        "oneOf": [
+          {
+            "properties": {
+              "guidance": {"required": ["attention"]},
+              "omitted": {"not": {"contains": {"const": "attention"}}}
+            }
+          },
+          {
+            "properties": {
+              "guidance": {"not": {"required": ["attention"]}},
+              "omitted": {"contains": {"const": "attention"}}
+            }
+          }
+        ]
+      },
+      "preferences": {
+        "oneOf": [
+          {
+            "properties": {
+              "guidance": {"required": ["preferences"]},
+              "omitted": {"not": {"contains": {"const": "preferences"}}}
+            }
+          },
+          {
+            "properties": {
+              "guidance": {"not": {"required": ["preferences"]}},
+              "omitted": {"contains": {"const": "preferences"}}
+            }
+          }
+        ]
+      },
+      "stake": {
+        "oneOf": [
+          {
+            "properties": {
+              "guidance": {"required": ["stake"]},
+              "omitted": {"not": {"contains": {"const": "stake"}}}
+            }
+          },
+          {
+            "properties": {
+              "guidance": {"not": {"required": ["stake"]}},
+              "omitted": {"contains": {"const": "stake"}}
+            }
+          }
+        ]
+      },
+      "advisory_authority": {
+        "oneOf": [
+          {
+            "properties": {
+              "guidance": {"required": ["advisory_authority"]},
+              "omitted": {"not": {"contains": {"const": "advisory_authority"}}}
+            }
+          },
+          {
+            "properties": {
+              "guidance": {"not": {"required": ["advisory_authority"]}},
+              "omitted": {"contains": {"const": "advisory_authority"}}
+            }
+          }
+        ]
+      }
     }
   }
 }

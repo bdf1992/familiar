@@ -5,6 +5,7 @@ import json
 import unittest
 from pathlib import Path
 
+from kernel.resources import OWL_PATH
 from kernel.spell_kernel import SpellKernel, validate_familiar
 from presence import PresenceStore
 from registry import Library, Scroll, Spellbook
@@ -13,7 +14,6 @@ from validation.casting_04 import cast_with_binding, validate_technique_binding
 
 ROOT = Path(__file__).resolve().parents[1]
 EXAMPLE = ROOT / "examples" / "summon-familiar"
-OWL_PATH = ROOT / "owl" / "owl.json"
 
 
 class SummonOwl05Tests(unittest.TestCase):

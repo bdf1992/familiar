@@ -38,7 +38,7 @@ class LocalStorage05Tests(unittest.TestCase):
             root = Path(tmp) / "familiars"
             store = FamiliarStore(root)
             ref = store.put(familiar_candidate(), caster_id="bdo")
-            [path] = list(root.glob("*.json"))
+            [path] = list(root.rglob("r*.json"))
             envelope = json.loads(path.read_text(encoding="utf-8"))
             envelope["familiar"]["attention"].append("tampered")
             path.write_text(json.dumps(envelope), encoding="utf-8")

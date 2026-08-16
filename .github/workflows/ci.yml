@@ -6,11 +6,42 @@ on:
 
 jobs:
   test:
+    name: test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    env:
+      PYTHONPATH: ${{ matrix.os == 'windows-latest' && 'cast;environment;.' || 'cast:environment:.' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - name: Install validation dependencies
+        run: python -m pip install --disable-pip-version-check PyYAML jsonschema 'pydantic>=2,<3'
+      - name: Run tests
+        run: python -m unittest discover -s cast/tests -v
+
+  # Issue #17: a checkout that cannot materialise symlinks must still pass.
+  # Git writes an ordinary file holding the target path in place of each link,
+  # so any runtime path traversing one breaks here and only here.
+  symlinks-disabled:
+    name: test (symlinks disabled)
     runs-on: ubuntu-latest
     env:
       PYTHONPATH: cast:environment:.
     steps:
+      - name: Disable symlink support before checkout
+        run: git config --global core.symlinks false
       - uses: actions/checkout@v7
+      - name: Assert no tracked symlink survived checkout as a link
+        run: |
+          links=$(git ls-files -s | awk '$1 == "120000" { print $4 }')
+          if [ -n "$links" ]; then
+            echo "tracked symlinks present:"; echo "$links"; exit 1
+          fi
       - uses: actions/setup-python@v7
         with:
           python-version: '3.11'

@@ -4,9 +4,11 @@ Purpose: make every repository surface legible before architectural change. `AGE
 
 This is an audit, not a claim that every Work artifact is Current doctrine, and not a release.
 
-**Audited commit `f8478df`** — *"Merge pull request #25 from bdf1992/fix/windows-digest-fixture-portability"*, `main`, 107 tracked files.
+**Audited commit `c6969ac`** — *"Merge pull request #52 from bdf1992/feat/28-ambient-blast-radius"*, `main`, 130 tracked files.
 
-**Attributable evidence:** `Agent Spells CI` run [31935673778](https://github.com/bdf1992/familiar/actions/runs/31935673778) on `f8478df` concluded **success**. That is the evidence this audit rests on. Saying tests exist is not evidence; a named run against a named commit is.
+**Attributable evidence:** `Agent Spells CI` run [31963822527](https://github.com/bdf1992/familiar/actions/runs/31963822527) on `c6969ac` concluded **success**, running **298 tests, OK** across ubuntu-latest, windows-latest, and a symlink-disabled checkout. That is the evidence this audit rests on. Saying tests exist is not evidence; a named run against a named commit is.
+
+This audit is cut against `c6969ac`, the state of `main` after the fourteen pull requests closing #10 through #32 landed. The commit that merges this audit will necessarily be one commit later; the completeness check covers the tree, and the named run covers the behavior.
 
 Lifecycle vocabulary follows `FOUNDATIONS.md`: **Current**, **Work**, **Archive**. Test source is Code; an attributable test run is Evidence.
 
@@ -30,21 +32,29 @@ It deliberately does **not** check that any row is *correct*. Purpose, Stake, an
 
 ## Lifecycle generations
 
-Four generations coexist. **None is archived by this audit.** A newer number is not a supersession, and a lifecycle crossing is an explicit decision that has not been taken for any of these.
+Five generations coexist. **None is archived by this audit, and none has ever been adopted.** A newer number is not a supersession. `FOUNDATIONS.md` is explicit that *"Work becomes Current only through explicit adoption"*, and **no such crossing has been recorded for any generation here.**
 
 ```text
 0.2 compatibility   Current   the format and Kernel the runtime actually validates against
 0.3 candidate       Work      requirement-centered declarations, reached through an adapter
 0.4 draft           Work      invariant casting law and the Technique Binding boundary
+0.5 work docs       Work      practitioner loop and registry/summoning narratives — no kernel generation
 0.6 draft           Work      Magic participation beneath the existing casting law
 ```
 
-What that means concretely:
+**Read that table as parallel drafts beside a Current 0.2, not as a ladder that has been climbed.** 0.6 does not build on 0.5; it builds on the 0.3 format and the existing casting law and skips 0.5 entirely, which is coherent once you notice 0.5 was never a kernel generation. `spell/format/0.3-draft/SPECIFICATION.md` still says so in its own header: *"FORMAT 0.2 remains Current until an explicit adoption crossing."*
+
+**Recording a standing for each generation is owned by #53, and it blocks #38.** 0.7 cannot be promoted to Current while four undispositioned Work generations sit behind it, because that is exactly the silent promotion the crossing rule forbids.
+
+What the generations mean concretely:
 
 - `spell/format/spell.schema.json` and `cast/kernel/cast.schema.json` are what the running Kernel validates. They are **Current**.
 - The 0.3 candidate is exercised in CI through `cast/validation/candidate_adapter.py`, which normalizes a candidate declaration into the compatibility Kernel. It is not a second Kernel.
 - The 0.4 draft governs Technique Binding and closure support matching, and is exercised by `cast/validation/casting_04.py`. It has its own CAST schema, which the adapter emits into.
-- The 0.6 draft adds Magic participation. Its Environment-owned definition is `environment/MAGIC.md` and its runtime is `environment/magic.py`. **It is not integrated with the Cast lifecycle** — issue #16 owns that crossing, and issue #26 owns whether the Mana state shape changes first.
+- The 0.5 material is practitioner and registry integration narrative — `cast/work/docs/PRACTITIONER_LOOP_0_5.md` and `cast/work/docs/REGISTRY_AND_SUMMONING_0_5.md`. There is no 0.5 kernel draft.
+- The 0.6 draft adds Magic participation. Its Environment-owned definition is `environment/MAGIC.md` and its runtime is `environment/magic.py`. **It is not integrated with the Cast lifecycle** — issue #16 owns that crossing, and issue #26 owns the Mana state shape as open design work rather than as a gate.
+
+**The code never forked.** There is one `cast/kernel/spell_kernel.py`, still titled for the 0.2 compatibility Kernel, and every merged correctness and architecture change lands in it. The runtime converged while the documentation branched five ways and never merged back. A reader cannot currently tell from the tree which generation governs the running code; that is the defect #53 exists to close.
 
 `AGENT_SPELLS.md` predates the five-domain split and carries historical 0.2 framing. It is **Current/Historical Knowledge**: still referenced, not authoritative where it disagrees with `FOUNDATIONS.md`. Its explicit lifecycle decision remains untaken.
 
@@ -74,7 +84,7 @@ Added by the work-metadata line and **absent from every previous audit**.
 
 | Path | Purpose | Stake | Lifecycle | Authority / issue |
 |---|---|---|---|---|
-| `.github/workflows/ci.yml` | Runs the complete `cast/tests` suite. Ubuntu only at this commit. | Code | Current | Windows and symlink-free coverage owned by #17 |
+| `.github/workflows/ci.yml` | Runs the complete `cast/tests` suite across ubuntu-latest, windows-latest, and a checkout with `core.symlinks=false`. | Code | Current | Matrix added by #39; #17 closed |
 | `.github/workflows/work-metadata.yml` | Triggers work-metadata validation on issues, pull requests, push, and a weekly schedule. | Code | Current | — |
 | `.github/scripts/work-metadata.js` | Validates issue and pull-request metadata; maintains the type and priority label taxonomy; applies and removes `invalid`. | Code | Current | — |
 | `.github/ISSUE_TEMPLATE/work-item.md` | Work item template carrying the metadata block the validator requires. | Knowledge | Current | — |
@@ -95,7 +105,8 @@ Added by the work-metadata line and **absent from every previous audit**.
 | `spell/format/0.3-draft/models.py` | Pydantic models defining the 0.3 candidate contract and generating its schema. | Code | Work | Exercised by `cast/tests/test_spell_format_03.py` |
 | `spell/format/0.3-draft/examples/find-familiar.SPELL.md` | Candidate-format example declaration. | Knowledge | Work | — |
 | `spell/spellcraft/SKILL.md` | Skill for authoring, inspecting, repairing, and migrating Spell declarations. | Code | Current | — |
-| `spell/migration/LEDGER.md` | Five-domain reassembly reasoning, ownership findings, unresolved crossings. | Knowledge | Work | Proposes ownership moves not yet taken |
+| `spell/alignment.py` | Effect invariants, semantic trials carrying evaluator provenance, and fail-closed promotion for autonomous Spellcraft. | Code | Current | Added by #51 (issue #29). Evidence never confers authority: a candidate cannot supply the trial that promotes itself |
+| `spell/migration/LEDGER.md` | Five-domain reassembly reasoning, ownership findings, unresolved crossings. | Knowledge | Work | Proposes ownership moves not yet taken; its open 0.3-versus-0.4 question is owned by #53 |
 | `spell/migration/agent-skills.md` | Relates Agent Skills to Spell and Technique boundaries. | Knowledge | Work | — |
 | `spell/migration/draw-the-owl.md` | Relates Draw the Owl to Familiar and Technique work. | Knowledge | Work | — |
 | `spell/migration/mcp.md` | Relates MCP capability surfaces to Cast and Environment. | Knowledge | Work | — |
@@ -109,12 +120,14 @@ The active `find-familiar` example uses the 0.3 candidate shape through the adap
 | `familiar/README.md` | Ownership and persistence/security boundary. | Knowledge | Current | — |
 | `familiar/familiar.schema.json` | Source-of-truth structural contract for a Familiar. | Code | Current | — |
 | `familiar/validation.py` | Familiar-owned validator; removes the former reverse dependency on Cast. | Code | Current | — |
-| `familiar/store.py` | Exact Familiar persistence; in-memory by default, restart-safe with a local root. | Code | Current | Retains only the latest revision — #15 |
+| `familiar/store.py` | Exact Familiar persistence; in-memory by default, restart-safe with a local root. Retains immutable revisions addressable by `FamiliarRef`; the latest pointer is a convenience index only. | Code | Current | #15 closed by #40 |
 | `familiar/find-familiar/SKILL.md` | Practitioner skill for creating, inspecting, repairing, or validating caster-owned Familiars. | Code | Current | — |
 | `familiar/owl/owl.json` | Canonical system Familiar used to advise protocol and Familiar quality. | Knowledge | Current | — |
 | `familiar/guidance/SKILL.md` | Applies a Familiar or View as bounded guidance without granting authority or establishing Presence. | Code | Current | Added by PR #9 |
 | `familiar/view/README.md` | Familiar View 0.1: a bounded representation of one exact accepted revision. | Knowledge | Current | Added by PR #9 |
-| `familiar/view/familiar-view.schema.json` | Machine contract for a Familiar View. | Code | Current | Omission accounting incomplete — #14 |
+| `familiar/view/__init__.py` | Public View exports. | Code | Current | — |
+| `familiar/view/familiar-view.schema.json` | Machine contract for a Familiar View. Accounts for every source guidance category exactly once. | Code | Current | #14 closed by #42 |
+| `familiar/view/builder.py` | Builds a View from a store-resolved `FamiliarRef` and validates omission accounting. | Code | Current | Added by #42 |
 | `familiar/report/README.md` | Familiar Report: a candidate account *about* a Familiar, deliberately not frozen as a schema. | Knowledge | Work | Added by PR #9 |
 
 A Familiar is guidance identity, not a persona or an authority token. A View represents an accepted revision; a Report is an account about one; neither establishes Presence.
@@ -130,6 +143,7 @@ A Familiar is guidance identity, not a persona or an authority token. A View rep
 | `registry/scroll.schema.json` | Contract for non-executable exact Spell carriers. | Code | Current | — |
 | `registry/spellbook.schema.json` | Contract for Spellbook registration metadata. | Code | Current | — |
 | `registry/library.schema.json` | Contract for Libraries and their directed relations. | Code | Current | — |
+| `registry/attestation.py` | Optional attestation envelope above content digests, one local/offline signing path, and consumer-local trust policy. | Code | Current | Added by #50 (issue #31). A digest proves the bytes; only an attestation names who vouched for them, and trust remains the consumer's |
 
 Content addressing gives integrity and exact identity. It does not establish who authored, approved, or published an artifact — #31 owns attestation above digests.
 
@@ -140,8 +154,14 @@ Content addressing gives integrity and exact identity. It does not establish who
 | `environment/README.md` | Defines Environment as concrete mechanisms and observations rather than declaration truth. | Knowledge | Current | — |
 | `environment/presence/__init__.py` | Public Presence exports. | Code | Current | — |
 | `environment/presence/store.py` | Host-owned session Presence store with identity preservation checks. | Code | Current | — |
-| `environment/MAGIC.md` | Environment-owned 0.6 Magic runtime semantics: conservation, dispositions, participation, maintenance. | Knowledge | Work | Added by PR #8; **absent from every previous audit** |
-| `environment/magic.py` | Conserved Mana runtime with a digest-chained event ledger and restart replay. | Code | Work | Replay guards incomplete — #12; state shape — #26; Cast integration — #16 |
+| `environment/MAGIC.md` | Environment-owned 0.6 Magic runtime semantics: conservation, dispositions, participation, maintenance. | Knowledge | Work | Added by PR #8; **absent from every previous audit**. Its lifecycle standing relative to Current 0.2 is unrecorded — #53 |
+| `environment/magic.py` | Conserved Mana runtime with a digest-chained event ledger and restart replay. | Code | Work | Replay guards closed by #41. State shape — #26; Cast integration — #16 |
+| `environment/MANA_TENSOR.md` | Candidate boundary for Mana as typed sparse relations over situated Spell participation. | Knowledge | Work | Added by #33 (issue #26). Explicitly a candidate: it does not replace `MAGIC.md` and is not integrated into `MagicRuntime` |
+| `environment/mana_tensor.py` | Immutable sparse `ManaCoordinate` / `ManaTerm` / `ManaTensor`, projection, contraction, and conservation-preserving transitions. | Code | Work | State shape remains open design work — #26 |
+| `environment/scope.py` | Environment-owned effect-path boundaries for Scope enforcement, plus one reference filtered object capability. | Code | Current | Added by #44 (issue #10). The Kernel specifies the contract; the Environment owns the mechanism |
+| `environment/authority.py` | Attenuated credentials for Authority enforcement, plus one reference host credential. | Code | Current | Added by #45 (issue #11) |
+| `environment/consequence.py` | Consequence classification for irreversible external effects, and compensation as a separate attributable record. | Code | Current | Added by #48 (issue #27) |
+| `environment/blast_radius.py` | Direct, declared, observed and unknown reactive reach; reactive dependency graph and downstream observation. | Code | Current | Added by #52 (issue #28). A narrow handle is not evidence of a small radius |
 
 Broader capability receipts still live in `cast/practitioner/situation.py`. `spell/migration/LEDGER.md` proposes eventual Environment ownership; that crossing has not been taken.
 
@@ -151,14 +171,17 @@ Broader capability receipts still live in `cast/practitioner/situation.py`. `spe
 |---|---|---|---|---|
 | `cast/README.md` | Ownership boundary for situated casting. | Knowledge | Current | — |
 | `cast/kernel/KERNEL.md` | Compatibility Kernel semantics. | Knowledge | Current | — |
-| `cast/kernel/spell_kernel.py` | Invariant cast implementation, compatibility validators, runtime hooks. | Code | Current | Scope enforced only at preflight — #10; Authority likewise — #11 |
-| `cast/kernel/cast.schema.json` | Compatibility CAST record schema. | Code | Current | — |
+| `cast/kernel/spell_kernel.py` | Invariant cast implementation, compatibility validators, runtime hooks. Scope and Authority now bind the effect path through Environment-owned boundaries; consequence, compensation, and reactive reach are read from the Environment rather than from the Technique's account of itself. | Code | Current | #10, #11, #27, #28 closed. Titled 0.2 but carrying every generation's work — see § *Lifecycle generations* and #53 |
+| `cast/kernel/cast.schema.json` | Compatibility CAST record schema. | Code | Current | 0.7 sealing contract owned by #36 |
+| `cast/kernel/resources.py` | Canonical cross-domain resource resolution from the repository root. | Code | Current | Added by #39 (issue #17), replacing the composition symlinks |
 | `cast/kernel/__init__.py` | Kernel public exports. | Code | Current | — |
 | `cast/practitioner/cast_session.py` | Resumable practitioner preparation state; acceptance gates closure. | Code | Current | — |
-| `cast/practitioner/situation.py` | Situation, capability receipt, CastPlan, requirement-to-capability compilation. | Code | Current | Matches on operation name only — #13; ownership split proposed in `spell/migration/LEDGER.md` |
+| `cast/practitioner/situation.py` | Situation, capability receipt, typed Requirement demand, capacity relations, attenuation, CastPlan, requirement-to-capability compilation. | Code | Current | #13 closed by #43. Ownership split still proposed in `spell/migration/LEDGER.md` |
+| `cast/practitioner/obligations.py` | Typed Runtime Obligations, discharge mechanisms, obligation plan, and four-status evaluation. | Code | Current | Added by #47 (issue #32). Obligations do not compile to capability demands; the firewall is structural |
+| `cast/practitioner/concurrency.py` | Observed pre-state identity, conflict detection, optimistic commit validation, and reservations with deterministic acquisition order. | Code | Current | Added by #49 (issue #30). Retry is a new attempt, never a resumed closure |
 | `cast/practitioner/__init__.py` | Practitioner public exports. | Code | Current | — |
 
-The `cast/familiar`, `cast/format`, and `cast/owl` symlinks are transitional composition aids after the domain move, not duplicate authorities. Runtime resolution currently depends on them materializing as real symlinks, which a checkout with `core.symlinks=false` does not do — #17.
+The three transitional composition symlinks under cast — pointing at the Familiar domain, the Spell format, and Owl — were aids after the domain move, never duplicate authorities. They were removed under #17: runtime code resolves another domain's artifacts through `cast/kernel/resources.py` by canonical repository path, so the supported test command no longer depends on whether the checkout can materialize symlinks. Their paths are named without backticks here deliberately, so the completeness check does not read a historical note as a live inventory claim.
 
 ## Cast domain — candidate and draft runtime
 
@@ -221,7 +244,7 @@ All files under `cast/tests/` are **Current Code** because CI depends on them. T
 | `cast/tests/fixtures/familiar-json.json` | Second dialect fixture, paired with the above. |
 | `cast/tests/test_kernel.py` | Compatibility Kernel mechanics: closure, authority refusal, cost, duration, scope bound. |
 | `cast/tests/test_candidate_requirements.py` | Requirement-centered candidate behavior through the adapter. |
-| `cast/tests/test_casting_04.py` | 0.4 binding and enforcement mechanics. **Carries the Scope containment defect specimen as an `expectedFailure`** — #10. |
+| `cast/tests/test_casting_04.py` | 0.4 binding and enforcement mechanics. Formerly carried the Scope containment defect as an `expectedFailure`; #44 closed it and the specimen now passes. |
 | `cast/tests/test_casting_order_04.py` | Invariant casting order; material is consumed only after closure. |
 | `cast/tests/test_workspace_tidy_integration.py` | Concrete Skill integration against a real filesystem effect, compared to the golden CAST. |
 | `cast/tests/test_workspace_tidy_casting_04.py` | Workspace-tidy through the candidate and binding path. |
@@ -235,8 +258,21 @@ All files under `cast/tests/` are **Current Code** because CI depends on them. T
 | `cast/tests/test_spell_format_03.py` | 0.3 candidate Pydantic contract and generated schema agreement. |
 | `cast/tests/test_magic_runtime_06.py` | Conserved Mana runtime: conservation, participation, settlement, maintenance, restart replay. **Absent from every previous audit.** |
 | `cast/tests/test_repository_audit_18.py` | This file's completeness against the tracked tree. |
+| `cast/tests/test_resource_resolution_17.py` | Canonical cross-domain resolution without composition symlinks, including a symlink-free checkout. |
+| `cast/tests/test_familiar_revisions_15.py` | Immutable Familiar revisions addressable by `FamiliarRef`; a newer write does not destroy an older revision. |
+| `cast/tests/test_familiar_view_14.py` | Every source guidance category accounted for exactly once; a silently dropped category fails. |
+| `cast/tests/test_maintenance_replay_12.py` | Maintenance replay guarded on source identity and accepted receipt. |
+| `cast/tests/test_capability_binding_13.py` | Typed demand binding to exact capability receipts; ambiguous and unsatisfiable demands fail closed. |
+| `cast/tests/test_runtime_obligations_32.py` | Requirements compiling to typed obligations and four-status evaluation; a raising checker is `unresolved`, never satisfied. |
+| `cast/tests/test_concurrent_casts_30.py` | Observed pre-state identity, conflict refusal naming both versions, and deterministic acquisition order. |
+| `cast/tests/test_attestation_31.py` | Attestation envelope, signer provenance, and consumer-local trust policy above content digests. |
+| `cast/tests/test_semantic_alignment_29.py` | Effect invariants and trials with evaluator provenance; a candidate cannot supply the trial that promotes itself. |
+| `cast/tests/test_authority_enforcement_11.py` | Authority bound at the effect path through an attenuated credential, not only resolved at preflight. |
+| `cast/tests/test_external_effects_27.py` | Irreversible external effects, compensation as a separate record, and the refusal of an executor certifying its own rollback. |
+| `cast/tests/test_blast_radius_28.py` | Direct, declared, observed and unknown reactive reach beyond the attenuated handle. |
+| `cast/tests/test_mana_tensor_06.py` | Sparse Mana tensor candidate: conservation, `Cost` contraction, and equal cost with unequal composition. |
 
-**One test is a known-failing specimen by design.** `test_binding_scope_claim_alone_cannot_prove_environment_containment` is marked `@unittest.expectedFailure` and documents a current defect as running code rather than prose. The suite reports `OK (expected failures=1)`. A green suite is therefore **not** a claim that Scope containment holds — #10.
+**The suite no longer reports an expected failure.** `test_binding_scope_claim_alone_cannot_prove_environment_containment` was a `@unittest.expectedFailure` documenting the Scope containment defect as running code. #44 closed the defect and the specimen now passes as `test_environment_containment_stops_an_out_of_scope_mutation`. The marker is gone because the defect is closed, not because the test was deleted.
 
 ## Normative invariants versus ticket-owned residuals
 
@@ -252,26 +288,32 @@ These are different kinds of statement and the distinction is load-bearing.
 - omission is not absence.
 - a digest is integrity, not provenance.
 
-**Ticket-owned residuals** — places where the implementation does not yet meet an invariant above. Each is a live GitHub issue and none is restated here:
+**Closed since the previous audit.** Each was a residual against an invariant above and is now met by merged, tested code. Listed as history, not as open work:
+
+| Issue | Closed by | Met |
+|---|---|---|
+| #10 | #44 | Scope enforced at the effect path rather than preflight |
+| #11 | #45 | Authority enforced through an attenuated execution capability |
+| #12 | #41 | Maintenance replay guarded by source identity and accepted receipt |
+| #13 | #43 | Requirements bound to exact capability receipts by typed demand |
+| #14 | #42 | Familiar View omission accounting |
+| #15 | #40 | Immutable Familiar revisions addressable by `FamiliarRef` |
+| #17 | #39 | Runtime independence from transitional Git symlinks |
+| #27 | #48 | Irreversible external effects and compensating Casts |
+| #28 | #52 | Ambient reactive blast radius beyond direct capabilities |
+| #29 | #51 | Semantic alignment evidence for autonomous Spellcraft |
+| #30 | #49 | Concurrent Cast isolation and conflict semantics |
+| #31 | #50 | Portable attestation and signer provenance above digests |
+| #32 | #47 | Requirements compiled into typed runtime obligations |
+
+**Ticket-owned residuals** — places where the implementation does not yet meet an invariant above, or where a required decision has not been recorded. Each is a live GitHub issue and none is restated here:
 
 | Issue | Owns |
 |---|---|
-| #10 | Scope enforced at the effect path rather than preflight |
-| #11 | Authority enforced through an attenuated execution capability |
-| #12 | Maintenance replay guarded by source identity and accepted receipt |
-| #13 | Requirements bound to exact capability receipts by typed demand |
-| #14 | Familiar View omission accounting |
-| #15 | Immutable Familiar revisions addressable by `FamiliarRef` |
 | #16 | Conserved Mana integrated with the invariant Cast lifecycle |
-| #17 | Runtime independence from transitional Git symlinks |
 | #18 | This audit |
-| #26 | Mana as tensor logic over situated relations |
-| #27 | Irreversible external effects and compensating Casts |
-| #28 | Ambient reactive blast radius beyond direct capabilities |
-| #29 | Semantic alignment evidence for autonomous Spellcraft |
-| #30 | Concurrent Cast isolation and conflict semantics |
-| #31 | Portable attestation and signer provenance above digests |
-| #32 | Requirements compiled into typed runtime obligations |
+| #26 | Mana as typed sparse relations versus tensor product — open design work, not a gate on #16 |
+| #53 | Recorded lifecycle standing for the 0.3, 0.4, 0.5, and 0.6 generations. **Blocks #38** |
 | #34 · #35 · #36 · #37 · #38 | Milestone 0.7 proof-carrying crossing: closed-plan contract, observation seam, CAST sealing, adversarial conformance suite, and integration |
 
 **Deferred by explicit decision, not by oversight:** remote Library transport and subscription, semantic-version range resolution, Presence lifetimes beyond a session, a Dismiss Spell, Level 0 semantics, portable Mana fields in `SPELL.md`, a universal sandbox implementation, a mandatory theorem prover, external PKI, and distributed consensus.
@@ -280,11 +322,14 @@ These are different kinds of statement and the distinction is load-bearing.
 
 `README.md` and this audit must agree, and this section is what they agree on.
 
-**Proven, by the CI run named at the top:** one local practitioner can cast Find Familiar, explicitly accept the resulting Familiar, persist it under a private host path, and resolve the exact artifact after restart. Registration, Presence, and the conserved Mana runtime each pass their own tests. Digest-chained ledger replay reconstructs conserved state across restart.
+**Proven, by the CI run named at the top:** one local practitioner can cast Find Familiar, explicitly accept the resulting Familiar, persist it under a private host path, and resolve the exact artifact after restart. Registration, Presence, and the conserved Mana runtime each pass their own tests, and digest-chained ledger replay reconstructs conserved state across restart.
+
+Since the previous audit, the effect path itself became enforceable rather than merely resolved. Scope and Authority now bind through Environment-owned boundaries and refuse at closure when no boundary can be supplied (#10, #11). A violation the Technique caught and swallowed still fails the Cast, because the Kernel reads the boundary rather than the Technique's account of itself. Consequence is classified independently of executor status, and an executor cannot certify its own rollback (#27). Reactive reach beyond the attenuated handle is observed separately, so a Cast cannot claim a small radius because its handle was narrow (#28). Requirements bind to exact capability receipts by typed demand (#13) and compile to typed obligations that do not collapse into capability checks (#32). Concurrent Casts detect conflict on observed pre-state identity (#30). Familiar revisions are immutable and addressable (#15), View omission is accounted for exactly once (#14), and maintenance replay is guarded on source identity and accepted receipt (#12).
 
 **Not proven, and not claimed:**
 
-- that Scope or Authority constrain a dishonest Technique's effect path — #10, #11, and the `expectedFailure` specimen says so in running code;
 - that the Mana runtime participates in the Cast lifecycle at all — #16;
-- that the documented Windows path works — CI is Ubuntu only at this commit, #17;
-- that any 0.3, 0.4, or 0.6 draft is Current.
+- that the Mana state shape is settled — #26, now open design work rather than a gate;
+- that the 0.7 crossing exists in any form — its plan contract (#34), observation seam (#35), sealing contract (#36), conformance suite (#37), and integration (#38) are all open;
+- that any of 0.3, 0.4, 0.5, or 0.6 is Current, Archive, or superseded by any other — **no lifecycle crossing has ever been recorded**, and #53 owns that;
+- that observation is exhaustive. Unknown reactive reach is representable and is recorded as unknown; it is not treated as absent.

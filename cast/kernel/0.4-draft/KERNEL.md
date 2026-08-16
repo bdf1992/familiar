@@ -60,6 +60,70 @@ A schema-valid binding can lie. Therefore:
 
 This forbids treating `mechanisms.scope: [max_items]` as evidence that arbitrary code cannot touch other objects.
 
+### Scope resolution is not Scope enforcement
+
+Three things are distinct and only the first was ever implemented:
+
+```text
+scope resolution     which targets or items are admissible
+scope enforcement    the concrete capability the effect path runs through
+scope observation    the evidence CAST retains about both
+```
+
+A resolved Scope binds the effect path only through a concrete boundary the Environment owns. The Kernel therefore takes a **scope enforcer** and calls it after resolution, replacing `context["target"]` with the attenuated handle the boundary returns. A Technique never receives a broader mutation capability and is never trusted to honour a narrower preflight result.
+
+The Kernel does not construct a boundary of its own. A runtime that supplies its own containment is attesting to its own honesty, which is the same defect one layer down.
+
+**Closure refuses when a Scope Requirement exists and no enforceable effect path can be supplied.** `runtime-scope-enforcer-missing` is a closure gap in exactly the way a missing checker or observer is.
+
+A conforming boundary must make the forbidden consequence **impossible or observable, and preferably both**. The reference mechanism, a filtered object capability, raises on a reach outside the admissible set *and* records the attempt, so a Technique that catches and swallows the exception still leaves attributable evidence. After execution the Kernel reads the boundary rather than the Technique's account of itself; a recorded violation fails the Cast even when execution reported success.
+
+An attenuated filesystem view, a scoped API token, or a sandbox namespace conform equally by satisfying the same contract. The protocol specifies the contract, not one implementation.
+
+CAST retains the resolved Scope Requirement, the enforcing mechanism that participated, and any violations it recorded.
+
+### Ambient reactive reach
+
+Attenuation bounds what the Technique invokes **directly**. The Environment may still contain machinery outside that handle hierarchy: watchers, CI, webhooks, deployments, subscriptions. A scoped mutation can trigger all of them without the Technique invoking any.
+
+Four reaches, and the fourth is the one usually missing:
+
+```text
+direct     consequences the injected handle can invoke
+declared   Environment mechanisms known to react to those mutations
+observed   downstream effects independently attributable after execution
+unknown    consequence space this Environment cannot prove absent
+```
+
+**A Cast must not claim a smaller blast radius because the Technique held a narrow handle.** An Environment that cannot enumerate its own reactive machinery reports `unknown`, not an empty set. Silently treating unenumerated reach as absent is how a runtime comes to report a blast radius of one file for a commit that triggered a deployment.
+
+Containment therefore requires *both* that nothing observed escaped the direct reach *and* that nothing is unknown. Observing no escape is not containment; it is not having seen anything.
+
+Closure refuses when a declared blast-radius condition requires downstream containment and no observer can characterize reach. Where containment is not declared, reach is still observed and recorded — it simply does not gate the outcome.
+
+This does not weaken direct Scope enforcement. The direct path must still be attenuated, and this layer observes rather than contains.
+
+### Consequence classification
+
+The casting law can observe a local mutation. It cannot assume the world can be put back. A successful HTTP call, a sent message, or a charged card is not undone by writing pre-state bytes.
+
+Without an explicit model, a failed postcondition collapses three materially different outcomes into one. They are distinguished:
+
+```text
+none           no effectful consequence observed
+reversed       exact mutation, restoration independently verified
+residual       persistent mutation, no compensation path declared
+compensatable  persistent mutation with a declared compensation path
+```
+
+`residual` is not a worse `reversed`. It is a different fact, and a runtime that cannot say which occurred cannot be trusted about either.
+
+**A provider may not certify its own rollback.** An inverse-looking API is not evidence that state was restored, so a `reversed` finding requires an observer distinct from the effect path — the same independence rule settlement already uses.
+
+**Compensation is a new attributable consequence-bearing operation, not deletion of history.** It produces its own record linked to the original Cast. The original CAST keeps its consequence and its residual whether compensation succeeds, fails, or is never attempted. Compensation failure stays visible and rewrites nothing.
+
+**Closure refuses when compensation is required and no path exists**, rather than discovering afterwards that the world kept something with no way back. Compensation is opt-in: an ordinary Cast declares nothing and closes normally. Not every Effect must be reversible.
+
 ## Closure support matching
 
 Before effectful execution, the Kernel derives the mechanisms demanded by the selected Effect and compares them against the current host/environment and Technique Binding.
@@ -86,6 +150,26 @@ Authority requires both:
 Missing either -> refuse closure.
 
 This forbids checking authorization with one identity and then executing with broader credentials.
+
+The same three-way split Scope needs applies here:
+
+```text
+authority resolution     whether the caster may attempt the declared effect
+authority attenuation    the credential granted to the execution path
+authority observation    the CAST evidence identifying which boundary participated
+```
+
+The Kernel takes an **authority enforcer** and calls it once every declared Authority resolves, injecting the attenuated credential as `context["authority"]`. A Technique that must act under authority acts through that credential. It is not handed the host's ambient token because a resolver returned true.
+
+**Closure refuses when an Authority Requirement exists and no attenuated execution capability can be supplied.** `runtime-authority-enforcer-missing` is a closure gap.
+
+The reference mechanism narrows a host credential to exactly the permissions that closed the Cast, and optionally to a resource set. A request outside either raises and is recorded, so an attempt the Technique caught is still attributable. After execution the Kernel reads the boundary rather than the Technique's account of itself.
+
+The attenuated credential holds the host credential privately. `act()` is the only way through, so a Technique cannot widen back to what the host holds.
+
+A scoped API token, an assumed role with a narrowed policy, or a per-cast service identity conform equally. The protocol specifies the contract, not one implementation.
+
+**What this does not claim.** In-process attenuation bounds what a Technique reaches *through the injected credential*. A Technique that ignores it and opens its own client against ambient host credentials is outside what the reference implementation can prevent, and remains the case for the hard environmental isolation named above. What the runtime now guarantees is that it never *hands over* more authority than it resolved.
 
 ### Scope
 
