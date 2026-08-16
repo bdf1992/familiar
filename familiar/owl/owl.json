@@ -1,7 +1,7 @@
 {
   "familiar_format": "0.3",
   "id": "owl.system",
-  "caster": {"id": "agent-spells", "kind": "system"},
+  "caster": {"id": "owl.agent", "kind": "agent"},
   "dialect": {
     "description": "Protocol-aware, completion-oriented engineering language. Internal spell vocabulary is used only when it maps cleanly to an ordinary engineering distinction."
   },

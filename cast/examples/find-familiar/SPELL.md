@@ -2,20 +2,20 @@
 spell_format: "0.3-candidate"
 name: find-familiar
 version: "0.1.0"
-description: Establish a validated Familiar artifact explicitly authored or accepted by the caster.
+description: Establish a validated Familiar artifact explicitly accepted for a resolved subject.
 telemetry: []
 effects:
   - id: establish
-    description: Persist one schema-valid caster-owned Familiar accepted by the target caster.
+    description: Persist one schema-valid subject-owned Familiar accepted by that subject.
     telemetry: []
     requirements:
       before:
-        - id: caster-resolved
-          description: The practitioner/caster whose Familiar is being found is explicitly resolved.
+        - id: subject-resolved
+          description: The subject whose Familiar is being found is explicitly resolved.
         - id: familiar-store-supported
           description: The environment can persist and resolve an exact Familiar artifact.
-        - id: caster-accepted
-          description: The caster explicitly accepted the complete Familiar candidate selected for persistence.
+        - id: subject-accepted
+          description: The subject explicitly accepted the complete Familiar candidate selected for persistence.
       during: []
       after:
         - id: familiar-valid
@@ -26,6 +26,6 @@ effects:
 
 # Find Familiar
 
-A conforming practitioner Technique may use several Shapes, Parts, Features, and Marks before closure. Those drafts are preparation, not the Effect. The Effect occurs only after the caster accepts a complete candidate, closure succeeds, and the exact Familiar artifact is persisted.
+A conforming Technique may use several Shapes, Parts, Features, and Marks before closure. Those drafts are preparation, not the Effect. The Effect occurs only after the subject accepts a complete candidate, closure succeeds, and the exact Familiar artifact is persisted for that subject.
 
-The system Owl may advise the drawing when present. Owl is not the resulting caster Familiar and cannot grant authority or waive Requirements.
+The Owl Agent may conduct the cast using `owl.system` as its Familiar. Owl is not the resulting subject Familiar and cannot accept the Whole for the subject, grant authority, or waive Requirements.

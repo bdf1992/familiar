@@ -13,6 +13,7 @@ from validation.casting_04 import cast_with_binding, validate_technique_binding
 
 ROOT = Path(__file__).resolve().parents[1]
 EXAMPLE = ROOT / "examples" / "find-familiar"
+OWL_PATH = ROOT.parent / "familiar" / "owl" / "owl.json"
 
 
 def candidate():
@@ -29,20 +30,22 @@ def candidate():
 
 
 class FindFamiliarFirstCast05Tests(unittest.TestCase):
-    def test_accepted_candidate_persists_and_resolves_through_invariant_cast(self):
+    def test_owl_casts_for_subject_and_subject_familiar_persists(self):
         spell = load_candidate_spell(EXAMPLE / "SPELL.md")
         binding = json.loads((EXAMPLE / "binding.json").read_text(encoding="utf-8"))
         validate_technique_binding(binding)
+        owl = json.loads(OWL_PATH.read_text(encoding="utf-8"))
         accepted = candidate()
+        validate_familiar(owl)
         validate_familiar(accepted)
 
         with tempfile.TemporaryDirectory() as tmp:
             store = FamiliarStore(Path(tmp) / "familiars")
             result_ref: FamiliarRef | None = None
 
-            def caster_resolved(phase, context):
-                caster = context.get("caster") or {}
-                return caster.get("id") == "bdo" and caster.get("kind") == "human"
+            def subject_resolved(phase, context):
+                subject = (context.get("target") or {}).get("subject") or {}
+                return subject.get("id") == "bdo" and subject.get("kind") == "human"
 
             def familiar_store_supported(phase, context):
                 return store.root is not None
@@ -54,8 +57,8 @@ class FindFamiliarFirstCast05Tests(unittest.TestCase):
                     return False
                 return True
 
-            def caster_accepted(phase, context):
-                return context.get("target", {}).get("accepted") is True
+            def subject_accepted(phase, context):
+                return (context.get("target") or {}).get("accepted") is True
 
             def familiar_persisted(phase, context):
                 if result_ref is None:
@@ -64,7 +67,8 @@ class FindFamiliarFirstCast05Tests(unittest.TestCase):
 
             def execute(spell_value, effect_id, context, execution_max_ms):
                 nonlocal result_ref
-                result_ref = store.put(accepted, caster_id=context["caster"]["id"])
+                subject_id = context["target"]["subject"]["id"]
+                result_ref = store.put(accepted, caster_id=subject_id)
                 return {
                     "familiar_ref": {
                         "id": result_ref.id,
@@ -76,10 +80,10 @@ class FindFamiliarFirstCast05Tests(unittest.TestCase):
 
             kernel = SpellKernel(
                 requirements={
-                    "caster-resolved": caster_resolved,
+                    "subject-resolved": subject_resolved,
                     "familiar-store-supported": familiar_store_supported,
                     "familiar-valid": familiar_valid,
-                    "caster-accepted": caster_accepted,
+                    "subject-accepted": subject_accepted,
                     "familiar-persisted": familiar_persisted,
                 },
                 executor=execute,
@@ -90,20 +94,25 @@ class FindFamiliarFirstCast05Tests(unittest.TestCase):
                 spell,
                 binding,
                 effect_id="establish",
-                caster={"id": "bdo", "kind": "human"},
-                target={"caster": "bdo", "accepted": True},
+                caster={"id": "owl.agent", "kind": "agent"},
+                familiar=owl,
+                target={"subject": {"id": "bdo", "kind": "human"}, "accepted": True},
                 cast_id="cast-find-bdo-first",
             )
 
+            self.assertEqual("owl.agent", record["caster"]["id"])
+            self.assertEqual("owl.system", record["familiar"]["id"])
             self.assertEqual("closed", record["closure"]["decision"])
             self.assertEqual("resolved", record["outcome"])
             self.assertIsNotNone(result_ref)
             assert result_ref is not None
+            self.assertEqual("bdo", result_ref.caster_id)
             self.assertEqual(accepted, FamiliarStore(Path(tmp) / "familiars").resolve(result_ref))
 
-    def test_unaccepted_candidate_refuses_before_persistence(self):
+    def test_unaccepted_subject_refuses_before_persistence(self):
         spell = load_candidate_spell(EXAMPLE / "SPELL.md")
         binding = json.loads((EXAMPLE / "binding.json").read_text(encoding="utf-8"))
+        owl = json.loads(OWL_PATH.read_text(encoding="utf-8"))
         executions: list[str] = []
 
         def execute(spell_value, effect_id, context, execution_max_ms):
@@ -112,10 +121,10 @@ class FindFamiliarFirstCast05Tests(unittest.TestCase):
 
         kernel = SpellKernel(
             requirements={
-                "caster-resolved": lambda phase, context: True,
+                "subject-resolved": lambda phase, context: True,
                 "familiar-store-supported": lambda phase, context: True,
                 "familiar-valid": lambda phase, context: True,
-                "caster-accepted": lambda phase, context: context.get("target", {}).get("accepted") is True,
+                "subject-accepted": lambda phase, context: (context.get("target") or {}).get("accepted") is True,
                 "familiar-persisted": lambda phase, context: False,
             },
             executor=execute,
@@ -126,13 +135,14 @@ class FindFamiliarFirstCast05Tests(unittest.TestCase):
             spell,
             binding,
             effect_id="establish",
-            caster={"id": "bdo", "kind": "human"},
-            target={"caster": "bdo", "accepted": False},
+            caster={"id": "owl.agent", "kind": "agent"},
+            familiar=owl,
+            target={"subject": {"id": "bdo", "kind": "human"}, "accepted": False},
         )
 
         self.assertEqual("refused", record["closure"]["decision"])
         self.assertEqual([], executions)
-        self.assertTrue(any("caster-accepted" in reason for reason in record["closure"]["reasons"]))
+        self.assertTrue(any("subject-accepted" in reason for reason in record["closure"]["reasons"]))
 
 
 if __name__ == "__main__":
