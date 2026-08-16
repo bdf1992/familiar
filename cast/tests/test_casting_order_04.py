@@ -4,6 +4,7 @@ import unittest
 from copy import deepcopy
 from pathlib import Path
 
+from environment.scope import mapping_scope_enforcer
 from kernel.spell_kernel import SpellKernel
 from validation.candidate_adapter import load_candidate_spell
 from validation.casting_04 import cast_with_binding
@@ -70,6 +71,7 @@ class CastingOrder04Tests(unittest.TestCase):
             },
             authority_resolver=lambda caster, permission, context: permission == "workspace.write",
             scope_resolver=lambda target, context: list(target["items"]),
+            scope_enforcer=mapping_scope_enforcer(("id", "items", "done", "valid")),
             executor=execute,
         )
 

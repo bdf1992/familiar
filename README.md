@@ -150,7 +150,7 @@ The historical seals remain evidence of prior crossings; they are not silently r
 
 Current `main` retains successful CI coverage of the complete `cast/tests` suite, including the 0.6 Magic runtime. Passing tests are mechanics evidence, not universal Spell standing.
 
-The Scope containment defect remains an executable expected-failure specimen until #10 closes; it is not considered resolved merely because the rest of CI is green.
+The Scope containment defect is closed by #10. The expected-failure specimen is now a passing adversarial test: a resolved Scope binds the effect path through a concrete Environment boundary, closure refuses when no such boundary can be supplied, and a violation the Technique swallowed is still recorded by the mechanism and still fails the Cast. Direct containment is necessary and not sufficient — ambient reactive consequences remain open under #28.
 
 ## Test
 

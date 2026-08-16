@@ -2,11 +2,13 @@ import json
 import subprocess
 import sys
 import unittest
+from collections.abc import Mapping
 from copy import deepcopy
 from pathlib import Path
 
 import jsonschema
 
+from environment.scope import mapping_scope_enforcer
 from kernel.spell_kernel import SpellKernel
 from validation.candidate_adapter import cast_candidate, load_candidate_spell
 
@@ -17,7 +19,8 @@ CAST_DRAFT_SCHEMA = ROOT / "kernel" / "0.3-draft" / "cast.schema.json"
 
 def target_observable(phase, context):
     target = context.get("target")
-    return isinstance(target, dict) and isinstance(target.get("items"), list)
+    # Mapping, not dict: under Scope enforcement this sees the attenuated handle.
+    return isinstance(target, Mapping) and isinstance(target.get("items"), list)
 
 
 def effect_confirmed(phase, context):
@@ -33,6 +36,7 @@ def build_kernel(executor, *, authorized=True):
         },
         authority_resolver=lambda caster, permission, context: authorized and permission == "workspace.write",
         scope_resolver=lambda target, context: target["items"],
+        scope_enforcer=mapping_scope_enforcer(("id", "items", "done", "valid")),
         executor=executor,
     )
 

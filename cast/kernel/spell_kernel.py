@@ -88,6 +88,7 @@ class SpellKernel:
         executor=None,
         guide=None,
         scope_resolver=None,
+        scope_enforcer=None,
     ):
         self.observers = observers or {}
         self.requirements = requirements or {}
@@ -96,6 +97,10 @@ class SpellKernel:
         self.executor = executor
         self.guide = guide
         self.scope_resolver = scope_resolver
+        # Environment-owned effect-path boundary. The Kernel calls it and never
+        # constructs one: a runtime that supplies its own containment is
+        # attesting to its own honesty.
+        self.scope_enforcer = scope_enforcer
 
     def _effect(self, spell: dict[str, Any], effect_id: str) -> dict[str, Any]:
         for effect in spell["effects"]:
@@ -179,6 +184,7 @@ class SpellKernel:
             context["cost"] = {"max": dict(cost_max), "used": cost_used, "charge": charge}
         observations = []
         reasons = []
+        scope_boundary = None
         familiar_ref = None
         guidance = None
         if familiar is not None:
@@ -211,17 +217,38 @@ class SpellKernel:
                     count = len(resolved_items)
                     context["scope"] = {"target": target, "items": resolved_items, "max_items": scope_max_items}
                     status = "satisfied" if count <= scope_max_items else "violated"
+                    value = {
+                        "target": target,
+                        "items": resolved_items,
+                        "count": count,
+                        "max_items": scope_max_items,
+                    }
+                    # Resolution is not enforcement. A resolved Scope binds the
+                    # effect path only through a concrete Environment boundary,
+                    # so closure refuses when none can be supplied rather than
+                    # trusting the Technique to honour a preflight result.
+                    if status == "satisfied":
+                        if self.scope_enforcer is None:
+                            status = "unavailable"
+                            value["detail"] = "no scope enforcer registered; effect path is unbounded"
+                        else:
+                            try:
+                                scope_boundary = self.scope_enforcer(target, resolved_items, context)
+                                handle = scope_boundary.handle()
+                            except Exception as exc:
+                                scope_boundary = None
+                                status = "unavailable"
+                                value["detail"] = f"scope enforcement failed: {type(exc).__name__}: {exc}"
+                            else:
+                                context["target"] = handle
+                                context["scope"]["handle"] = handle
+                                value["enforcement"] = scope_boundary.describe()
                     observations.append({
                         "kind": "requirement",
                         "id": "scope-max-items",
                         "phase": "before",
                         "status": status,
-                        "value": {
-                            "target": target,
-                            "items": resolved_items,
-                            "count": count,
-                            "max_items": scope_max_items,
-                        },
+                        "value": value,
                     })
                     if status != "satisfied":
                         reasons.append("requirement-unsatisfied: scope-max-items")
@@ -293,6 +320,27 @@ class SpellKernel:
             observation = self._observe(telemetry_by_id[telemetry_id], "after", context)
             observations.append(observation)
             context.setdefault("telemetry_after", {})[telemetry_id] = observation
+        # Read the boundary rather than the Technique's account of itself. An
+        # attempt the Technique caught and swallowed is still attributable, so
+        # containment is proven by the mechanism and not by an absent exception.
+        scope_failed = False
+        if scope_boundary is not None:
+            breaches = scope_boundary.violations()
+            observations.append({
+                "kind": "requirement",
+                "id": "scope-max-items",
+                "phase": "after",
+                "status": "violated" if breaches else "satisfied",
+                "value": {
+                    "enforcement": scope_boundary.describe(),
+                    "violations": [item.as_dict() for item in breaches],
+                },
+            })
+            if breaches:
+                scope_failed = True
+                record["residuals"].append(
+                    f"scope violated during execution: {len(breaches)} attempt(s) outside resolved Scope"
+                )
         post_failed = False
         for requirement in [r for r in effect["requirements"] if r["phase"] == "after"]:
             obs = self._check("requirement", requirement["id"], "after", self.requirements.get(requirement["id"]), context)
@@ -307,7 +355,7 @@ class SpellKernel:
             if obs["status"] != "satisfied":
                 limit_failed = True
                 record["residuals"].append(f"limit violated after execution: {limit_id}")
-        if execution_failed or limit_failed:
+        if execution_failed or limit_failed or scope_failed:
             record["outcome"] = "failed"
         elif post_failed:
             record["outcome"] = "partial"
