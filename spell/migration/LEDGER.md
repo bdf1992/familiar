@@ -224,7 +224,7 @@ Do not bulk-move directories yet. The lowest-risk sequence is:
 
 ## Open decisions before physical relocation
 
-- Does current `kernel/0.3-draft/` remain active Work, or has 0.4 explicitly superseded it? Record the crossing before Archive.
+- ~~Does current `kernel/0.3-draft/` remain active Work, or has 0.4 explicitly superseded it? Record the crossing before Archive.~~ **Answered under #53: it remains active Work, and 0.4 has not superseded it.** 0.4 states in its own header that it *extends* the requirement-centered 0.3 work, and `cast/kernel/0.4-draft/CASTING.md` describes itself as *derived from* the 0.3 FORMAT/KERNEL validation work. Extension and derivation are not supersession, so there is no crossing to record and nothing is archived. The standing of every generation is now recorded in `REPOSITORY_AUDIT.md` § *Lifecycle generations*. The question is struck rather than deleted because what it asked, and the fact that it went unanswered from the reassembly until #53, are both part of this ledger's record.
 - Is `AGENT_SPELLS.md` still Current root doctrine, or should its still-live invariants be extracted and its 0.2 material explicitly superseded?
 - Should domain unit tests be physically co-located or only logically owned, leaving one root test runner? Either is compatible with the five domains.
 - Should `examples/workspace-tidy/host.py` remain deliberately mixed as an integration fixture, or be split into Environment fixture + Cast binding inside the same example?
