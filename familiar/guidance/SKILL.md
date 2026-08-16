@@ -1,6 +1,6 @@
 ---
 name: familiar-guidance
-description: Apply a valid Familiar or Familiar Report as bounded guidance for representation, attention, preferences, stake, and advisory judgment without granting runtime authority or changing Spell semantics. Use when a host or agent wants to work with a practitioner through an accepted Familiar projection.
+description: Apply a valid Familiar or Familiar View as bounded guidance for representation, attention, preferences, stake, and advisory judgment without granting runtime authority or changing Spell semantics. Use when a host or agent wants to work with a practitioner through an accepted Familiar or host-facing view.
 ---
 
 # Familiar Guidance
@@ -14,13 +14,15 @@ This is an Agent Skill, not a Spell. It produces no Effect by itself and grants 
 Prefer one of:
 
 1. an exact Familiar resolved from a valid `FamiliarRef`; or
-2. a Familiar Report whose `subject` identifies an exact Familiar revision and whose projection policy is appropriate for this host or interaction.
+2. a Familiar View whose `subject` identifies an exact Familiar revision and whose perspective is appropriate for this host or interaction.
 
-When using a report, treat omitted source material as unknown. Do not infer omitted Familiar state from conversation style, history, metadata, or model confidence.
+A Familiar View is source-bounded representation. Treat omitted source material as unknown. Do not infer omitted Familiar state from conversation style, history, metadata, reports, or model confidence.
+
+A Report about a Familiar is not automatically a Familiar View and is not a direct substitute for accepted Familiar guidance. Report statements may be useful knowledge, but durable guidance changes still require the Familiar's own acceptance path.
 
 ## Apply guidance
 
-A Familiar or report may influence:
+A Familiar or Familiar View may influence:
 
 - **dialect** — wording, representation, notation, structure, and explanatory style;
 - **attention** — which distinctions, risks, invariants, or opportunities receive deliberate inspection;
@@ -37,9 +39,10 @@ Familiar guidance != runtime authority
 Preference != Requirement
 Attention != Telemetry
 Stake != permission
-Report != Familiar
+View != Familiar
+View != Report
 Omission != absence
-Claim != observation
+Report knowledge != Familiar state
 ```
 
 Do not let Familiar material:
@@ -56,21 +59,21 @@ Do not let Familiar material:
 
 If a requested action depends on one of those mechanisms, surface the need for the appropriate Environment or Cast mechanism instead of pretending guidance can supply it.
 
-## Report handling
+## Familiar View handling
 
-When consuming a Familiar Report:
+When consuming a Familiar View:
 
 1. inspect the exact subject reference (`id`, `caster_id`, `revision`, `digest`);
-2. note whether the report says the subject digest was verified;
-3. respect the named projection policy and `generated_for` audience;
-4. distinguish projected source guidance from report-only observations and claims;
-5. preserve claim status such as `asserted`, `supported`, `defeated`, or `unknown`;
+2. require that the view was produced from a Familiar successfully resolved through that reference before representing it as exact;
+3. respect the named policy and `for` perspective;
+4. apply only the guidance actually present in the View;
+5. treat fields named in `omitted` as unknown to this consumer;
 6. never reconstruct omitted private material.
 
-A report with `subject_digest_verified: false` may still be useful as attributed advisory material, but it must not be represented as an exact projection of the accepted Familiar.
+If provenance cannot establish that the subject reference was resolved when the View was produced, treat the material as attributed guidance rather than an exact Familiar View.
 
 ## Corrections
 
-When the practitioner corrects a material dialect, attention, preference, stake, or advisory-authority statement, do not silently evolve the Familiar or report. Treat the correction as candidate source material for Find Familiar or the appropriate report-generation procedure.
+When the practitioner corrects a material dialect, attention, preference, stake, or advisory-authority statement, do not silently evolve the Familiar or View. Treat the correction as candidate source material for Find Familiar.
 
 A host may adapt presentation transiently during a conversation. Durable Familiar changes require the Familiar's own acceptance and persistence path.
