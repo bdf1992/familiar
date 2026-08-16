@@ -150,6 +150,7 @@ def cast_with_binding(
     target: Any,
     familiar: dict[str, Any] | None = None,
     cast_id: str | None = None,
+    compensation_required: bool = False,
 ) -> dict[str, Any]:
     """Run the 0.3 candidate through the 0.4 binding/closure check."""
     gaps = binding_support_gaps(kernel, spell, effect_id, binding)
@@ -164,6 +165,7 @@ def cast_with_binding(
         target=target,
         familiar=familiar,
         cast_id=cast_id,
+        compensation_required=compensation_required,
     )
     record["cast_format"] = "0.4-draft"
     record["technique"] = {"id": binding["id"], "version": binding["version"], "kind": binding["kind"]}
