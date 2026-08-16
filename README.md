@@ -98,17 +98,11 @@ Repository-local development data belongs under `.agent-spells-local/`, which is
 
 ## Active non-deferred work
 
-GitHub Issues are the backlog source of truth. Do not duplicate these as free-floating TODO prose in code or specifications.
+[GitHub Issues](https://github.com/bdf1992/familiar/issues) are the backlog source of truth. Do not duplicate active residuals as free-floating TODO prose in code or specifications.
 
-- [#10 — Enforce Scope at the effect path, not only at preflight](https://github.com/bdf1992/familiar/issues/10)
-- [#11 — Enforce Authority through attenuated execution capabilities](https://github.com/bdf1992/familiar/issues/11)
-- [#12 — Prevent maintenance replay by source identity and accepted receipt](https://github.com/bdf1992/familiar/issues/12)
-- [#13 — Bind Cast Requirements to exact capability receipts](https://github.com/bdf1992/familiar/issues/13)
-- [#14 — Make Familiar View omission semantics mechanically complete](https://github.com/bdf1992/familiar/issues/14)
-- [#15 — Retain immutable Familiar revisions addressable by FamiliarRef](https://github.com/bdf1992/familiar/issues/15)
-- [#16 — Integrate conserved Mana with the invariant Cast lifecycle](https://github.com/bdf1992/familiar/issues/16)
-- [#17 — Remove runtime dependence on transitional Git symlinks](https://github.com/bdf1992/familiar/issues/17)
-- [#18 — Refresh repository audit and lifecycle after 0.6 and Familiar View](https://github.com/bdf1992/familiar/issues/18)
+Every active issue carries repository work metadata for **Type, Priority, Domain, Depends on, Blocks, and Related**. Priority describes consequence rather than effort. The contract and priority meanings live in [CONTRIBUTING.md](CONTRIBUTING.md).
+
+`.github/workflows/work-metadata.yml` validates the metadata on issue changes, synchronizes type/priority labels, validates pull-request lifecycle/evidence metadata, and periodically rescans the open queue so drift remains noticeable.
 
 Normative invariants remain in domain documents. Executable defect specimens remain in tests. The issue owns the repair specification, acceptance criteria, and implementation backlog.
 
@@ -134,12 +128,14 @@ These are outside the current active backlog above:
 ```text
 README.md                 orientation, current status, issue/defer boundary
 FOUNDATIONS.md            meaning, invariants, domains, lifecycle crossings
+CONTRIBUTING.md           repository work metadata, priority, dependency, PR/residual law
 AGENT_SPELLS.md           earlier structural baseline and validation history
 AGENTS.md                  repository participation rules for agents
 CLAUDE.md                  Claude-oriented adaptation of AGENTS.md
 REPOSITORY_AUDIT.md        lifecycle audit; refresh tracked by issue #18
 FIRST_FAMILIAR_SEAL.md     previous frozen first-cast seal
 MIDNIGHT_FIRST_FAMILIAR.md corrected Owl-led first-cast candidate and procedure
+.github/                   issue/PR templates and CI/governance workflows
 
 spell/                     declared possibility and Spellcraft
 cast/                      invariant casting runtime, practitioner loop, tests, examples
