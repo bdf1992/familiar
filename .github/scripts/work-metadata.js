@@ -66,6 +66,12 @@ async function ensureLabel(github, owner, repo, name, color, description) {
   }
 }
 
+async function ensurePriorityTaxonomy(github, owner, repo) {
+  for (const [priority, spec] of Object.entries(PRIORITY)) {
+    await ensureLabel(github, owner, repo, `priority:${priority}`, spec.color, spec.description);
+  }
+}
+
 async function removeLabelIfPresent(github, owner, repo, issueNumber, labels, name) {
   if (!labels.has(name)) return;
   try {
@@ -108,8 +114,6 @@ async function validateIssue({ github, owner, repo, issue, commentOnInvalid }) {
   }
 
   const priorityLabel = `priority:${parsed.priority}`;
-  const prioritySpec = PRIORITY[parsed.priority];
-  await ensureLabel(github, owner, repo, priorityLabel, prioritySpec.color, prioritySpec.description);
   for (const candidate of Object.keys(PRIORITY)) {
     const label = `priority:${candidate}`;
     if (label !== priorityLabel) await removeLabelIfPresent(github, owner, repo, issue.number, labels, label);
@@ -146,6 +150,7 @@ function validatePullRequest(body) {
 
 module.exports = async ({ github, context, core }) => {
   const { owner, repo } = context.repo;
+  await ensurePriorityTaxonomy(github, owner, repo);
 
   if (context.eventName === "issues") {
     const issue = context.payload.issue;
