@@ -87,6 +87,17 @@ class MaintenanceEvidence:
     def act_id(self) -> str:
         return f"{self.source_kind}:{self.domain}:{self.source_id}"
 
+    @property
+    def source_key(self) -> str:
+        """One attributable execution source, independent of claimed domain.
+
+        `act_id` carries the domain, so the same source rebound to another
+        domain produces a different act. Source identity must be consumed on
+        its own or a single execution can manufacture one maintenance
+        consequence per domain it is willing to claim.
+        """
+        return f"{self.source_kind}:{self.source_id}"
+
 
 @dataclass(frozen=True)
 class MaintenanceDecision:
@@ -166,7 +177,12 @@ class _State:
     committed: dict[str, dict[str, Any]] = field(default_factory=dict)
     spent: dict[str, SpentLot] = field(default_factory=dict)
     cast_ids: set[str] = field(default_factory=set)
+    # Three independent replay guards. One Maintenance Act, one attributable
+    # execution source, and one accepted verifier receipt each close at most
+    # one maintenance consequence.
     maintenance_acts: set[str] = field(default_factory=set)
+    maintenance_sources: set[str] = field(default_factory=set)
+    maintenance_receipts: set[str] = field(default_factory=set)
 
 
 AccessResolver = Callable[[str, str, str], bool]
@@ -397,6 +413,7 @@ class MagicRuntime:
             raise MagicRuntimeError("runtime settings require maintenance of magic-runtime.settings")
         decision = self._verify_maintenance(evidence)
         self._require_confirmed_maintenance(actor, decision)
+        self._require_unconsumed_receipt(decision)
         if "total_mana" in changes:
             raise MagicRuntimeError("total_mana is conserved and cannot be reconfigured")
         unknown = set(changes) - set(asdict(self.limits))
@@ -436,6 +453,7 @@ class MagicRuntime:
         self._require_maintainer(actor, evidence.domain)
         decision = self._verify_maintenance(evidence)
         self._require_confirmed_maintenance(actor, decision)
+        self._require_unconsumed_receipt(decision)
         return decision
 
     def _verify_maintenance(self, evidence: MaintenanceEvidence) -> MaintenanceDecision:
@@ -464,6 +482,37 @@ class MagicRuntime:
     def _require_unapplied_act(self, evidence: MaintenanceEvidence) -> None:
         if evidence.act_id in self._state.maintenance_acts:
             raise MagicRuntimeError("maintenance act already applied")
+        if evidence.source_key in self._state.maintenance_sources:
+            raise MagicRuntimeError("maintenance source already consumed")
+
+    def _require_unconsumed_receipt(self, decision: MaintenanceDecision) -> None:
+        """A verifier response is not reusable authority.
+
+        Checked after confirmation because the receipt is supplied by the
+        verifier, not claimed by the source.
+        """
+        if decision.receipt_id in self._state.maintenance_receipts:
+            raise MagicRuntimeError("maintenance receipt already consumed")
+
+    def _consume_maintenance_identity(self, details: dict[str, Any]) -> None:
+        """Consume all three replay guards for one maintenance consequence.
+
+        Called from `_apply`, so live operation and ledger replay pass through
+        the same boundary. A persisted ledger holding a duplicate is refused on
+        open rather than reconstructed into a state that already permitted it.
+        """
+        act_id = details["act_id"]
+        source_key = "{source_kind}:{source_id}".format(**details["evidence"])
+        receipt_id = details["decision"]["receipt_id"]
+        if act_id in self._state.maintenance_acts:
+            raise MagicRuntimeError("maintenance act already applied")
+        if source_key in self._state.maintenance_sources:
+            raise MagicRuntimeError("maintenance source already consumed")
+        if receipt_id in self._state.maintenance_receipts:
+            raise MagicRuntimeError("maintenance receipt already consumed")
+        self._state.maintenance_acts.add(act_id)
+        self._state.maintenance_sources.add(source_key)
+        self._state.maintenance_receipts.add(receipt_id)
 
     def _restoration_allocations(self, locality: str, amount: int) -> list[dict[str, Any]]:
         remaining = amount
@@ -590,14 +639,14 @@ class MagicRuntime:
                     del self._state.spent[cast_id]
             if amount:
                 self._move_ambient(locality, amount)
-            self._state.maintenance_acts.add(event.details["act_id"])
+            self._consume_maintenance_identity(event.details)
         elif operation == "configure":
             data = asdict(self._state.limits)
             data.update(event.details["changes"])
             candidate = MagicLimits(**data)
             candidate.validate(total_mana=self.total_mana)
             self._state.limits = candidate
-            self._state.maintenance_acts.add(event.details["act_id"])
+            self._consume_maintenance_identity(event.details)
         else:
             raise MagicRuntimeError(f"unknown Mana event operation: {operation}")
 
