@@ -2,7 +2,7 @@
 
 A Familiar View is a bounded representation of one exact accepted Familiar revision for a named perspective, audience, or host.
 
-It is not the Familiar, not a Report, and not runtime authority.
+It is not the Familiar, not a Report, not Presence, and not runtime authority.
 
 ```text
 Familiar
@@ -18,6 +18,7 @@ Familiar
 Familiar != Familiar View
 View != source
 View != Report
+View != Presence
 Omission != absence
 Reported advisory authority != runtime authority
 ```
@@ -39,6 +40,22 @@ A View answers a representation question such as:
 Perspective controls representation, not truth and not authority.
 
 Useful policy names may include `host`, `private`, `shareable`, and `public`, but names alone do not prove disclosure authorization. Environment mechanisms remain responsible for access control.
+
+## View and Presence
+
+A View is knowledge-side material. Possessing or consuming a View does not establish that the Familiar itself is Present in the current Environment.
+
+`Summon Familiar` is the separate effectful operation that establishes bounded session Presence of an independently existing Familiar. A host may consume a View without summoning the Familiar, and a successful summon does not by itself determine which View or disclosure perspective should be used.
+
+```text
+Familiar View
+    represents an accepted Familiar
+
+Summon Familiar
+    makes the accepted Familiar Present
+```
+
+A View therefore cannot satisfy `presence-supported` or `target-present`, and it is not evidence that a summon occurred.
 
 ## Why this exists
 
