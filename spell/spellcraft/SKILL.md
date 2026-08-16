@@ -28,7 +28,7 @@ Identity/version metadata remains required by the FORMAT.
 
 Scope, Cost, Duration, Authority, target compatibility, preservation rules, and postconditions are treated as forms of Requirements rather than peer Spell fields.
 
-FORMAT 0.2 remains the compatibility baseline. `../format/0.3-draft/` records the requirement-centered draft. `../kernel/0.4-draft/` records the current casting/binding validation work.
+FORMAT 0.2 remains the compatibility baseline. `../format/0.3-draft/` records the requirement-centered draft. `../../cast/kernel/0.4-draft/` records the current casting/binding validation work. `../../environment/MAGIC.md` records the 0.6 candidate runtime semantics for conserved Mana and maintenance participation.
 
 ## Craft against one casting law
 
@@ -101,6 +101,42 @@ Examples:
 
 The 0.4 casting work intentionally retains a failing Scope-containment conformance case until a real environment control blocks the out-of-Scope operation.
 
+## Runtime-derived properties
+
+Some properties affect a Cast while remaining situated runtime truth rather than portable Spell declaration truth.
+
+Current examples include:
+
+- participation role;
+- Mana disposition, reach, and availability;
+- current runtime limits;
+- maintenance admission and restoration;
+- runtime level admission or standing where later evidence establishes it.
+
+Spellcraft may discover that an Effect depends on one of these mechanisms. It must not copy the current value into `SPELL.md` merely because the runtime exposes it.
+
+For Mana-bearing work, ask which runtime transition is actually required: claim, commit, spend, release, drain, or restoration. Mana conservation, claims, and runtime ceilings are Environment facts unless later evidence proves a portable Spell Requirement is needed.
+
+The 0.6 candidate deliberately does not yet define Level 0 or a portable Spell level field.
+
+## Maintenance effects
+
+Maintenance is an Effect on a concrete mechanism, not prose about a mechanism.
+
+A candidate maintenance Effect should identify:
+
+- the domain and concrete mechanism being maintained;
+- the observable before condition;
+- the attempted change;
+- an independent after observation;
+- the runtime boundary that prevents replay or self-certification.
+
+`Domains Maintainer` is a situated role, not evidence that maintenance happened. A Skill or Cast may supply one Maintenance Act, but the runtime independently decides whether it was confirmed and whether any existing Spent Mana became restorable.
+
+Do not describe restoration as creating, minting, awarding, or paying Mana. Verified restoration returns existing Spent Mana to Ambient. Claiming that Mana is a later ordinary runtime operation.
+
+A repeated Maintenance Act must not produce repeated runtime consequence.
+
 ## What the validation removed
 
 ### Generic Limit
@@ -117,6 +153,8 @@ FORMAT 0.2 retains `limits` only for compatibility. The 0.3 draft removes it.
 ### Domain as runtime semantics
 
 The Domain fixture showed that target compatibility is fully enforceable as a before Requirement. Domain therefore has no demonstrated unique runtime job. If catalogs later need Domain as discovery metadata, evaluate that separately from casting semantics.
+
+This does not conflict with `Domains Maintainer`: there, `domain` identifies which existing repository subject domain owns the concrete mechanism being maintained; it does not determine Spell target compatibility.
 
 ### Instructions
 
@@ -172,6 +210,8 @@ Owl reviews the craft by asking:
 - Is a generic Limit hiding a more precise Requirement?
 - Is live State or derived Scaling being presented as declaration truth?
 - Can CAST point back to the exact Requirement ids and Technique that mattered?
+- Is a runtime-derived Mana, role, capacity, maintenance, or level fact being mistaken for portable Spell truth?
+- If this is maintenance, what concrete mechanism changed and who independently observed it?
 
 Owl advises. FORMAT validation and runtime evidence decide what survives.
 
@@ -208,9 +248,12 @@ The reference suite now demonstrates:
 - exact Technique Binding matching;
 - closure refusal when a binding lacks Scope or Duration support;
 - Technique identity in 0.4 CAST;
-- two different synthetic Techniques producing equivalent Spell-level Requirement results without changing the Spell declaration.
-
-The unresolved Scope-containment conformance case proves that binding metadata alone cannot prevent a Technique with unrestricted environment access from bypassing the resolved Scope.
+- two different synthetic Techniques producing equivalent Spell-level Requirement results without changing the Spell declaration;
+- conserved Mana across claim, flow, commitment, settlement, drain, restoration, and restart;
+- runtime-resolved access before sensing, claiming, releasing, or committing;
+- one-use maintenance evidence with independent structured verification;
+- Spent Mana provenance retained to the Cast that produced it;
+- maintained Magic settings that cannot change `total_mana` or invalidate live state.
 
 These are mechanics results, not Spell standing.
 
@@ -220,7 +263,9 @@ These are mechanics results, not Spell standing.
 - treating Skill/MCP/executor success as proof of an Effect;
 - encoding Familiar preferences as universal Requirements;
 - encoding one Technique's dependencies as Spell properties unless every valid Technique requires them;
-- putting live State, Stats, or asserted Scaling into `SPELL.md`;
+- putting live State, Stats, asserted Scaling, current Mana, current role, or runtime limits into `SPELL.md` as declaration truth;
+- treating maintenance prose, role identity, or executor self-report as a Maintenance Act;
+- describing Mana restoration as creation or direct payment to a Maintainer;
 - using generic Limit as a dumping ground;
 - claiming Scope or Authority enforcement from preflight alone when the consequence path can bypass it;
 - claiming Cost or Duration enforcement when the bound Technique cannot actually participate;
