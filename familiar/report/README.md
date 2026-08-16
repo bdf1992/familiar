@@ -45,7 +45,34 @@ This follows the repository-wide distinction between artifact stake and lifecycl
 
 Report is instead treated as a recognizable carrier assembly: bounded content made situated and accountable by bindings such as `about`, `based-on`, `reported-by`, and `for`.
 
-Binding here is a compositional pattern, not a universal permission edge. A semantic or evidentiary binding does not grant runtime authority and is not sufficient for Cast closure unless the owning runtime explicitly recognizes an admissible mechanism.
+These are **account bindings**: semantic/evidentiary relations over Knowledge. They do not replace domain-owned binding realizations.
+
+```text
+account binding
+    situates knowledge
+
+Registrar Binding
+    situates registration/addressability
+
+Technique Binding
+    situates an execution path for a Spell Effect
+```
+
+The shared compositional intuition is a typed relation between addressable things. The owning domain determines what a relation means and what mechanisms, if any, it can participate in.
+
+Binding here is therefore not a universal permission edge. A semantic or evidentiary binding does not grant runtime authority, establish Presence, realize an Effect, or become sufficient for Cast closure merely because the relation exists.
+
+## Presence
+
+A Report may account for observations that a Familiar was Present, but the Report does not establish that Presence. Likewise a Familiar View may be consumed without the Familiar being Present.
+
+```text
+View != Presence
+Report about Presence != Presence
+Binding to Presence evidence != Summon Familiar
+```
+
+Presence belongs to the situated Environment/Cast side of the system; reporting about it remains knowledge-side work.
 
 ## Why no schema yet
 
@@ -64,6 +91,8 @@ The second should wait for real evidence-backed Familiar Reports so the format c
 Familiar != Familiar View
 Familiar != Familiar Report
 View != Report
+View != Presence
+Report about Presence != Presence
 Carrier != content
 Binding != authority
 Knowledge != Evidence
