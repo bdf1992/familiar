@@ -150,6 +150,7 @@ def cast_with_binding(
     target: Any,
     familiar: dict[str, Any] | None = None,
     cast_id: str | None = None,
+    downstream_containment_required: bool = False,
     compensation_required: bool = False,
 ) -> dict[str, Any]:
     """Run the 0.3 candidate through the 0.4 binding/closure check."""
@@ -165,6 +166,7 @@ def cast_with_binding(
         target=target,
         familiar=familiar,
         cast_id=cast_id,
+        downstream_containment_required=downstream_containment_required,
         compensation_required=compensation_required,
     )
     record["cast_format"] = "0.4-draft"

@@ -76,6 +76,7 @@ Audit residual: `registry/core.py` still parses Spell frontmatter itself. The mi
 | `environment/presence/__init__.py` | Public Presence exports. | Current Code |
 | `environment/presence/store.py` | Host-owned session Presence store with identity preservation checks. | Current Code |
 | `environment/scope.py` | Environment-owned effect-path boundaries for Scope enforcement, plus one reference filtered object capability. | Current Code |
+| `environment/blast_radius.py` | Direct, declared, observed and unknown reactive reach; reactive dependency graph and downstream observation. | Current Code |
 | `environment/authority.py` | Environment-owned attenuated credentials for Authority enforcement, plus one reference host credential. | Current Code |
 | `environment/consequence.py` | Consequence classification for irreversible external effects, and compensation as a separate attributable record. | Current Code |
 

@@ -89,6 +89,7 @@ class SpellKernel:
         guide=None,
         scope_resolver=None,
         scope_enforcer=None,
+        blast_radius_observer=None,
         authority_enforcer=None,
         consequence_classifier=None,
         compensation_provider=None,
@@ -105,6 +106,10 @@ class SpellKernel:
         # constructs one: a runtime that supplies its own containment is
         # attesting to its own honesty.
         self.scope_enforcer = scope_enforcer
+        # Environment-owned observation of reactive reach. Attenuation bounds
+        # what the Technique invokes directly; it says nothing about watchers,
+        # CI, webhooks, or anything else that reacts to the mutation.
+        self.blast_radius_observer = blast_radius_observer
         # The same split at the Authority boundary. Resolution says the caster
         # may attempt; only attenuation constrains what the executor can reach.
         self.authority_enforcer = authority_enforcer
@@ -165,6 +170,7 @@ class SpellKernel:
         execution_max_ms: int | None = None,
         cost_max: dict[str, int] | None = None,
         scope_max_items: int | None = None,
+        downstream_containment_required: bool = False,
         compensation_required: bool = False,
     ) -> dict[str, Any]:
         validate_spell(spell)
@@ -323,6 +329,18 @@ class SpellKernel:
             observations.append(obs)
             if obs["status"] != "satisfied":
                 reasons.append(f"limit-unresolved: {limit_id}")
+        # A declared blast-radius condition needs an Environment that can
+        # characterize reactive reach. Without one, closure refuses rather than
+        # reporting a small radius it cannot support.
+        if downstream_containment_required and self.blast_radius_observer is None:
+            observations.append({
+                "kind": "requirement",
+                "id": "downstream-containment",
+                "phase": "before",
+                "status": "unavailable",
+                "detail": "downstream containment required but no blast radius observer is registered",
+            })
+            reasons.append("downstream-unobservable: no blast radius observer")
         # Where compensation is required, refuse before the effect rather than
         # discovering afterwards that the world kept something with no path back.
         if compensation_required and self.compensation_provider is None:
@@ -401,6 +419,44 @@ class SpellKernel:
                 record["residuals"].append(
                     f"scope violated during execution: {len(breaches)} attempt(s) outside resolved Scope"
                 )
+        # Direct containment and ambient reach are recorded separately. A Cast
+        # does not get to claim a small radius because its handle was narrow.
+        blast_failed = False
+        if self.blast_radius_observer is not None:
+            try:
+                radius = self.blast_radius_observer(spell, effect_id, context, scope_boundary)
+            except Exception as exc:
+                observations.append({
+                    "kind": "requirement",
+                    "id": "downstream-containment",
+                    "phase": "after",
+                    "status": "unavailable",
+                    "detail": f"blast radius observation failed: {type(exc).__name__}: {exc}",
+                })
+                record["residuals"].append(
+                    f"downstream reach unobserved: {type(exc).__name__}: {exc}"
+                )
+                blast_failed = downstream_containment_required
+            else:
+                escaped = radius.escaped_direct
+                observations.append({
+                    "kind": "requirement",
+                    "id": "downstream-containment",
+                    "phase": "after",
+                    "status": "satisfied" if radius.contained else "violated",
+                    "value": radius.as_dict(),
+                })
+                if escaped:
+                    record["residuals"].append(
+                        "downstream consequences outside direct reach: "
+                        + ", ".join(f"{item.mechanism}->{item.target}" for item in escaped)
+                    )
+                if radius.unknown:
+                    record["residuals"].append(
+                        f"downstream reach unknown: {radius.unknown_reason}"
+                    )
+                if downstream_containment_required and not radius.contained:
+                    blast_failed = True
         # Classify what the world kept. Three outcomes a failed postcondition
         # would otherwise collapse: nothing happened, it was undone, it persists.
         if self.consequence_classifier is not None:
@@ -478,7 +534,13 @@ class SpellKernel:
             if obs["status"] != "satisfied":
                 limit_failed = True
                 record["residuals"].append(f"limit violated after execution: {limit_id}")
-        if execution_failed or limit_failed or scope_failed or authority_failed:
+        if (
+            execution_failed
+            or limit_failed
+            or scope_failed
+            or authority_failed
+            or blast_failed
+        ):
             record["outcome"] = "failed"
         elif post_failed:
             record["outcome"] = "partial"
