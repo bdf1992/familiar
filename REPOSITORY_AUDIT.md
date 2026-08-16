@@ -47,6 +47,8 @@ Audit note: the active `find-familiar` example uses the 0.3 candidate declaratio
 | `familiar/store.py` | Exact Familiar persistence. In-memory by default; restart-safe when supplied a local root. Retains immutable revisions addressable by `FamiliarRef`, with a latest pointer as a convenience index only. | Current Code |
 | `familiar/find-familiar/SKILL.md` | Practitioner skill for creating, inspecting, repairing, or validating caster-owned Familiars. | Current Skill |
 | `familiar/owl/owl.json` | Canonical system Familiar used to advise protocol/Familiar quality. | Current Knowledge artifact |
+| `familiar/view/familiar-view.schema.json` | Contract for a bounded representation of one exact accepted Familiar revision. Accounts for every source guidance category exactly once. | Current Code |
+| `familiar/view/builder.py` | Builds a View from a store-resolved `FamiliarRef` and validates omission accounting. | Current Code |
 
 A Familiar is guidance identity, not a persona or authority token. Owl may advise the first finding but cannot accept a Familiar for the practitioner.
 
