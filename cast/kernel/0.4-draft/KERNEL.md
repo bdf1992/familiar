@@ -84,6 +84,27 @@ CAST retains the resolved Scope Requirement, the enforcing mechanism that partic
 
 Issue #28 owns the separate problem of ambient reactive consequences that a correctly attenuated direct mutation can still trigger. Direct containment is necessary and is not sufficient.
 
+### Consequence classification
+
+The casting law can observe a local mutation. It cannot assume the world can be put back. A successful HTTP call, a sent message, or a charged card is not undone by writing pre-state bytes.
+
+Without an explicit model, a failed postcondition collapses three materially different outcomes into one. They are distinguished:
+
+```text
+none           no effectful consequence observed
+reversed       exact mutation, restoration independently verified
+residual       persistent mutation, no compensation path declared
+compensatable  persistent mutation with a declared compensation path
+```
+
+`residual` is not a worse `reversed`. It is a different fact, and a runtime that cannot say which occurred cannot be trusted about either.
+
+**A provider may not certify its own rollback.** An inverse-looking API is not evidence that state was restored, so a `reversed` finding requires an observer distinct from the effect path — the same independence rule settlement already uses.
+
+**Compensation is a new attributable consequence-bearing operation, not deletion of history.** It produces its own record linked to the original Cast. The original CAST keeps its consequence and its residual whether compensation succeeds, fails, or is never attempted. Compensation failure stays visible and rewrites nothing.
+
+**Closure refuses when compensation is required and no path exists**, rather than discovering afterwards that the world kept something with no way back. Compensation is opt-in: an ordinary Cast declares nothing and closes normally. Not every Effect must be reversible.
+
 ## Closure support matching
 
 Before effectful execution, the Kernel derives the mechanisms demanded by the selected Effect and compares them against the current host/environment and Technique Binding.

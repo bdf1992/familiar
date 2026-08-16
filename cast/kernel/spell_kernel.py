@@ -91,6 +91,9 @@ class SpellKernel:
         scope_resolver=None,
         scope_enforcer=None,
         authority_enforcer=None,
+        consequence_classifier=None,
+        compensation_provider=None,
+        executor_id=None,
     ):
         self.observers = observers or {}
         self.requirements = requirements or {}
@@ -106,6 +109,14 @@ class SpellKernel:
         # The same split at the Authority boundary. Resolution says the caster
         # may attempt; only attenuation constrains what the executor can reach.
         self.authority_enforcer = authority_enforcer
+        # Environment-owned classification of what the world kept. The Kernel
+        # can observe a local mutation; only the Environment can say whether an
+        # external consequence was undone, persists, or can be compensated.
+        self.consequence_classifier = consequence_classifier
+        self.compensation_provider = compensation_provider
+        # Identity of the effect path, used to refuse a rollback claim the
+        # executor makes about itself.
+        self.executor_id = executor_id
 
     def _effect(self, spell: dict[str, Any], effect_id: str) -> dict[str, Any]:
         for effect in spell["effects"]:
@@ -155,6 +166,7 @@ class SpellKernel:
         execution_max_ms: int | None = None,
         cost_max: dict[str, int] | None = None,
         scope_max_items: int | None = None,
+        compensation_required: bool = False,
     ) -> dict[str, Any]:
         validate_spell(spell)
         if execution_max_ms is not None and (not isinstance(execution_max_ms, int) or execution_max_ms <= 0):
@@ -312,6 +324,17 @@ class SpellKernel:
             observations.append(obs)
             if obs["status"] != "satisfied":
                 reasons.append(f"limit-unresolved: {limit_id}")
+        # Where compensation is required, refuse before the effect rather than
+        # discovering afterwards that the world kept something with no path back.
+        if compensation_required and self.compensation_provider is None:
+            observations.append({
+                "kind": "execution",
+                "id": "compensation-support",
+                "phase": "before",
+                "status": "unavailable",
+                "detail": "compensation required but no compensation provider is registered",
+            })
+            reasons.append("compensation-unsupported: no compensation path available")
         record = {"cast_format": "0.2", "cast_id": cast_id, "spell": {"name": spell["name"], "version": spell["version"]}, "caster": {"id": caster["id"], "kind": caster["kind"]}, "familiar": familiar_ref, "guidance": guidance, "effect": effect_id, "closure": {"decision": "refused" if reasons else "closed", "reasons": reasons}, "observations": observations, "outcome": None, "residuals": []}
         if reasons:
             validate_cast_record(record)
@@ -379,6 +402,51 @@ class SpellKernel:
                 record["residuals"].append(
                     f"scope violated during execution: {len(breaches)} attempt(s) outside resolved Scope"
                 )
+        # Classify what the world kept. Three outcomes a failed postcondition
+        # would otherwise collapse: nothing happened, it was undone, it persists.
+        if self.consequence_classifier is not None:
+            try:
+                finding = self.consequence_classifier(spell, effect_id, context, execution_failed)
+                # An inverse-looking API is not evidence that state was
+                # restored. The Kernel reads the finding structurally and
+                # imports nothing from the Environment to do it.
+                if (
+                    self.executor_id is not None
+                    and finding.kind == "reversed"
+                    and finding.observer == self.executor_id
+                ):
+                    raise ValueError(
+                        f"exact reversal requires an observer independent of the executor; "
+                        f"{self.executor_id!r} cannot certify its own rollback"
+                    )
+            except Exception as exc:
+                observations.append({
+                    "kind": "execution",
+                    "id": "consequence",
+                    "phase": "after",
+                    "status": "unavailable",
+                    "detail": f"consequence classification failed: {type(exc).__name__}: {exc}",
+                })
+                record["residuals"].append(
+                    f"consequence unclassified: {type(exc).__name__}: {exc}"
+                )
+            else:
+                observations.append({
+                    "kind": "execution",
+                    "id": "consequence",
+                    "phase": "after",
+                    "status": "violated" if finding.persistent else "satisfied",
+                    "value": finding.as_dict(),
+                })
+                if finding.persistent:
+                    detail = (
+                        f"compensatable via {finding.compensation}"
+                        if finding.kind == "compensatable"
+                        else "no compensation path declared"
+                    )
+                    record["residuals"].append(
+                        f"persistent world mutation ({finding.kind}): {detail}"
+                    )
         authority_failed = False
         if authority_boundary is not None:
             breaches = authority_boundary.violations()
