@@ -1,104 +1,204 @@
 # Agent Spells Format 0.3 — Draft
 
-Status: draft derived from validation fixtures on 2026-08-15. FORMAT 0.2 remains the current compatibility baseline until this draft is adopted.
+Status: Work + Knowledge. FORMAT 0.2 remains Current until an explicit adoption crossing.
 
 ## Purpose
 
-`SPELL.md` declares Effects and the Requirements under which those Effects may be attempted and counted as resolved. It does not select an implementation, contain live runtime state, or claim standing.
+`SPELL.md` declares a portable Effect contract. FORMAT 0.3 makes enough of that contract machine-readable for a host, Familiar, or planner to answer four questions before a cast:
 
-The 0.3 draft removes generic `limits` and the separate `authority` field from the 0.2 shape. Authority, Scope, Cost, Duration, safety invariants, compatibility checks, and postconditions are represented as Requirements with phase-appropriate structure.
+1. What typed material may enter and leave the Effect?
+2. Which typed protocol operations participate?
+3. Which concrete runtime capabilities must bind each Requirement?
+4. Which implementations are plausible realizations without making any implementation part of Spell semantics?
+
+A Spell still does not contain live runtime state, capability receipts, CAST evidence, standing, or an executor.
 
 ## Portable frontmatter
 
 ```yaml
 ---
 spell_format: "0.3"
-name: bounded-work
-version: "0.1.0"
-description: Attempt bounded work and verify its result.
+name: find-familiar
+version: "0.2.0"
+description: Establish an accepted Familiar artifact for a resolved subject.
+
+schemas:
+  - id: familiar
+    description: Persisted Familiar artifact.
+    ref: ../../../familiar/familiar.schema.json
+  - id: familiar-ref
+    description: Exact reference returned by Familiar persistence.
+    schema:
+      type: object
+      required: [id, caster_id, revision, digest]
+
+protocols:
+  - id: familiar-store
+    ref: familiar.store:FamiliarStore
+    version: "0.1"
+    operations:
+      - id: put
+        input: {schema: familiar}
+        result: {schema: familiar-ref}
+      - id: resolve
+        input: {schema: familiar-ref}
+        result: {schema: familiar}
+
+runtime:
+  protocols: [familiar-store]
+
 telemetry: []
+
+implementations:
+  - id: local-familiar-store
+    kind: package
+    locator: familiar.store:FamiliarStore
+    effects: [establish]
+    protocols: [familiar-store]
+    description: Reference local implementation; not required by Spell semantics.
+
 effects:
-  - id: act
-    description: Perform the requested bounded action.
+  - id: establish
+    description: Persist the exact accepted Familiar and return an exact reference.
     telemetry: []
+    interface:
+      result:
+        schema: familiar-ref
     requirements:
       before:
-        - id: target-observable
-          description: The requested target is observable.
-        - id: write-authority
-          authority: workspace.write
-        - id: bounded-scope
-          scope:
-            max_items: 2
-      during:
-        - id: tool-budget
-          cost:
-            resource: tool_calls
-            max: 1
-        - id: execution-time
-          duration:
-            execution_max_ms: 50
+        - id: subject-resolved
+          description: The subject whose Familiar is being found is explicitly resolved.
+          check: subject.resolved
+          binding:
+            operation: observe
+            capability: subject-resolution
+
+        - id: familiar-store-supported
+          description: The Environment exposes exact Familiar persistence.
+          check: familiar.store.available
+          binding:
+            operation: put
+            protocol: familiar-store
+            capability: familiar-store
+
+      during: []
+
       after:
-        - id: effect-confirmed
-          description: The requested effect is observable as complete.
+        - id: familiar-valid
+          description: The resulting Familiar validates against the declared contract.
+          check: schema.valid
+          binding:
+            operation: validate
+            capability: schema-validator
+
+        - id: familiar-persisted
+          description: The exact Familiar resolves from the returned FamiliarRef.
+          check: familiar.store.roundtrip
+          binding:
+            operation: resolve
+            protocol: familiar-store
+            capability: familiar-store
 ---
 ```
 
-The optional Markdown body is human guidance only. It cannot satisfy a Requirement.
+The optional Markdown body is human guidance. It cannot satisfy a Requirement.
 
-## Required top-level fields
+## Top-level contract
 
-### `spell_format`
+### Identity
 
-Declares the FORMAT version. A host must reject versions it does not support. This forbids silently interpreting a declaration under incompatible semantics.
+`spell_format`, `name`, `version`, and `description` retain their 0.2 jobs. A host must reject unsupported format versions.
 
-### `name`
+### `schemas`
 
-Stable portable identifier used in catalogs and CAST. This forbids anonymous execution records that cannot be tied to a declaration.
+`schemas` names data shapes used by Effect interfaces and protocol operations. Each declaration has an `id`, description, and exactly one of:
 
-### `version`
+- `ref` — a portable locator for an external schema;
+- `schema` — an embedded JSON-Schema-shaped object.
 
-Version of the declaration. This forbids materially different contracts from being treated as the same Spell definition.
+FORMAT does not require JSON Schema as the only implementation language. The declaration provides a machine-addressable shape that a validator or generator can consume.
 
-### `description`
+### `protocols`
 
-Author-asserted discovery and inspection text. It helps selection but is never runtime evidence.
+`protocols` names interaction contracts that participate in realizing Effects. A protocol declaration includes an id, locator, version, and typed `operations`.
+
+Each operation has a stable id and may declare `input` and `result` schema references. When a Requirement binds to a protocol, its `binding.operation` must name an operation declared by that protocol.
+
+This matters because a bare operation verb is not a protocol. `put` against an unrelated store must not satisfy `familiar-store.put` merely because both advertise a write-like action.
+
+A protocol is not a capability receipt. It states what contract is expected; the Environment still has to expose a concrete implementation at cast time.
+
+### `runtime`
+
+`runtime.protocols` lists protocol ids that a conforming runtime must be able to resolve for this Spell. Missing or ambiguous resolution fails closed.
+
+This is runtime contracting, not runtime state.
 
 ### `telemetry`
 
-Declares named current observations that Effects may require. A telemetry declaration has an id, description, and optional maximum age. This forbids substituting assumed or stale state where current observation is required.
+Telemetry retains the 0.2/early-0.3 meaning: named observations with optional freshness bounds.
+
+### `implementations`
+
+`implementations` is optional non-authoritative implementation guidance. Each suggestion may identify a Skill, MCP server, script, service, host, package, or binding and state which Effects/protocols it is intended to realize.
+
+An implementation suggestion:
+
+- helps Familiars and hosts discover likely realizations;
+- may be generated, ranked, replaced, or ignored;
+- does not grant authority;
+- does not prove compatibility;
+- does not satisfy a Requirement merely by being listed.
 
 ### `effects`
 
-Declares one or more Effects. Each Effect has an id, description, telemetry references, and Requirements. An Effect is the change or resulting condition the runtime attempts and investigates.
+An Effect contains telemetry references, an optional typed interface, and phase-specific Requirements.
 
-## Requirements
+## Typed Effect interfaces
 
-Requirements are phase-specific. Every Requirement has a stable id. The runtime record must preserve that id so declaration and CAST can be compared directly.
+`interface.input`, `interface.target`, and `interface.result` may reference ids declared in `schemas`.
 
-### `before`
+This gives generators and Familiars a concrete contract for proposing inputs, resolving targets, validating results, and producing forms or models without pretending that generated data is runtime evidence.
 
-A before Requirement must be satisfied for execution to close.
+## Requirements and bindings
 
-The draft supports three validated forms:
+Every Requirement has a stable id and a concrete `binding` selector. Ordinary before/after Requirements additionally carry a machine-readable `check` id.
+
+A binding selector contains:
+
+- required `operation`;
+- and at least one of `capability`, `protocol`, or `locator`;
+- optional `environment`, `subject`, and `authority` constraints when exact selection requires them.
+
+If `protocol` is present, `operation` must resolve to an operation declared by that protocol. If more than one runtime receipt satisfies a selector and the selector cannot choose deterministically, closure must refuse as ambiguous.
+
+CAST should retain the exact receipt/mechanism selected for every Requirement.
+
+### Before
+
+Before Requirements gate closure.
 
 **Ordinary check**
 
 ```yaml
 - id: target-observable
   description: The target can be observed.
+  check: target.observable
+  binding:
+    operation: observe
+    capability: target-observer
 ```
-
-A host supplies the checker. If no checker exists or the check is negative, execution is refused. This forbids prose confidence from replacing a real precondition check.
 
 **Authority**
 
 ```yaml
 - id: write-authority
   authority: workspace.write
+  binding:
+    operation: authorize
+    capability: workspace-authority
+    authority: workspace.write
 ```
-
-The host/security environment resolves the permission. A caster, Familiar, Skill, executor, or declaration cannot self-certify it. This forbids a Spell from widening the host's authorization model.
 
 **Scope**
 
@@ -106,15 +206,17 @@ The host/security environment resolves the permission. A caster, Familiar, Skill
 - id: bounded-scope
   scope:
     max_items: 2
+    enforcement: effect_path
+  binding:
+    operation: constrain
+    capability: workspace-scope
 ```
 
-The host resolves the concrete target into items and refuses before execution when the count exceeds the declared bound. CAST retains the resolved target, item count, and bound. This forbids a compliant Technique from silently widening the requested reach.
+`enforcement: effect_path` is required in 0.3. Preflight counting alone does not enforce Scope. The Technique must receive an attenuated capability, namespace, token, handle, or equivalent Environment-owned boundary that cannot perform the forbidden out-of-scope consequence.
 
-The draft standardizes only `max_items` because that is the only Scope form exercised by the current fixtures. It does not claim a universal domain-specific Scope language.
+### During
 
-### `during`
-
-A during Requirement is governed while effectful execution is occurring. Declaring the budget is insufficient: the Technique/runtime path must actually participate in the enforcement mechanism.
+During Requirements are governed while effectful execution occurs.
 
 **Cost**
 
@@ -123,13 +225,10 @@ A during Requirement is governed while effectful execution is occurring. Declari
   cost:
     resource: tool_calls
     max: 1
+  binding:
+    operation: meter
+    capability: tool-call-meter
 ```
-
-The runtime makes a named integer budget available to the Technique binding. The next metered unit must be denied before it would exceed the ceiling. CAST records used/max values against the Requirement id.
-
-This forbids after-the-fact counting from being presented as budget enforcement.
-
-The draft does not standardize arbitrary currencies or units. A resource name is meaningful only when the host and Technique share a real meter for it.
 
 **Duration**
 
@@ -137,80 +236,101 @@ The draft does not standardize arbitrary currencies or units. A resource name is
 - id: execution-time
   duration:
     execution_max_ms: 50
+  binding:
+    operation: contain
+    capability: execution-container
 ```
 
-The runtime passes the bound to a Technique binding capable of containing execution. CAST records material timing against the Requirement id.
+A declaration is insufficient unless the selected runtime mechanism participates in the actual effect path.
 
-This forbids a compliant binding from ignoring a finite execution bound and later calling the Effect resolved merely because execution eventually returned.
+### After
 
-Only execution duration is standardized in this draft. Observation-window duration and temporary Effect lifetime remain unvalidated.
-
-### `after`
-
-An after Requirement determines whether the Effect can be counted as resolved.
+After Requirements independently determine whether the Effect may count as resolved.
 
 ```yaml
-- id: preserve-unmarked
-  description: Every pre-existing unmarked file remains byte-identical.
+- id: effect-confirmed
+  description: The declared result is observable.
+  check: effect.confirmed
+  binding:
+    operation: observe
+    capability: result-observer
 ```
 
-A host independently checks the resulting state. If an after Requirement is negative or unavailable, the Effect cannot be fully resolved and CAST carries the unresolved condition as a residual.
+Executor success cannot substitute for after-Requirement evidence.
 
-This forbids executor success from substituting for effect confirmation.
+## Pydantic and generative validation
 
-## Removed from the 0.2 candidate shape
+`models.py` is the reference typed model for this draft. It performs semantic validation that plain JSON Schema cannot conveniently express and generates `spell.schema.json`.
 
-### Generic `limits`
+The normative rule is **model/schema equivalence**, not Pydantic dependence. Other implementations may validate the same contract in another language.
 
-Removed. Current evidence gives its former jobs to more precise Requirement forms: Scope, Cost, Duration, and ordinary before/after Requirements. The real workspace-tidy fixture preserved the same external safety guarantee after its only Limit became an after Requirement.
+The reference model validates at least:
 
-### Separate effect `authority`
+- unique schema, protocol, protocol-operation, telemetry, Effect, and per-Effect Requirement ids;
+- all Effect telemetry references resolve;
+- all Effect and protocol-operation schema references resolve;
+- all runtime/Requirement/implementation protocol references resolve;
+- protocol-bound Requirement operations are declared by the referenced protocol;
+- implementation Effect references resolve;
+- binding selectors identify more than an operation verb;
+- no duplicate Cost resource per Effect;
+- at most one Scope and one execution Duration Requirement per Effect;
+- Scope requires effect-path enforcement;
+- phase-specific Requirement forms remain phase-correct.
 
-Removed as a peer field. Authority is a before Requirement with a privileged host resolver.
+Because the typed model can emit JSON Schema, downstream tools may generate editors, forms, model prompts, typed SDKs, or validation fixtures from the same contract rather than maintaining parallel hand-authored shapes.
 
-## Not in the portable format
+## Relationship to protocol shapes
 
-- **Domain as runtime semantics** — compatibility was fully enforced as a before Requirement in the Domain fixture. Domain may be reconsidered later as optional discovery metadata if catalogs demonstrate a need.
-- **Instructions** — belong to Skills, Techniques, MCP tools/services, or host bindings.
-- **live State** — belongs to runtime/CAST; relevant current state is observed through Telemetry and Requirements.
-- **Stats** — derived from multiple CAST records.
-- **Scaling** — learned from Stats and repeated casts; supported hard boundaries may be reflected in a later declaration version.
-- **standing/level/grade** — execution-derived and outside this draft.
-- **Familiar preferences** — Familiar is an optional caster dialect/judgment artifact and cannot alter Spell semantics.
+FORMAT 0.3 does not define one universal protocol ontology. It supplies three compositional hooks:
 
-## Semantic validation
+1. `schemas` for reusable data shape;
+2. typed protocol `operations` for interaction shape;
+3. Requirement `binding` selectors for exact situated capability resolution.
 
-A conforming validator must reject:
+The chain is therefore explicit:
 
-- duplicate telemetry ids;
-- duplicate Effect ids;
-- duplicate Requirement ids within one Effect across all phases;
-- Effect telemetry references that do not resolve;
-- more than one Scope Requirement for the same Effect in this draft;
-- more than one execution Duration Requirement for the same Effect in this draft;
-- duplicate Cost resource names for the same Effect;
-- Cost or Duration declarations placed in `before` or `after`;
-- Authority or Scope declarations placed in `during` or `after`.
+```text
+Schema -> Protocol Operation -> Requirement Binding -> Capability Receipt -> CAST Evidence
+```
 
-## Runtime boundary
+No link is allowed to stand in for the next one. This preserves the distinction between declared shape, declared protocol, concrete Environment capability, and situated evidence.
 
-FORMAT describes what must be governed. It does not guarantee that a host can govern it.
+## Familiar-facing minimum
 
-A host that cannot provide a declared observer, checker, authority resolver, Scope resolver, Cost meter, or Duration containment mechanism must refuse the affected cast rather than silently weakening the declaration.
+The format now supports near-term Familiar work without giving Familiar semantic authority. A Familiar can:
 
-## Evidence supporting this draft
+- inspect typed Effect and protocol input/result shapes;
+- inspect required protocols and runtime capabilities before proposing a cast;
+- rank or suggest implementations;
+- generate candidate data against declared schemas;
+- explain which Requirement or protocol operation cannot currently bind;
+- preserve the same Spell semantics across different Familiar dialects.
 
-The current reference suite demonstrates:
+A Familiar still cannot self-certify authority, acceptance, persistence, effect confirmation, Mana settlement, or any other privileged runtime fact.
 
-- before ordinary Requirements;
-- host-resolved Authority;
-- Scope refusal before Technique execution;
-- Cost denial before the next metered action;
-- Duration containment of a subprocess;
-- independent after Requirements;
-- post-observation after executor failure;
-- target retention in the candidate CAST;
-- machine caster records;
-- Familiar guidance that changes representation without changing Spell behavior.
+## Deliberately outside 0.3
 
-These tests establish mechanics, not Spell standing.
+These remain outside the portable declaration because current repository evidence has not established a stable contract shape for them:
+
+- live State and CAST observations;
+- Stats, standing, grade, and learned Scaling;
+- portable Spell level semantics;
+- Mana allocation/settlement fields;
+- wall-clock scheduling;
+- implementation-specific credentials or capability receipts.
+
+They are not excuses to defer concrete runtime integration: when an Effect needs one of these today, it must bind an existing Environment/Cast protocol or fail closed.
+
+## Compatibility
+
+0.3 is intentionally not wire-compatible with 0.2. In particular:
+
+- generic `limits` remains removed;
+- Authority is a before Requirement;
+- ordinary Requirements require `check` + `binding`;
+- structured Requirements require exact `binding` selectors;
+- Scope explicitly requires effect-path enforcement;
+- typed interfaces, typed protocol operations, runtime contracts, and implementation suggestions are new.
+
+FORMAT 0.2 remains Current until 0.3 is explicitly adopted.
