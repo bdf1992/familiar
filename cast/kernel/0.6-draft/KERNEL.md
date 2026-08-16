@@ -1,107 +1,119 @@
-# Agent Spells Kernel 0.6 Draft — Magic Runtime
+# Agent Spells Kernel 0.6 Draft — Magic Participation
 
-0.6 adds a conserved Magic runtime beneath the existing casting law. It does not redefine Spell format or introduce Level 0 Spell semantics.
+0.6 adds Magic participation beneath the existing invariant casting law. The Environment-owned definition is `../../../environment/MAGIC.md`.
 
-## Conservation law
+It does not change the 0.3 Spell format and does not define Level 0 Spell semantics.
 
-A Magic network begins with one fixed quantity of Mana, `N`.
+## Kernel responsibility
+
+The Kernel does not own Mana as a substance or topology. It coordinates Cast participation with Environment mechanisms that expose Mana access and accounting.
+
+For a Mana-bearing Cast, the relevant runtime sequence is:
+
+```text
+resolve invocation / actor / target / Technique
+        ↓
+resolve Situation and Environment capabilities
+        ↓
+evaluate ordinary before Requirements
+        ↓
+resolve Mana access + sufficient Claim
+        ↓
+closure
+        ↓
+Claimed -> Committed
+        ↓
+govern effectful execution
+        ↓
+observe consequence
+        ↓
+settle Committed -> Spent + Claimed
+        ↓
+ordinary after Requirements / outcome / residuals
+        ↓
+CAST
+```
+
+A refusal before commitment does not spend Mana.
+
+Commitment does not itself prove consequence. Settlement follows runtime observation of what actually crossed the consequence boundary.
+
+## Conservation dependency
+
+The Kernel may request legal Mana transitions, but the Environment Magic runtime must preserve:
 
 ```text
 Ambient + Claimed + Committed + Spent = N
 ```
 
-Mana is never created or destroyed. Runtime operations only move existing Mana between dispositions.
+The Kernel cannot mint, destroy, directly edit, or self-restore Mana.
 
-## Mana dispositions
+## Level admission
 
-- **Ambient** — present in the shared Environment and not currently claimed.
-- **Claimed** — temporarily held by a participant.
-- **Committed** — reserved to one Cast after the runtime admits that commitment.
-- **Spent** — no longer available for ordinary claiming until verified maintenance restores it.
+The current runtime can reject a supplied runtime level above `max_level`.
 
-Legal transitions are:
+That is only an admission mechanism. 0.6 does not establish how a Spell receives a level, what Level 0 means, how Mana cost maps to level, or whether level belongs in a future portable Spell declaration. Those require later executable evidence.
 
-```text
-Ambient   -> Claimed      claim
-Claimed   -> Ambient      release / drain
-Claimed   -> Committed    commit
-Committed -> Claimed      unspent settlement
-Committed -> Spent        spent settlement
-Spent     -> Ambient      verified maintenance
-```
+## Maintenance participation
 
-A transition that would violate conservation or a maintained runtime limit fails closed.
+Domains Maintainer is a situated role resolved against one of the existing five domains.
 
-## Shared sensing
+Maintenance may originate in a Skill or a Cast. Both produce candidate Maintenance Evidence and use the same Environment verification path.
 
-Mana is not the network. The Environment is the networked context through which Mana is present, reachable, sensed, claimed, committed, spent, and restored.
+The Kernel does not treat role possession, executor success, prose, or a repeated receipt as restoration evidence.
 
-The 0.6 runtime exposes ambient Mana and active claims in a locality. It may also expose how much one subject currently claims. Sensing does not move Mana.
+A verified Maintenance Act may make existing Spent Mana eligible for restoration. The Environment applies `max_restored`, preserves Spent-Cast provenance, returns restored Mana to Ambient, and records that the unique Act has already produced its runtime consequence.
 
-## Claims and drain
+## Runtime settings
 
-A claim is not ownership. It is a temporary relation constrained by network, locality, and personal limits.
+`total_mana = N` is a law and is not configurable.
 
-Unused claimed Mana may drain back into the same locality's ambient pool. Explicit release and natural drain have the same Mana transition but different event causes.
+The Environment owns maintained ceilings for network activity, locality activity, personal claims, per-Cast commitment, total commitment, restoration, level admission, and drain.
 
-## Runtime limits
+Changing those settings is itself maintenance of the Environment mechanism `magic-runtime.settings` and must be independently confirmed.
 
-0.6 carries these maintained settings:
+## Consequence-boundary questions for 0.6
 
-- `total_mana` — immutable `N` for the network;
-- `max_network` — maximum Mana simultaneously active as claims/commitments;
-- `max_local` — maximum active Mana in one locality;
-- `max_personal` — maximum one participant may actively claim/commit;
-- `max_cast` — maximum Mana one Cast may commit;
-- `max_committed` — maximum Mana committed across active Casts;
-- `max_restored` — maximum Mana one Maintenance Act may restore;
-- `max_level` — runtime admission ceiling only; portable level semantics remain deferred;
-- `drain_rate` — claimed Mana returned per runtime tick.
+Every Mana-bearing integration should answer:
 
-`total_mana` is a conservation constant, not a Maintainer-editable setting. Other settings may be changed only through admitted Domains Maintainer maintenance and may not invalidate live state.
+1. Who resolved that the actor may sense/claim/commit in this locality?
+2. Which reachable Ambient Mana is being claimed?
+3. At what exact closure edge does Claimed become Committed?
+4. Which observed consequence determines Committed -> Spent?
+5. Which unused commitment returns to Claim?
+6. Can a failed/refused Cast accidentally spend or duplicate Mana?
+7. Can the Cast id be replayed?
+8. Can maintenance evidence be replayed?
+9. What concrete mechanism was maintained?
+10. Which independent observation supports restoration?
+11. Which prior Spent Cast provenance supplied the restored Mana?
+12. Does every transition preserve N?
 
-## Practice settlement
+## Reference implementation
 
-0.6 does not add a second casting law.
+`environment/magic.py` currently supplies a single-writer reference runtime with:
 
-A Mana-bearing Cast may reserve claimed Mana through `commit` only after the runtime admits the Cast's commitment. Settlement records how much of that commitment became Spent and how much returned to the participant's claim.
+- access resolution for sensing, claiming, releasing, and committing;
+- Environment route resolution for Ambient flow between localities;
+- conserved Mana dispositions;
+- deterministic drain;
+- per-Cast commitment and settlement;
+- attributable Spent lots;
+- one-use Maintenance Acts;
+- structured maintenance verification;
+- Domains Maintainer runtime-setting maintenance;
+- append-only digest-chained persistence and exact replay.
 
-Executor success alone does not determine Mana spending. Settlement belongs to runtime consequence accounting.
-
-## Domains Maintainer
-
-`Domains Maintainer` is a situated participation role, not maintenance evidence by itself.
-
-A Maintenance Act must identify a concrete mechanism and provide attributable evidence. The runtime independently verifies that evidence before any Mana transition occurs.
-
-Maintenance may be sourced by a Skill or a Cast. Both use the same restoration path:
-
-```text
-Maintenance evidence
-    -> role resolved
-    -> independent verifier
-    -> confirmed restoration
-    -> apply max_restored
-    -> Spent -> Ambient
-```
-
-The Maintainer does not receive the restored Mana directly. Restored Mana returns to the ambient commons and may then be claimed under ordinary limits.
-
-## Ledger
-
-The 0.6 Environment implementation persists an append-only digest-chained event ledger. Current Mana state is a projection of the ledger rather than an independently mutable balance.
-
-Restart must replay to the same conserved disposition. Broken sequence, broken digest chain, or altered event content refuses open.
+The reference implementation is evidence for the semantics, not a claim that one storage implementation is the only valid Technique.
 
 ## Deferred
 
-0.6 intentionally does not define:
+0.6 intentionally leaves these beyond its boundary:
 
 - Level 0 Spell semantics;
 - Mana fields in `SPELL.md`;
-- a portable Spell level schema;
-- Prestidigitation or another canonical cantrip;
-- real-time clock integration for drain;
-- distributed consensus for one Mana ledger across hosts.
-
-Those should be derived from executable runtime evidence rather than authored ahead of it.
+- portable Spell level semantics;
+- Prestidigitation/cantrip specimens;
+- wall-clock scheduling for drain;
+- external signatures/seals for the Mana ledger;
+- multi-host consensus/concurrent mutation.
