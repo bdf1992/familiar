@@ -63,6 +63,7 @@ A Familiar is guidance identity, not a persona or authority token. Owl may advis
 | `registry/scroll.schema.json` | Contract for non-executable exact Spell carriers. | Current Code |
 | `registry/spellbook.schema.json` | Contract for Spellbook registration metadata. | Current Code |
 | `registry/library.schema.json` | Contract for Libraries and their directed relations. | Current Code |
+| `registry/attestation.py` | Optional attestation envelope above content digests, one local/offline signing path, and consumer-local trust policy. | Current Code |
 
 Audit residual: `registry/core.py` still parses Spell frontmatter itself. The migration ledger identifies a future narrow Spell identity API as cleaner ownership. This does not block the first local cast because exact identity/digest behavior is tested.
 
