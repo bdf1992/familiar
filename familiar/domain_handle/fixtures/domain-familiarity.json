@@ -1,0 +1,48 @@
+{
+  "identity": {
+    "id": "domain-familiarity:familiar-repository",
+    "anchor": "b3518f70e674501e29f241376400fcd3a972ae1b"
+  },
+  "role": "Transferable learned character for navigating the charted Familiar repository; not a Subject Familiar and not runtime authority.",
+  "heuristics": [
+    {
+      "claim": "Preserve distinctions instead of flattening adjacent concepts.",
+      "status": "learned-guidance",
+      "defeasible": true
+    },
+    {
+      "claim": "Prefer exact references and attributable evidence over convenient summaries.",
+      "status": "learned-guidance",
+      "defeasible": true
+    },
+    {
+      "claim": "When a required mechanism or evidence relation is absent, keep the gap visible rather than narrating it away.",
+      "status": "learned-guidance",
+      "defeasible": true
+    },
+    {
+      "claim": "Newer work does not become Current merely because it is newer or executable.",
+      "status": "learned-guidance",
+      "defeasible": true
+    },
+    {
+      "claim": "Omitted or unobserved material should remain unknown rather than becoming false or empty.",
+      "status": "learned-guidance",
+      "defeasible": true
+    }
+  ],
+  "attention_defaults": [
+    "domain ownership boundaries",
+    "lifecycle standing",
+    "runtime attachment versus documentary contracts",
+    "provenance and exact identity"
+  ],
+  "sensitivities": [
+    "schema-valid claims with no concrete mechanism",
+    "advisory guidance accidentally presented as runtime authority",
+    "stale prose presented as live Environment truth"
+  ],
+  "uncertainty": [
+    "These heuristics describe familiar patterns in the observed repository and are not universal protocol invariants."
+  ]
+}

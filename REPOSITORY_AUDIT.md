@@ -152,8 +152,13 @@ The active `find-familiar` example uses the 0.3 candidate shape through the adap
 | `familiar/view/familiar-view.schema.json` | Machine contract for a Familiar View. Accounts for every source guidance category exactly once. | Code | Current | #14 closed by #42 |
 | `familiar/view/builder.py` | Builds a View from a store-resolved `FamiliarRef` and validates omission accounting. | Code | Current | Added by #42 |
 | `familiar/report/README.md` | Familiar Report: a candidate account *about* a Familiar, deliberately not frozen as a schema. | Knowledge | Work | Added by PR #9 |
+| `familiar/domain_handle/README.md` | Bounded Work description for Context + Domain Familiarity + optional Subject Familiar resolution. | Knowledge | Work | #67 |
+| `familiar/domain_handle/__init__.py` | Work exports for the read-only Domain Handle resolver. | Code | Work | #67 |
+| `familiar/domain_handle/resolver.py` | Read-only non-flattening resolver; preserves source identities, disagreement and unknowns while exposing no effectful path. | Code | Work | #67 |
+| `familiar/domain_handle/fixtures/context.json` | Machine-readable repository Context Work specimen anchored to the #66 survey commit. | Knowledge | Work | #67; derived from #66 |
+| `familiar/domain_handle/fixtures/domain-familiarity.json` | Machine-readable learned Domain Familiarity Work specimen, explicitly distinct from Subject Familiar. | Knowledge | Work | #67; derived from #66 |
 
-A Familiar is guidance identity, not a persona or an authority token. A View represents an accepted revision; a Report is an account about one; neither establishes Presence.
+A Familiar is guidance identity, not a persona or an authority token. A View represents an accepted revision; a Report is an account about one; neither establishes Presence. Domain Familiarity remains separate Work from a Subject Familiar and cannot grant runtime authority.
 
 ## Registry domain
 
@@ -284,6 +289,7 @@ All files under `cast/tests/` are **Current Code** because CI depends on them. T
 | `cast/tests/test_repository_audit_18.py` | This file's completeness against the tracked tree. |
 | `cast/tests/test_format_generations_55.py` | The two incompatible FORMAT 0.3 generations, pinned as running code. Documents a defect; every assertion is expected to change when #55 closes. |
 | `cast/tests/test_crossing_plan_34.py` | Closure refusal at an unclean Brink, canonical plan identity, and adversarial post-Closure swaps of target, Technique, binding, authority, obligation, evidence contract, residual bounds and Mana. |
+| `cast/tests/test_domain_handle_67.py` | Read-only Domain Handle resolution: source identity, disagreement/unknown preservation, participant-relative projection, copy isolation, and no Cast/Environment dependency. |
 | `cast/tests/test_resource_resolution_17.py` | Canonical cross-domain resolution without composition symlinks, including a symlink-free checkout. |
 | `cast/tests/test_familiar_revisions_15.py` | Immutable Familiar revisions addressable by `FamiliarRef`; a newer write does not destroy an older revision. |
 | `cast/tests/test_familiar_view_14.py` | Every source guidance category accounted for exactly once; a silently dropped category fails. |
