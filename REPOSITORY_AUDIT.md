@@ -44,7 +44,7 @@ Audit note: the active `find-familiar` example uses the 0.3 candidate declaratio
 | `familiar/README.md` | Ownership and persistence/security boundary. | Current orientation |
 | `familiar/familiar.schema.json` | Source-of-truth structural contract for a Familiar. | Current Code |
 | `familiar/validation.py` | Familiar-owned validator; removes the former reverse dependency on Cast. | Current Code |
-| `familiar/store.py` | Exact Familiar persistence. In-memory by default; restart-safe when supplied a local root. | Current Code |
+| `familiar/store.py` | Exact Familiar persistence. In-memory by default; restart-safe when supplied a local root. Retains immutable revisions addressable by `FamiliarRef`, with a latest pointer as a convenience index only. | Current Code |
 | `familiar/find-familiar/SKILL.md` | Practitioner skill for creating, inspecting, repairing, or validating caster-owned Familiars. | Current Skill |
 | `familiar/owl/owl.json` | Canonical system Familiar used to advise protocol/Familiar quality. | Current Knowledge artifact |
 
