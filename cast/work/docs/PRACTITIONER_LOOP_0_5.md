@@ -83,6 +83,24 @@ not_applicable  the obligation does not apply in this Situation
 A checker that raises is `unresolved`, never satisfied.
 
 Formal methods are optional mechanisms, not protocol law. A prover, model checker, temporal monitor, policy engine, property suite, or adversarial evaluator may each discharge an obligation when the Environment accepts its evidence contract. **Checker output is evidence, never authority**, so every outcome retains the provenance of whatever produced it — and a candidate cannot supply the trial that promotes itself.
+### Concurrency
+
+Two Practitioners may resolve overlapping targets, close against the same pre-state, then execute concurrently. The contract is expressed in terms of **observed pre-state identity** rather than one universal locking strategy, so an Environment that can lock and one that can only compare-and-swap are both conforming.
+
+A CastPlan retains a `StateVersion(resource, version)` per resource it depends on. A resource name alone detects nothing: two Casts naming the same resource conflict only when the version each observed differs from what is there at commit.
+
+```text
+reservation   exclusive or shared acquisition before closure
+optimistic    execute against isolated state, validate versions at commit
+conflict      another consequence invalidated an assumption this Cast required
+retry         a NEW attempt with fresh evidence, never a resumed old closure
+```
+
+A conflicting commit is refused and **names the resource and both versions**, rather than overwriting another Cast silently. A conflict on any observed resource refuses the whole commit — a partial apply would be the lost update this exists to prevent, wearing a different name.
+
+**Retry is not resumption.** The old closure was against a pre-state that no longer exists, so `replan()` demands a new attempt id and refuses to reuse the old one.
+
+**Deadlock avoidance is by total order, not timeout.** Every multi-resource acquisition sorts by resource name and takes them in that order, so two holders can never each hold what the other needs next. A refused acquisition leaves no partial hold, so nobody waits behind a loser. A timeout would turn a deadlock into a slow deadlock; ordering removes the cycle.
 
 OWL_ENGINE is the intended provider of environment/capability observations. SpellCast consumes those receipts to decide whether this Spell can close in this Situation.
 
