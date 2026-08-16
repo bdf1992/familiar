@@ -25,12 +25,16 @@ class WorkspaceTidyIntegrationTests(unittest.TestCase):
         self.spell = load_spell_md(EXAMPLE / "SPELL.md")
 
     def make_workspace(self, root: Path) -> None:
-        (root / "notes.txt").write_text("authored\n", encoding="utf-8")
-        (root / "cache.agentspells-disposable").write_text("cache\n", encoding="utf-8")
+        # write_bytes, not write_text: this fixture is hashed, and the expected
+        # digests in CAST.example.json are over LF content. Text mode translates
+        # "\n" to os.linesep, so write_text produces CRLF on Windows and every
+        # observed sha256 diverges from the checked-in record.
+        (root / "notes.txt").write_bytes(b"authored\n")
+        (root / "cache.agentspells-disposable").write_bytes(b"cache\n")
         nested = root / "build"
         nested.mkdir()
-        (nested / "artifact.agentspells-disposable").write_text("artifact\n", encoding="utf-8")
-        (nested / "keep.json").write_text('{"keep":true}\n', encoding="utf-8")
+        (nested / "artifact.agentspells-disposable").write_bytes(b"artifact\n")
+        (nested / "keep.json").write_bytes(b'{"keep":true}\n')
 
     def test_skill_technique_produces_observed_external_effect(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -32,12 +32,18 @@ class WorkspaceTidyCasting04Tests(unittest.TestCase):
         validate_technique_binding(self.binding)
 
     def make_workspace(self, root: Path) -> None:
-        (root / "notes.txt").write_text("authored\n", encoding="utf-8")
-        (root / "cache.agentspells-disposable").write_text("cache\n", encoding="utf-8")
+        # write_bytes, not write_text: this workspace is observed and hashed by
+        # the host. This test does not currently compare against a checked-in
+        # record, so it passes on Windows today -- but it shares the hazard with
+        # test_workspace_tidy_integration and would acquire the same defect the
+        # moment a digest assertion is added. Byte-exact fixtures are the
+        # invariant, not a workaround.
+        (root / "notes.txt").write_bytes(b"authored\n")
+        (root / "cache.agentspells-disposable").write_bytes(b"cache\n")
         nested = root / "build"
         nested.mkdir()
-        (nested / "artifact.agentspells-disposable").write_text("artifact\n", encoding="utf-8")
-        (nested / "keep.json").write_text('{"keep":true}\n', encoding="utf-8")
+        (nested / "artifact.agentspells-disposable").write_bytes(b"artifact\n")
+        (nested / "keep.json").write_bytes(b'{"keep":true}\n')
 
     def test_real_skill_casts_through_04_binding_and_keeps_spell_postconditions(self):
         with tempfile.TemporaryDirectory() as tmp:
