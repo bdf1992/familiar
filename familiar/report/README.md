@@ -62,6 +62,40 @@ The shared compositional intuition is a typed relation between addressable thing
 
 Binding here is therefore not a universal permission edge. A semantic or evidentiary binding does not grant runtime authority, establish Presence, realize an Effect, or become sufficient for Cast closure merely because the relation exists.
 
+## Bound knowledge and admissibility
+
+Account bindings do more than decorate content: they constrain the admissible reading of that content.
+
+```text
+"tests passed"
+    unbound -> ambiguous claim
+
+about       -> commit:abc123
+based-on    -> workflow-run:991
+reported-by -> github-actions
+for         -> compatibility assessment
+
+    bound -> situated claim
+```
+
+Each binding removes otherwise-plausible interpretations:
+
+- `about` constrains which subject the account concerns;
+- `based-on` constrains which evidence may be cited as its basis;
+- `reported-by` preserves attribution rather than allowing the account to float free of its reporter;
+- `for` constrains the perspective or question the account is answering.
+
+This follows the broader working intuition that **Binding changes admissible candidates**. For Knowledge, that means changing admissible readings, references, or evidence relations—not changing truth itself.
+
+```text
+Bound != true
+Bound != accepted
+Bound != authorized
+Bound != closed
+```
+
+A binding may make a statement precise enough to evaluate while leaving it unsupported, defeated, or irrelevant to a particular Cast Requirement. Operational consumers remain responsible for deciding which bound information is admissible for their own purpose.
+
 ## Presence
 
 A Report may account for observations that a Familiar was Present, but the Report does not establish that Presence. Likewise a Familiar View may be consumed without the Familiar being Present.
@@ -94,6 +128,7 @@ View != Report
 View != Presence
 Report about Presence != Presence
 Carrier != content
+Binding != truth
 Binding != authority
 Knowledge != Evidence
 Delivery != Closure
