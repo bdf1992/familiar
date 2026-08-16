@@ -17,6 +17,11 @@ class MagicRuntimeError(ValueError):
     pass
 
 
+def _is_int(value: Any) -> bool:
+    """Python bool is an int subclass; runtime quantities deliberately are not."""
+    return type(value) is int
+
+
 @dataclass(frozen=True)
 class MagicLimits:
     """Maintained runtime ceilings. The conserved quantity N is not a setting."""
@@ -32,9 +37,9 @@ class MagicLimits:
 
     def validate(self, *, total_mana: int) -> None:
         values = asdict(self)
-        if any(not isinstance(value, int) or value < 0 for value in values.values()):
+        if any(not _is_int(value) or value < 0 for value in values.values()):
             raise MagicRuntimeError("magic limits must be non-negative integers")
-        if not isinstance(total_mana, int) or total_mana <= 0:
+        if not _is_int(total_mana) or total_mana <= 0:
             raise MagicRuntimeError("total_mana must be a positive integer")
         if self.max_network > total_mana:
             raise MagicRuntimeError("max_network cannot exceed total_mana")
@@ -52,10 +57,11 @@ class MagicLimits:
 
 @dataclass(frozen=True)
 class MaintenanceEvidence:
-    """Attributable evidence for one Maintenance Act.
+    """Candidate evidence identifying one Maintenance Act.
 
-    source_id identifies the Act. Reusing the same source_kind/source_id/domain
-    is a replay and cannot yield another runtime consequence.
+    `before` and `after` are claims supplied to the Environment verifier. They
+    do not certify themselves. The verifier supplies the accepted independent
+    observer and receipt in MaintenanceDecision.
     """
 
     source_kind: str
@@ -64,14 +70,13 @@ class MaintenanceEvidence:
     mechanism: str
     before: dict[str, Any]
     after: dict[str, Any]
-    observer: str
 
     def validate(self) -> None:
         if self.source_kind not in {"skill", "cast"}:
             raise MagicRuntimeError("maintenance source_kind must be skill or cast")
         if self.domain not in DOMAINS:
             raise MagicRuntimeError("maintenance domain must be one of the five repository domains")
-        for name in ("source_id", "mechanism", "observer"):
+        for name in ("source_id", "mechanism"):
             value = getattr(self, name)
             if not isinstance(value, str) or not value:
                 raise MagicRuntimeError(f"maintenance evidence requires {name}")
@@ -85,19 +90,50 @@ class MaintenanceEvidence:
 
 @dataclass(frozen=True)
 class MaintenanceDecision:
-    """Independent runtime decision about one evidenced Maintenance Act."""
+    """Environment decision about one candidate Maintenance Act."""
 
     confirmed: bool
     restorable: int = 0
+    observer: str = ""
+    receipt_id: str = ""
     reason: str = ""
 
     def validate(self) -> None:
-        if not isinstance(self.confirmed, bool):
+        if type(self.confirmed) is not bool:
             raise MagicRuntimeError("maintenance decision confirmed must be boolean")
-        if not isinstance(self.restorable, int) or self.restorable < 0:
+        if not _is_int(self.restorable) or self.restorable < 0:
             raise MagicRuntimeError("maintenance decision restorable must be a non-negative integer")
         if self.restorable and not self.confirmed:
             raise MagicRuntimeError("unconfirmed maintenance cannot restore Mana")
+        if self.confirmed:
+            for name in ("observer", "receipt_id"):
+                value = getattr(self, name)
+                if not isinstance(value, str) or not value:
+                    raise MagicRuntimeError(f"confirmed maintenance requires {name}")
+
+
+@dataclass(frozen=True)
+class ConsequenceDecision:
+    """Environment observation used to settle one committed Cast."""
+
+    confirmed: bool
+    spent: int = 0
+    observer: str = ""
+    receipt_id: str = ""
+    reason: str = ""
+
+    def validate(self) -> None:
+        if type(self.confirmed) is not bool:
+            raise MagicRuntimeError("consequence decision confirmed must be boolean")
+        if not _is_int(self.spent) or self.spent < 0:
+            raise MagicRuntimeError("consequence decision spent must be a non-negative integer")
+        if self.spent and not self.confirmed:
+            raise MagicRuntimeError("unconfirmed consequence cannot spend Mana")
+        if self.confirmed:
+            for name in ("observer", "receipt_id"):
+                value = getattr(self, name)
+                if not isinstance(value, str) or not value:
+                    raise MagicRuntimeError(f"confirmed consequence requires {name}")
 
 
 @dataclass(frozen=True)
@@ -137,15 +173,11 @@ AccessResolver = Callable[[str, str, str], bool]
 RouteResolver = Callable[[str, str], bool]
 RoleResolver = Callable[[str, str, str], bool]
 MaintenanceVerifier = Callable[[MaintenanceEvidence], MaintenanceDecision]
+ConsequenceVerifier = Callable[[str, dict[str, Any]], ConsequenceDecision]
 
 
 class MagicRuntime:
-    """Single-writer conserved Mana runtime carried by an Environment.
-
-    Mana is not the network. The Environment supplies participation, reach,
-    routing, role resolution, observation, and persistence mechanisms. This
-    runtime owns only the legal disposition changes of one fixed quantity N.
-    """
+    """Single-writer conserved Mana runtime carried by an Environment."""
 
     ROLE_DOMAINS_MAINTAINER = "domains-maintainer"
     SETTINGS_MECHANISM = "magic-runtime.settings"
@@ -161,6 +193,7 @@ class MagicRuntime:
         route_resolver: RouteResolver | None = None,
         role_resolver: RoleResolver | None = None,
         maintenance_verifier: MaintenanceVerifier | None = None,
+        consequence_verifier: ConsequenceVerifier | None = None,
     ):
         limits.validate(total_mana=total_mana)
         self._name(initial_locality, "initial_locality")
@@ -169,6 +202,7 @@ class MagicRuntime:
         self._route_resolver = route_resolver
         self._role_resolver = role_resolver
         self._maintenance_verifier = maintenance_verifier
+        self._consequence_verifier = consequence_verifier
         self._events: list[ManaEvent] = []
         self._state = _State(total_mana=total_mana, limits=limits)
 
@@ -197,7 +231,8 @@ class MagicRuntime:
 
     @property
     def events(self) -> tuple[ManaEvent, ...]:
-        return tuple(self._events)
+        # Never expose references into the digest-bearing internal ledger.
+        return tuple(deepcopy(self._events))
 
     def sense(self, observer: str, locality: str, *, subject: str | None = None) -> dict[str, int]:
         self._name(observer, "observer")
@@ -229,7 +264,6 @@ class MagicRuntime:
         return self._accounted_total()
 
     def flow(self, source: str, target: str, amount: int) -> ManaEvent:
-        """Move Ambient Mana over an Environment-approved network route."""
         self._name(source, "source locality")
         self._name(target, "target locality")
         self._positive(amount)
@@ -300,39 +334,46 @@ class MagicRuntime:
             "commit", actor=actor, locality=locality, amount=amount, details={"cast_id": cast_id, "level": level}
         )
 
-    def settle(self, cast_id: str, *, spent: int) -> ManaEvent:
+    def settle(self, cast_id: str) -> ManaEvent:
+        """Settle a Cast only from an Environment-produced consequence decision."""
         self._name(cast_id, "cast_id")
-        if not isinstance(spent, int) or spent < 0:
-            raise MagicRuntimeError("spent must be a non-negative integer")
         commitment = self._state.committed.get(cast_id)
         if commitment is None:
             raise MagicRuntimeError(f"unknown Mana commitment: {cast_id}")
-        if spent > commitment["amount"]:
+        decision = self._verify_consequence(cast_id, commitment)
+        if not decision.confirmed:
+            raise MagicRuntimeError("Cast consequence has not been independently confirmed")
+        if decision.observer == commitment["actor"]:
+            raise MagicRuntimeError("Cast settlement requires an independent consequence observer")
+        if decision.spent > commitment["amount"]:
             raise MagicRuntimeError("cannot spend more Mana than committed")
         return self._append(
             "settle",
             actor=commitment["actor"],
             locality=commitment["locality"],
             amount=commitment["amount"],
-            details={"cast_id": cast_id, "spent": spent, "released": commitment["amount"] - spent},
+            details={
+                "cast_id": cast_id,
+                "spent": decision.spent,
+                "released": commitment["amount"] - decision.spent,
+                "decision": asdict(decision),
+            },
         )
 
     def restore(self, actor: str, locality: str, evidence: MaintenanceEvidence) -> ManaEvent:
+        """Record one confirmed Maintenance Act and any restoration it causes.
+
+        A confirmed act is consumed even when zero Mana is currently restorable.
+        Restoration is therefore a possible consequence of maintenance, not its
+        definition and not a deferred credit that can be replayed later.
+        """
         self._name(actor, "actor")
         self._name(locality, "locality")
-        evidence.validate()
-        self._require_unapplied_act(evidence)
-        self._require_maintainer(actor, evidence.domain)
-        self._require_independent_observer(actor, evidence)
-        decision = self._verify_maintenance(evidence)
-        if not decision.confirmed or decision.restorable <= 0:
-            raise MagicRuntimeError("maintenance did not confirm a restoration")
+        decision = self._verify_maintenance_act(actor, evidence)
         amount = min(decision.restorable, self.limits.max_restored, self.spent_total(locality=locality))
-        if amount <= 0:
-            raise MagicRuntimeError("no eligible spent Mana can be restored")
-        allocations = self._restoration_allocations(locality, amount)
+        allocations = self._restoration_allocations(locality, amount) if amount else []
         return self._append(
-            "restore",
+            "maintenance",
             actor=actor,
             locality=locality,
             amount=amount,
@@ -347,15 +388,15 @@ class MagicRuntime:
 
     def configure(self, actor: str, changes: dict[str, int], evidence: MaintenanceEvidence) -> ManaEvent:
         self._name(actor, "actor")
+        if not isinstance(changes, dict):
+            raise MagicRuntimeError("magic setting changes must be a mapping")
         evidence.validate()
         self._require_unapplied_act(evidence)
         self._require_maintainer(actor, evidence.domain)
-        self._require_independent_observer(actor, evidence)
         if evidence.domain != "environment" or evidence.mechanism != self.SETTINGS_MECHANISM:
             raise MagicRuntimeError("runtime settings require maintenance of magic-runtime.settings")
         decision = self._verify_maintenance(evidence)
-        if not decision.confirmed:
-            raise MagicRuntimeError("configuration maintenance was not independently confirmed")
+        self._require_confirmed_maintenance(actor, decision)
         if "total_mana" in changes:
             raise MagicRuntimeError("total_mana is conserved and cannot be reconfigured")
         unknown = set(changes) - set(asdict(self.limits))
@@ -375,19 +416,42 @@ class MagicRuntime:
         )
 
     def admit_level(self, level: int) -> None:
-        if not isinstance(level, int) or level < 0:
+        if not _is_int(level) or level < 0:
             raise MagicRuntimeError("level must be a non-negative integer")
         if level > self.limits.max_level:
             raise MagicRuntimeError("max_level exceeded")
 
+    def _verify_consequence(self, cast_id: str, commitment: dict[str, Any]) -> ConsequenceDecision:
+        if self._consequence_verifier is None:
+            raise MagicRuntimeError("consequence verifier unavailable")
+        decision = self._consequence_verifier(cast_id, deepcopy(commitment))
+        if not isinstance(decision, ConsequenceDecision):
+            raise MagicRuntimeError("consequence verifier must return ConsequenceDecision")
+        decision.validate()
+        return decision
+
+    def _verify_maintenance_act(self, actor: str, evidence: MaintenanceEvidence) -> MaintenanceDecision:
+        evidence.validate()
+        self._require_unapplied_act(evidence)
+        self._require_maintainer(actor, evidence.domain)
+        decision = self._verify_maintenance(evidence)
+        self._require_confirmed_maintenance(actor, decision)
+        return decision
+
     def _verify_maintenance(self, evidence: MaintenanceEvidence) -> MaintenanceDecision:
         if self._maintenance_verifier is None:
             raise MagicRuntimeError("maintenance verifier unavailable")
-        decision = self._maintenance_verifier(evidence)
+        decision = self._maintenance_verifier(deepcopy(evidence))
         if not isinstance(decision, MaintenanceDecision):
             raise MagicRuntimeError("maintenance verifier must return MaintenanceDecision")
         decision.validate()
         return decision
+
+    def _require_confirmed_maintenance(self, actor: str, decision: MaintenanceDecision) -> None:
+        if not decision.confirmed:
+            raise MagicRuntimeError("maintenance was not independently confirmed")
+        if decision.observer == actor:
+            raise MagicRuntimeError("maintenance requires an independent observer")
 
     def _require_access(self, actor: str, operation: str, locality: str) -> None:
         if self._access_resolver is None or not self._access_resolver(actor, operation, locality):
@@ -396,10 +460,6 @@ class MagicRuntime:
     def _require_maintainer(self, actor: str, domain: str) -> None:
         if self._role_resolver is None or not self._role_resolver(actor, self.ROLE_DOMAINS_MAINTAINER, domain):
             raise MagicRuntimeError("Domains Maintainer role unavailable for domain")
-
-    def _require_independent_observer(self, actor: str, evidence: MaintenanceEvidence) -> None:
-        if evidence.observer == actor:
-            raise MagicRuntimeError("maintenance evidence requires an independent observer")
 
     def _require_unapplied_act(self, evidence: MaintenanceEvidence) -> None:
         if evidence.act_id in self._state.maintenance_acts:
@@ -432,15 +492,18 @@ class MagicRuntime:
         details: dict[str, Any],
         persist: bool = True,
     ) -> ManaEvent:
+        if not _is_int(amount) or amount < 0:
+            raise MagicRuntimeError("event amount must be a non-negative integer")
         sequence = len(self._events)
         previous_digest = self._events[-1].digest if self._events else None
+        safe_details = deepcopy(details)
         material = {
             "sequence": sequence,
             "operation": operation,
             "actor": actor,
             "locality": locality,
             "amount": amount,
-            "details": details,
+            "details": safe_details,
             "previous_digest": previous_digest,
         }
         digest = self._event_digest(material)
@@ -457,7 +520,8 @@ class MagicRuntime:
             self._state = previous_state
             self._events = previous_events
             raise
-        return event
+        # Return a detached record so callers cannot mutate ledger internals.
+        return deepcopy(event)
 
     def _apply(self, event: ManaEvent) -> None:
         operation = event.operation
@@ -503,7 +567,7 @@ class MagicRuntime:
                 )
             if released:
                 self._move_claim(locality, actor, released)
-        elif operation == "restore":
+        elif operation == "maintenance":
             allocations = event.details["restored_from"]
             if sum(item["amount"] for item in allocations) != amount:
                 raise MagicRuntimeError("restoration allocations do not match event amount")
@@ -524,7 +588,8 @@ class MagicRuntime:
                     )
                 else:
                     del self._state.spent[cast_id]
-            self._move_ambient(locality, amount)
+            if amount:
+                self._move_ambient(locality, amount)
             self._state.maintenance_acts.add(event.details["act_id"])
         elif operation == "configure":
             data = asdict(self._state.limits)
@@ -629,14 +694,25 @@ class MagicRuntime:
             raise MagicRuntimeError("magic ledger is empty")
         self._events = []
         for raw in raw_events:
+            if not isinstance(raw, dict):
+                raise MagicRuntimeError("magic ledger event must be a mapping")
+            sequence = raw.get("sequence")
+            amount = raw.get("amount")
+            if not _is_int(sequence) or sequence < 0:
+                raise MagicRuntimeError("magic ledger sequence is invalid")
+            if not _is_int(amount) or amount < 0:
+                raise MagicRuntimeError("magic ledger amount is invalid")
             expected_previous = self._events[-1].digest if self._events else None
+            details = raw.get("details") or {}
+            if not isinstance(details, dict):
+                raise MagicRuntimeError("magic ledger event details must be a mapping")
             material = {
-                "sequence": raw["sequence"],
+                "sequence": sequence,
                 "operation": raw["operation"],
                 "actor": raw.get("actor"),
                 "locality": raw.get("locality"),
-                "amount": raw["amount"],
-                "details": raw.get("details") or {},
+                "amount": amount,
+                "details": deepcopy(details),
                 "previous_digest": raw.get("previous_digest"),
             }
             if material["sequence"] != len(self._events):
@@ -658,7 +734,7 @@ class MagicRuntime:
 
     @staticmethod
     def _positive(value: int) -> None:
-        if not isinstance(value, int) or value <= 0:
+        if not _is_int(value) or value <= 0:
             raise MagicRuntimeError("amount must be a positive integer")
 
     @staticmethod
