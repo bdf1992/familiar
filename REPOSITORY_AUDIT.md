@@ -44,9 +44,11 @@ Audit note: the active `find-familiar` example uses the 0.3 candidate declaratio
 | `familiar/README.md` | Ownership and persistence/security boundary. | Current orientation |
 | `familiar/familiar.schema.json` | Source-of-truth structural contract for a Familiar. | Current Code |
 | `familiar/validation.py` | Familiar-owned validator; removes the former reverse dependency on Cast. | Current Code |
-| `familiar/store.py` | Exact Familiar persistence. In-memory by default; restart-safe when supplied a local root. | Current Code |
+| `familiar/store.py` | Exact Familiar persistence. In-memory by default; restart-safe when supplied a local root. Retains immutable revisions addressable by `FamiliarRef`, with a latest pointer as a convenience index only. | Current Code |
 | `familiar/find-familiar/SKILL.md` | Practitioner skill for creating, inspecting, repairing, or validating caster-owned Familiars. | Current Skill |
 | `familiar/owl/owl.json` | Canonical system Familiar used to advise protocol/Familiar quality. | Current Knowledge artifact |
+| `familiar/view/familiar-view.schema.json` | Contract for a bounded representation of one exact accepted Familiar revision. Accounts for every source guidance category exactly once. | Current Code |
+| `familiar/view/builder.py` | Builds a View from a store-resolved `FamiliarRef` and validates omission accounting. | Current Code |
 
 A Familiar is guidance identity, not a persona or authority token. Owl may advise the first finding but cannot accept a Familiar for the practitioner.
 
@@ -85,10 +87,12 @@ Audit residual: broader capability receipts still live in `cast/practitioner/sit
 | `cast/kernel/__init__.py` | Kernel public exports. | Current Code |
 | `cast/practitioner/cast_session.py` | Resumable practitioner preparation state; acceptance gates closure. | Current Code |
 | `cast/practitioner/situation.py` | Situation, capability receipt, typed Requirement demand, capacity relations, attenuation, CastPlan, requirement-to-capability compilation. | Current Code with future ownership split noted |
+| `cast/practitioner/obligations.py` | Typed Runtime Obligations, discharge mechanisms, obligation plan, and four-status evaluation. | Current Code |
 | `cast/practitioner/concurrency.py` | Observed pre-state identity, conflict detection, optimistic commit validation, and reservations with deterministic acquisition order. | Current Code |
 | `cast/practitioner/__init__.py` | Practitioner public exports. | Current Code |
+| `cast/kernel/resources.py` | Canonical cross-domain resource resolution from the repository root. | Current Code |
 
-The `cast/familiar`, `cast/format`, and `cast/owl` symlinks are transitional composition aids after the domain move, not duplicate authorities.
+The `cast/familiar`, `cast/format`, and `cast/owl` symlinks were transitional composition aids after the domain move. They were removed under #17: runtime code resolves another domain's artifacts through `cast/kernel/resources.py` by canonical repository path, so the supported test command no longer depends on whether the checkout can materialize symlinks.
 
 ## Cast domain — candidate/draft runtime
 

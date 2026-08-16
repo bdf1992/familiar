@@ -176,7 +176,21 @@ reason
 
 One confirmed Maintenance Act is recorded at most once.
 
-Replaying the same Skill run, CAST, source id, or accepted receipt cannot restore more Mana or reapply a configuration change. This rule survives restart because applied Maintenance Act identities are replayed from the runtime ledger.
+Replaying the same Skill run, CAST, source id, or accepted receipt cannot restore more Mana or reapply a configuration change. This rule survives restart because applied Maintenance identities are replayed from the runtime ledger.
+
+The rule needs three independent guards, because one of them alone leaves the other two routes open:
+
+```text
+act identity     source_kind:domain:source_id   the exact Maintenance Act
+source identity  source_kind:source_id          one attributable execution source
+receipt identity receipt_id                     one accepted verifier response
+```
+
+Source identity is consumed separately from act identity because act identity carries the claimed domain. Without it, one execution manufactures a fresh maintenance consequence for every domain it is willing to claim.
+
+Receipt identity is consumed separately because the receipt is supplied by the verifier rather than claimed by the source. A verifier response is not reusable authority, and without this guard one accepted receipt closes a second consequence under a fresh act id.
+
+Both restoration and runtime configuration pass through the same boundary. The guards are consumed where ledger events are applied, so replaying a persisted ledger enforces them exactly as live operation does, and a ledger holding a duplicated maintenance event is refused on open rather than reconstructed into a state that already permitted it.
 
 A confirmed Maintenance Act remains a real Act even when it restores zero Mana. Zero restoration therefore consumes the Act rather than creating a deferred restoration credit that can be replayed after unrelated Mana is spent later.
 
