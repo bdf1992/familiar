@@ -17,6 +17,8 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import asdict
+from hashlib import sha256
+import json
 from typing import Any, Iterable, Mapping, Sequence
 
 from .situation import CapabilityReceipt, Demand, Situation, compile_cast_plan
@@ -57,6 +59,52 @@ def _require_text(name: str, value: Any) -> str:
     if not isinstance(value, str) or not value:
         raise HandleSituationError(f"{name} must be a non-empty string")
     return value
+
+
+def _canonical_digest(value: Mapping[str, Any]) -> str:
+    material = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return "sha256:" + sha256(material.encode("utf-8")).hexdigest()
+
+
+def _verify_handle_sources(handle_view: Mapping[str, Any]) -> Mapping[str, Any]:
+    """Fail closed if the Handle source material no longer matches its labels."""
+
+    sources = _require_mapping("handle_view sources", handle_view.get("sources"))
+    source_pairs = (
+        ("context", "context"),
+        ("domain_familiarity", "domain_familiarity"),
+    )
+    anchors: list[str] = []
+
+    for source_key, material_key in source_pairs:
+        source = _require_mapping(f"{source_key} source", sources.get(source_key))
+        material = _require_mapping(f"handle_view {material_key}", handle_view.get(material_key))
+        identity = _require_mapping(f"{material_key} identity", material.get("identity"))
+
+        source_id = _require_text(f"{source_key} source id", source.get("id"))
+        source_anchor = _require_text(f"{source_key} source anchor", source.get("anchor"))
+        source_digest = _require_text(f"{source_key} source digest", source.get("digest"))
+        material_id = _require_text(f"{material_key} identity id", identity.get("id"))
+        material_anchor = _require_text(
+            f"{material_key} identity anchor", identity.get("anchor")
+        )
+
+        if source_id != material_id or source_anchor != material_anchor:
+            raise HandleSituationError(
+                f"{source_key} source identity does not match Handle material"
+            )
+        actual_digest = _canonical_digest(material)
+        if source_digest != actual_digest:
+            raise HandleSituationError(
+                f"{source_key} source digest does not match Handle material"
+            )
+        anchors.append(source_anchor)
+
+    if len(set(anchors)) != 1:
+        raise HandleSituationError(
+            "Context and Domain Familiarity must retain the same source anchor"
+        )
+    return sources
 
 
 def _at_path(root: Any, path: Sequence[Any]) -> Any:
@@ -240,9 +288,7 @@ def resolve_handle_situation(
     if handle_view.get("runtime_authority") not in ([], ()):
         raise HandleSituationError("HandleView cannot bring runtime authority into Situation")
 
-    sources = _require_mapping("handle_view sources", handle_view.get("sources"))
-    context_source = _require_mapping("context source", sources.get("context"))
-    _require_text("context source anchor", context_source.get("anchor"))
+    sources = _verify_handle_sources(handle_view)
 
     intent_id = _require_text("intent id", intent.get("id"))
     situation_input = _require_mapping("intent situation", intent.get("situation"))
