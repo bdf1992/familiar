@@ -52,6 +52,38 @@ Compilation fails closed three ways rather than guessing: no admissible receipt,
 
 Where a demand requires narrowing, the plan carries an attenuated handle beside the receipt. A Technique is given the handle, never the broader receipt.
 
+### Runtime Obligations
+
+Not every runtime invariant is a capability check, and routing every Requirement through the capability matcher would recreate the operation-name-lookup error one layer up. A capability proves a mechanism exists with sufficient typed capacity. It cannot prove a property of an execution trace, a law over whole-runtime state, or that an implementation realizes its intended Effect.
+
+A Requirement therefore compiles into one or more typed **Runtime Obligations**:
+
+```text
+capability gate    an effect path needs a capability with sufficient capacity
+state predicate    a before/after condition over resolved state
+temporal monitor   a property over an ordered trace, not one instant
+global invariant   a law over whole-runtime state, owned by no Technique
+semantic trial     behavioural evidence that the intended Effect was realized
+provenance proof   evidence carrying attributable observer or signer identity
+```
+
+One Requirement may compile to several. A Scope Requirement compiles to a capability gate for the attenuated effect path **and** a post-observation of downstream residuals. Mana conservation compiles to a global invariant and needs no per-Technique capability at all.
+
+Only capability-bearing obligations reach the capability matcher. Everything else binds to a registered discharge mechanism of its own kind. The plan fails closed when a required before or during obligation has no viable path, and when two mechanisms of one kind are both admissible.
+
+Evaluation distinguishes four statuses, because they mean different things:
+
+```text
+discharged      evidence was produced and satisfies the obligation
+violated        evidence was produced and defeats it
+unresolved      no evidence could be produced
+not_applicable  the obligation does not apply in this Situation
+```
+
+A checker that raises is `unresolved`, never satisfied.
+
+Formal methods are optional mechanisms, not protocol law. A prover, model checker, temporal monitor, policy engine, property suite, or adversarial evaluator may each discharge an obligation when the Environment accepts its evidence contract. **Checker output is evidence, never authority**, so every outcome retains the provenance of whatever produced it — and a candidate cannot supply the trial that promotes itself.
+
 OWL_ENGINE is the intended provider of environment/capability observations. SpellCast consumes those receipts to decide whether this Spell can close in this Situation.
 
 ## Draw the Owl mapping
