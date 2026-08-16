@@ -25,7 +25,9 @@ Claimed -> Committed
         ↓
 govern effectful execution
         ↓
-observe consequence
+Environment observes consequence
+        ↓
+Environment consequence decision / receipt
         ↓
 settle Committed -> Spent + Claimed
         ↓
@@ -36,7 +38,7 @@ CAST
 
 A refusal before commitment does not spend Mana.
 
-Commitment does not itself prove consequence. Settlement follows runtime observation of what actually crossed the consequence boundary.
+Commitment does not itself prove consequence. Settlement is closed by an Environment consequence verifier: the caller does not choose `spent` directly. A confirmed decision identifies an independent observer and receipt and determines how much Committed Mana became Spent.
 
 ## Conservation dependency
 
@@ -60,9 +62,11 @@ Domains Maintainer is a situated role resolved against one of the existing five 
 
 Maintenance may originate in a Skill or a Cast. Both produce candidate Maintenance Evidence and use the same Environment verification path.
 
-The Kernel does not treat role possession, executor success, prose, or a repeated receipt as restoration evidence.
+The candidate evidence does not certify its own observer. The Environment verifier returns the accepted observation identity and receipt together with `confirmed` and `restorable`; self-observed decisions refuse.
 
-A verified Maintenance Act may make existing Spent Mana eligible for restoration. The Environment applies `max_restored`, preserves Spent-Cast provenance, returns restored Mana to Ambient, and records that the unique Act has already produced its runtime consequence.
+The Kernel does not treat role possession, executor success, prose, caller-supplied observer names, or a repeated receipt as restoration evidence.
+
+A confirmed Maintenance Act is recorded exactly once even when it restores zero Mana. Restoration is one possible consequence of maintenance, not the identity of the Maintenance Act. When restoration is available, the Environment applies `max_restored`, preserves Spent-Cast provenance, and returns restored Mana to Ambient.
 
 ## Runtime settings
 
@@ -79,15 +83,18 @@ Every Mana-bearing integration should answer:
 1. Who resolved that the actor may sense/claim/commit in this locality?
 2. Which reachable Ambient Mana is being claimed?
 3. At what exact closure edge does Claimed become Committed?
-4. Which observed consequence determines Committed -> Spent?
+4. Which Environment observation and receipt determine Committed -> Spent?
 5. Which unused commitment returns to Claim?
-6. Can a failed/refused Cast accidentally spend or duplicate Mana?
-7. Can the Cast id be replayed?
-8. Can maintenance evidence be replayed?
-9. What concrete mechanism was maintained?
-10. Which independent observation supports restoration?
-11. Which prior Spent Cast provenance supplied the restored Mana?
-12. Does every transition preserve N?
+6. Can a caller assert its own spend result?
+7. Can a failed/refused Cast accidentally spend or duplicate Mana?
+8. Can the Cast id be replayed?
+9. Can maintenance evidence be replayed?
+10. What concrete mechanism was maintained?
+11. Which independent verifier observation supports the Maintenance Act?
+12. Is the Act recorded even when restoration is zero?
+13. Which prior Spent Cast provenance supplied any restored Mana?
+14. Does every transition preserve N?
+15. Can any caller mutate already-hashed event material?
 
 ## Reference implementation
 
@@ -97,12 +104,14 @@ Every Mana-bearing integration should answer:
 - Environment route resolution for Ambient flow between localities;
 - conserved Mana dispositions;
 - deterministic drain;
-- per-Cast commitment and settlement;
+- per-Cast commitment and verifier-closed settlement;
 - attributable Spent lots;
-- one-use Maintenance Acts;
-- structured maintenance verification;
+- one-use Maintenance Acts, including confirmed zero-restoration Acts;
+- structured maintenance decisions with verifier-resolved observer and receipt identity;
 - Domains Maintainer runtime-setting maintenance;
-- append-only digest-chained persistence and exact replay.
+- caller-detached digest-bearing event material;
+- append-only digest-chained persistence and exact replay;
+- strict integer validation that excludes Python booleans from Mana and limit quantities.
 
 The reference implementation is evidence for the semantics, not a claim that one storage implementation is the only valid Technique.
 
