@@ -1,0 +1,34 @@
+{
+  "observations": {
+    "environment-domain-role": {
+      "status": "present",
+      "value": "concrete runtime state and mechanisms",
+      "evidence": "repo:environment/README.md@003ca4815a491679e9ecf88511cb5abadcd1241f"
+    },
+    "repository-anchor": {
+      "status": "present",
+      "value": "003ca4815a491679e9ecf88511cb5abadcd1241f",
+      "evidence": "git:main@003ca4815a491679e9ecf88511cb5abadcd1241f"
+    },
+    "live-practitioner-host-state": {
+      "status": "unobservable",
+      "evidence": "probe:not-performed:host-state"
+    }
+  },
+  "capability_receipts": [
+    {
+      "name": "repository-read",
+      "environment": "github",
+      "operations": ["read"],
+      "status": "available",
+      "authority": "read",
+      "locator": "bdf1992/familiar",
+      "evidence": "github-connector:contents-read@003ca4815a491679e9ecf88511cb5abadcd1241f",
+      "protocol": "github-contents",
+      "subject": "bdf1992/familiar",
+      "capacity": {
+        "granted": ["contents:read", "metadata:read"]
+      }
+    }
+  ]
+}
