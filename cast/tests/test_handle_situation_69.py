@@ -36,8 +36,10 @@ def subject(subject_id: str, dialect: str, attention: str) -> dict:
     }
 
 
-def handle(subject_familiar: dict | None = None) -> dict:
+def handle(subject_familiar: dict | None = None, context_patch: dict | None = None) -> dict:
     context = load_json(HANDLE_FIXTURES / "context.json")
+    if context_patch:
+        context.update(deepcopy(context_patch))
     familiar = load_json(HANDLE_FIXTURES / "domain-familiarity.json")
     return resolve_domain_handle(context, familiar, subject_familiar)
 
@@ -176,6 +178,13 @@ class SituationEvidenceTests(unittest.TestCase):
         with self.assertRaisesRegex(HandleSituationError, "not absence"):
             self.resolve(intent_value=bad_intent)
 
+    def test_tampered_handle_source_is_refused_before_comparison(self):
+        tampered = deepcopy(self.handle)
+        tampered["context"]["scope"] = "forged broader chart"
+
+        with self.assertRaisesRegex(HandleSituationError, "digest does not match"):
+            self.resolve(handle_view=tampered)
+
     def test_concrete_capability_matching_reuses_existing_demand_logic(self):
         view = self.resolve()
         match = view["capability_matching"]["matches"]["inspect-repository"]
@@ -189,7 +198,7 @@ class SituationEvidenceTests(unittest.TestCase):
         self.assertEqual(
             ["contents:read", "metadata:read"], match["receipt"]["capacity"]["granted"]
         )
-        self.assertEqual(["contents:read"], match["handle"]["capacity"]["granted"])
+        self.assertEqual(("contents:read",), match["handle"]["capacity"]["granted"])
         self.assertTrue(match["attenuated"])
 
     def test_observation_prose_never_becomes_a_capability_receipt(self):
@@ -221,11 +230,15 @@ class SituationEvidenceTests(unittest.TestCase):
         self.assertEqual(software["capability_matching"], magic["capability_matching"])
 
     def test_explicit_drift_kinds_remain_distinct(self):
-        synthetic = deepcopy(self.handle)
-        synthetic["context"]["runtime_expectations"] = {
-            "identity": "mechanism:v1",
-            "capacity": 5,
-        }
+        synthetic = handle(
+            subject("bdo", "compact", "runtime boundaries"),
+            context_patch={
+                "runtime_expectations": {
+                    "identity": "mechanism:v1",
+                    "capacity": 5,
+                }
+            },
+        )
         observations = deepcopy(self.fixture["observations"])
         observations.update(
             {
