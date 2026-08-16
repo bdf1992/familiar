@@ -95,6 +95,7 @@ That decision is not owned by this section. Recording the standing is what #53 r
 | `LIFECYCLE_LADDER.md` | The ordered sequence of crossings from 0.2 Current to 0.7 Current, with an owning issue per rung. | Knowledge | Work | Specifies a route, not a standing. Takes no crossing — #55, #56, #57, #58, #59 and #38 own the rungs |
 | `FIRST_FAMILIAR_SEAL.md` | Bounded pre-cast readiness statement and practitioner procedure. | Knowledge | Current for the seal | Bootstrap roles superseded by `MIDNIGHT_FIRST_FAMILIAR.md` |
 | `MIDNIGHT_FIRST_FAMILIAR.md` | Smallest corrected first-cast candidate after the seal exposed a bootstrap-role error. | Knowledge | Current | Supersedes the seal's caster/subject roles only |
+| `.gitattributes` | Pins every tracked file to LF in the repository and in the working tree. | Code | Current | Digest identity rests on bytes; unmanaged line endings put a platform variable under every seal |
 | `.gitignore` | Keeps repository-local practitioner data and Python caches out of Git. | Code | Current | — |
 | `verify-store.py` | *Untracked.* Not part of this repository. | — | — | — |
 
