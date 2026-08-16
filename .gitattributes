@@ -1,0 +1,33 @@
+# Line endings.
+#
+# Without this file, line endings are decided by whatever wrote them. This
+# repository has been bitten by that twice in one day, both times on
+# REPOSITORY_AUDIT.md, both times because a tool wrote the file back with
+# platform-native newlines:
+#
+#   #60  added LIFECYCLE_LADDER.md as the only CRLF file in an all-LF tree
+#   #63  a 21-line audit edit arrived as a 740-line diff
+#
+# Neither changed a character of content. Both buried the real change in
+# hundreds of lines of noise, which is worse than cosmetic here: this
+# repository reviews by reading diffs, and a diff nobody can read is a review
+# nobody performed.
+#
+# There is a sharper reason than readability. #24 and #25 established that
+# digest-bearing fixtures must be written as exact bytes, because a digest over
+# a file whose newlines depend on the checkout is not an identity. Every digest
+# in this repository -- Scroll seals, the Magic ledger chain, record_digest,
+# and now plan_digest -- rests on bytes being what they were when they were
+# sealed. Unmanaged line endings put a platform variable underneath all of it.
+#
+# `eol=lf` rather than bare `text=auto`: auto normalizes what is stored but
+# still checks out CRLF on Windows if core.autocrlf says so, which leaves the
+# working tree -- the thing that gets hashed and tested -- platform dependent.
+# The whole tree is already LF, so this pins what is true rather than changing
+# anything.
+#
+# The tree is entirely text at the time of writing: .gitignore, .js, .json,
+# .md, .py, .yml. Add an explicit `binary` rule beside this note before
+# committing the first file that is not.
+
+* text=auto eol=lf
