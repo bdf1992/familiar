@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import unittest
+from collections.abc import Mapping
 from copy import deepcopy
 from pathlib import Path
 
+from environment.scope import mapping_scope_enforcer
 from kernel.spell_kernel import SpellKernel
 from validation.candidate_adapter import load_candidate_spell
 from validation.casting_04 import cast_with_binding, validate_cast_04, validate_technique_binding
@@ -11,14 +13,29 @@ from validation.casting_04 import cast_with_binding, validate_cast_04, validate_
 ROOT = Path(__file__).resolve().parents[1]
 SPELL = ROOT / "validation" / "candidate" / "SPELL.md"
 
+#: What this Environment lets a bounded-work Cast reach. Declared here rather
+#: than read from the Technique Binding: a claim by the thing being contained
+#: is not containment.
+ADMISSIBLE_KEYS = ("id", "items", "done", "valid")
+
 
 def target_observable(phase, context):
     target = context.get("target")
-    return isinstance(target, dict) and isinstance(target.get("items"), list)
+    # Mapping, not dict. Under Scope enforcement the Technique and the before
+    # checkers see the attenuated handle, and a checker that insists on the
+    # concrete type is asserting on the unattenuated object.
+    return isinstance(target, Mapping) and isinstance(target.get("items"), list)
 
 
 def effect_confirmed(phase, context):
     return (context.get("target") or {}).get("done") is True
+
+
+def execute_honest(spell, effect_id, context, execution_max_ms):
+    """Stays inside the resolved Scope, so ordinary execution still succeeds."""
+    context["cost"]["charge"]("tool_calls")
+    context["target"]["done"] = True
+    return {"implementation": "honest"}
 
 
 def make_kernel(executor, *, authorized=True):
@@ -29,6 +46,7 @@ def make_kernel(executor, *, authorized=True):
         },
         authority_resolver=lambda caster, permission, context: authorized and permission == "workspace.write",
         scope_resolver=lambda target, context: list(target["items"]),
+        scope_enforcer=mapping_scope_enforcer(ADMISSIBLE_KEYS),
         executor=executor,
     )
 
@@ -184,9 +202,8 @@ class Casting04Tests(unittest.TestCase):
         second_requirements = {(o["id"], o["phase"], o["status"]) for o in second["observations"] if o["kind"] == "requirement"}
         self.assertEqual(first_requirements, second_requirements)
 
-    @unittest.expectedFailure
-    def test_binding_scope_claim_alone_cannot_prove_environment_containment(self):
-        """Executable defect specimen for https://github.com/bdf1992/familiar/issues/10."""
+    def test_environment_containment_stops_an_out_of_scope_mutation(self):
+        """Was the expectedFailure defect specimen for issues/10, now enforced."""
         target = {"id": "one", "items": ["a"], "outside": ["do-not-touch"], "done": False}
 
         def dishonest(spell, effect_id, context, execution_max_ms):
@@ -206,6 +223,84 @@ class Casting04Tests(unittest.TestCase):
 
         self.assertEqual(["do-not-touch"], target["outside"])
         self.assertNotEqual("resolved", record["outcome"])
+        self.assertEqual("closed", record["closure"]["decision"])
+
+    def test_a_swallowed_scope_violation_is_still_attributable(self):
+        """Containment is proven by the mechanism, not by an absent exception."""
+        target = {"id": "one", "items": ["a"], "outside": ["do-not-touch"], "done": False}
+
+        def sneaky(spell, effect_id, context, execution_max_ms):
+            context["cost"]["charge"]("tool_calls")
+            try:
+                context["target"]["outside"].clear()
+            except Exception:
+                pass
+            context["target"]["done"] = True
+            return {"implementation": "sneaky"}
+
+        record = cast_with_binding(
+            make_kernel(sneaky),
+            self.spell,
+            make_binding("sneaky-technique", "script"),
+            effect_id="act",
+            caster={"id": "agent-1", "kind": "agent"},
+            target=target,
+        )
+
+        self.assertEqual(["do-not-touch"], target["outside"])
+        self.assertEqual("failed", record["outcome"])
+        after = next(
+            item for item in record["observations"]
+            if item["kind"] == "requirement" and item["id"] == "bounded-scope" and item["phase"] == "after"
+        )
+        self.assertEqual("violated", after["status"])
+        self.assertEqual([{"operation": "read", "key": "outside"}], after["value"]["violations"])
+        self.assertTrue(any("scope violated during execution" in item for item in record["residuals"]))
+
+    def test_cast_identifies_the_scope_requirement_and_the_enforcing_mechanism(self):
+        record = cast_with_binding(
+            make_kernel(execute_honest),
+            self.spell,
+            make_binding(),
+            effect_id="act",
+            caster={"id": "agent-1", "kind": "agent"},
+            target={"id": "one", "items": ["a"], "done": False},
+        )
+
+        before = next(
+            item for item in record["observations"]
+            if item["kind"] == "requirement" and item["id"] == "bounded-scope" and item["phase"] == "before"
+        )
+        self.assertEqual("satisfied", before["status"])
+        self.assertEqual(["a"], before["value"]["items"])
+        self.assertEqual("environment.mapping-view", before["value"]["enforcement"]["mechanism"])
+        self.assertEqual(sorted(ADMISSIBLE_KEYS), before["value"]["enforcement"]["admissible"])
+        self.assertEqual("resolved", record["outcome"])
+
+    def test_closure_refuses_when_no_effect_path_boundary_can_be_supplied(self):
+        unbounded = SpellKernel(
+            requirements={"target-observable": target_observable, "effect-confirmed": effect_confirmed},
+            authority_resolver=lambda caster, permission, context: permission == "workspace.write",
+            scope_resolver=lambda target, context: list(target["items"]),
+            executor=execute_honest,
+        )
+        target = {"id": "one", "items": ["a"], "outside": ["do-not-touch"], "done": False}
+
+        record = cast_with_binding(
+            unbounded,
+            self.spell,
+            make_binding(),
+            effect_id="act",
+            caster={"id": "agent-1", "kind": "agent"},
+            target=target,
+        )
+
+        self.assertEqual("refused", record["closure"]["decision"])
+        self.assertTrue(
+            any("runtime-scope-enforcer-missing" in reason for reason in record["closure"]["reasons"])
+        )
+        self.assertIsNone(record["outcome"])
+        self.assertFalse(target["done"])
 
 
 if __name__ == "__main__":

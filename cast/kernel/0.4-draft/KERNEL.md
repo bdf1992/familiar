@@ -60,6 +60,30 @@ A schema-valid binding can lie. Therefore:
 
 This forbids treating `mechanisms.scope: [max_items]` as evidence that arbitrary code cannot touch other objects.
 
+### Scope resolution is not Scope enforcement
+
+Three things are distinct and only the first was ever implemented:
+
+```text
+scope resolution     which targets or items are admissible
+scope enforcement    the concrete capability the effect path runs through
+scope observation    the evidence CAST retains about both
+```
+
+A resolved Scope binds the effect path only through a concrete boundary the Environment owns. The Kernel therefore takes a **scope enforcer** and calls it after resolution, replacing `context["target"]` with the attenuated handle the boundary returns. A Technique never receives a broader mutation capability and is never trusted to honour a narrower preflight result.
+
+The Kernel does not construct a boundary of its own. A runtime that supplies its own containment is attesting to its own honesty, which is the same defect one layer down.
+
+**Closure refuses when a Scope Requirement exists and no enforceable effect path can be supplied.** `runtime-scope-enforcer-missing` is a closure gap in exactly the way a missing checker or observer is.
+
+A conforming boundary must make the forbidden consequence **impossible or observable, and preferably both**. The reference mechanism, a filtered object capability, raises on a reach outside the admissible set *and* records the attempt, so a Technique that catches and swallows the exception still leaves attributable evidence. After execution the Kernel reads the boundary rather than the Technique's account of itself; a recorded violation fails the Cast even when execution reported success.
+
+An attenuated filesystem view, a scoped API token, or a sandbox namespace conform equally by satisfying the same contract. The protocol specifies the contract, not one implementation.
+
+CAST retains the resolved Scope Requirement, the enforcing mechanism that participated, and any violations it recorded.
+
+Issue #28 owns the separate problem of ambient reactive consequences that a correctly attenuated direct mutation can still trigger. Direct containment is necessary and is not sufficient.
+
 ## Closure support matching
 
 Before effectful execution, the Kernel derives the mechanisms demanded by the selected Effect and compares them against the current host/environment and Technique Binding.

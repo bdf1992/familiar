@@ -79,6 +79,10 @@ def binding_support_gaps(
         elif "scope" in item:
             if kernel.scope_resolver is None:
                 gaps.append(f"runtime-scope-resolver-missing: {requirement_id}")
+            # A binding that claims Scope support without an enforceable effect
+            # path is claiming metadata. Refuse before execution, not after.
+            if kernel.scope_enforcer is None:
+                gaps.append(f"runtime-scope-enforcer-missing: {requirement_id}")
             if "max_items" not in mechanisms["scope"]:
                 gaps.append(f"binding-scope-boundary-missing: {requirement_id}")
         elif requirement_id not in kernel.requirements:
