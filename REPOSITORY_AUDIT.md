@@ -4,9 +4,9 @@ Purpose: make every repository surface legible before architectural change. `AGE
 
 This is an audit, not a claim that every Work artifact is Current doctrine, and not a release.
 
-**Audited commit `3d052fc783b5d5d32e4132d1ef27874396e49ff0`** — *"Merge PR #70: add Handle-to-Situation evidence seam"*, `main`.
+**Audited commit `c9f34e52087a0118303b92e04966c716ac2bc1cd`** — *"Merge PR #72: attach evidenced Situation to open CrossingPlan"*, `main`.
 
-**Attributable evidence:** `Agent Spells CI` run [31980373757](https://github.com/bdf1992/familiar/actions/runs/31980373757) on `c7307edff43a258a38c85b0a5961a9f6bf0db11d` concluded **success**, running **358 tests, OK** across ubuntu-latest, windows-latest, and a symlink-disabled checkout before merge as PR #70. Work Metadata run [31980373952](https://github.com/bdf1992/familiar/actions/runs/31980373952) also concluded **success**. That is the evidence this audit rests on. Saying tests exist is not evidence; a named run against a named commit is.
+**Attributable evidence:** `Agent Spells CI` run [31980922205](https://github.com/bdf1992/familiar/actions/runs/31980922205) on `812340530d8498eaabe5e5f6d01f8fdde9845370` concluded **success**, running **371 tests, OK** across ubuntu-latest, windows-latest, and a symlink-disabled checkout before merge as PR #72. Work Metadata run [31980922200](https://github.com/bdf1992/familiar/actions/runs/31980922200) also concluded **success**. That is the evidence this audit rests on. Saying tests exist is not evidence; a named run against a named commit is.
 
 The commit that merges any change to this file is necessarily one commit later than the one it names. That is not drift: the completeness check covers the tree mechanically on every run, and the named run covers the behavior at a commit that actually existed.
 
@@ -208,8 +208,9 @@ Broader capability receipts still live in `cast/practitioner/situation.py`. `spe
 | `cast/practitioner/handle_situation.py` | Read-only HandleView-to-Situation evidence seam; verifies Handle source identity, compares charted claims with attributable Environment observations, records exact Demand/receipt/attenuated-handle matches, and derives an integrity digest over authoritative situated evidence while excluding participant projection. | Code | Work | #69; strengthened for #71 attachment |
 | `cast/practitioner/obligations.py` | Typed Runtime Obligations, discharge mechanisms, obligation plan, and four-status evaluation. | Code | Current | Added by #47 (issue #32). Obligations do not compile to capability demands; the firewall is structural |
 | `cast/practitioner/concurrency.py` | Observed pre-state identity, conflict detection, optimistic commit validation, and reservations with deterministic acquisition order. | Code | Current | Added by #49 (issue #30). Retry is a new attempt, never a resumed closure |
-| `cast/practitioner/crossing.py` | CrossingPlan, Brink observation, Closure, canonical `plan_digest`, and post-Closure verification. Couples Capacity, Obligations and Mana by composition without flattening them. | Code | Work | #34 complete on contract scope; runtime attachment remains separate |
-| `cast/practitioner/situation_crossing.py` | Pre-Closure attachment from exact #69 Situation evidence into the existing CrossingPlan contract; reconstructs Environment receipts, re-compiles obligations, and refuses any Demand/receipt/attenuated-handle mismatch. Never observes Brink or calls Closure. | Code | Work | #71 |
+| `cast/practitioner/crossing.py` | CrossingPlan, Brink observation, Closure, canonical `plan_digest`, and post-Closure verification. Closure deep-snapshots the complete plan graph before digesting so later mutation of the caller's open plan cannot rewrite `ClosedPlan` material. | Code | Work | #34 contract complete; immutability defect exposed and corrected by #73 |
+| `cast/practitioner/situation_crossing.py` | Pre-Closure attachment from exact #69 Situation evidence into the existing CrossingPlan contract; reconstructs Environment receipts, re-compiles obligations, and refuses any Demand/receipt/attenuated-handle mismatch. Never observes Brink or calls Closure. | Code | Work | #71 complete by PR #72 |
+| `cast/practitioner/brink_closure.py` | Observed-Brink Closure seam: retains a non-authorizing construction receipt, verifies exact #71 attachment before and after independent probes, rejects caster/Technique self-observation, and calls the existing #34 Closure without Mana movement or execution. | Code | Work | #73 |
 | `cast/practitioner/__init__.py` | Practitioner public exports. | Code | Current | — |
 
 The three transitional composition symlinks under cast — pointing at the Familiar domain, the Spell format, and Owl — were aids after the domain move, never duplicate authorities. They were removed under #17: runtime code resolves another domain's artifacts through `cast/kernel/resources.py` by canonical repository path, so the supported test command no longer depends on whether the checkout can materialize symlinks. Their paths are named without backticks here deliberately, so the completeness check does not read a historical note as a live inventory claim.
@@ -291,10 +292,11 @@ All files under `cast/tests/` are **Current Code** because CI depends on them. T
 | `cast/tests/test_magic_runtime_06.py` | Conserved Mana runtime: conservation, participation, settlement, maintenance, restart replay. **Absent from every previous audit.** |
 | `cast/tests/test_repository_audit_18.py` | This file's completeness against the tracked tree. |
 | `cast/tests/test_format_generations_55.py` | The two incompatible FORMAT 0.3 generations, pinned as running code. Documents a defect; every assertion is expected to change when #55 closes. |
-| `cast/tests/test_crossing_plan_34.py` | Closure refusal at an unclean Brink, canonical plan identity, and adversarial post-Closure swaps of target, Technique, binding, authority, obligation, evidence contract, residual bounds and Mana. |
+| `cast/tests/test_crossing_plan_34.py` | CrossingPlan contract, clean/unobservable/nonzero Brink refusal, canonical plan identity, Closure snapshot integrity, and adversarial post-Closure swaps of target, Technique, binding, authority, obligation, evidence contract, residual bounds and Mana. |
 | `cast/tests/test_domain_handle_67.py` | Read-only Domain Handle resolution: source identity, disagreement/unknown preservation, participant-relative projection, copy isolation, and no Cast/Environment dependency. |
 | `cast/tests/test_handle_situation_69.py` | Domain Handle re-resolution against Environment evidence: source-digest verification, drift/unknown preservation, exact capability matching, participant invariance, and no Closure/execution path. |
 | `cast/tests/test_situation_crossing_71.py` | Exact pre-Closure attachment from #69 Situation evidence into an open #34 CrossingPlan; rejects stale/recomputed binding tamper, Demand substitution, unresolved evidence, capability gaps, and all Closure/execution paths. |
+| `cast/tests/test_brink_closure_73.py` | Independent pre-Closure Brink observation and exact Closure attachment; rejects missing/raising/self-certified probes, nonzero Cast-attributable deltas, plan/Situation mutation before or during observation, and proves Closure moves no Mana or Technique state. |
 | `cast/tests/test_resource_resolution_17.py` | Canonical cross-domain resolution without composition symlinks, including a symlink-free checkout. |
 | `cast/tests/test_familiar_revisions_15.py` | Immutable Familiar revisions addressable by `FamiliarRef`; a newer write does not destroy an older revision. |
 | `cast/tests/test_familiar_view_14.py` | Every source guidance category accounted for exactly once; a silently dropped category fails. |
@@ -342,8 +344,9 @@ These are different kinds of statement and the distinction is load-bearing.
 | #30 | #49 | Concurrent Cast isolation and conflict semantics |
 | #31 | #50 | Portable attestation and signer provenance above digests |
 | #32 | #47 | Requirements compiled into typed runtime obligations |
-| #34 | #63 | CrossingPlan / Brink / Closure contract defined and adversarially proven as Work; caller attachment is separate |
+| #34 | #63 | CrossingPlan / Brink / Closure contract defined and adversarially proven as Work; #73 subsequently corrected nested-plan snapshot immutability discovered by the first real practitioner Closure caller |
 | #53 | #54 | Recorded lifecycle standing for the 0.3, 0.4, 0.5 and 0.6 generations |
+| #71 | #72 | Exact Environment-evidenced Situation attached to a ready open CrossingPlan without crossing Closure |
 
 **Ticket-owned residuals** — places where the implementation does not yet meet an invariant above, or where a required decision has not been recorded. Each is a live GitHub issue and none is restated here:
 
@@ -354,8 +357,8 @@ These are different kinds of statement and the distinction is load-bearing.
 | #26 | Mana as typed sparse relations versus tensor product — open design work, not a gate on #16 |
 | #56 | Adopt FORMAT 0.3 — including resolving **which of two incompatible 0.3 generations** it is, absorbed from #55. The Cast domain owns an admission schema the Spell domain does not generate |
 | #57 · #58 · #59 | The remaining ladder rungs — KERNEL 0.4, 0.6 Magic participation, and the 0.5 disposition. See `LIFECYCLE_LADDER.md` |
-| #71 | Attach exact Environment-evidenced Situation material to an open CrossingPlan without crossing Closure |
-| #35 · #36 · #37 · #38 | Milestone 0.7 proof-carrying crossing: observation seam, CAST sealing, adversarial conformance suite, and integration |
+| #73 | Independently observe the exact pre-Closure Brink and seal the #71 plan without moving Mana or executing |
+| #35 · #36 · #37 · #38 | Milestone 0.7 proof-carrying crossing: post-execution observation seam, CAST sealing, adversarial conformance suite, and integration |
 
 **Deferred by explicit decision, not by oversight:** remote Library transport and subscription, semantic-version range resolution, Presence lifetimes beyond a session, a Dismiss Spell, Level 0 semantics, portable Mana fields in `SPELL.md`, a universal sandbox implementation, a mandatory theorem prover, external PKI, and distributed consensus.
 
@@ -363,7 +366,7 @@ These are different kinds of statement and the distinction is load-bearing.
 
 `README.md` and this audit must agree, and this section is what they agree on.
 
-**Proven, by the CI run named at the top:** one local practitioner can cast Find Familiar, explicitly accept the resulting Familiar, persist it under a private host path, and resolve the exact artifact after restart. Registration, Presence, and the conserved Mana runtime each pass their own tests, and digest-chained ledger replay reconstructs conserved state across restart. The read-only Domain Handle and Situation seams also preserve participant-relative projection separately from attributable Environment evidence and exact capability matching.
+**Proven, by the CI run named at the top:** one local practitioner can cast Find Familiar, explicitly accept the resulting Familiar, persist it under a private host path, and resolve the exact artifact after restart. Registration, Presence, and the conserved Mana runtime each pass their own tests, and digest-chained ledger replay reconstructs conserved state across restart. The read-only Domain Handle and Situation seams preserve participant-relative projection separately from attributable Environment evidence and exact capability matching, and #71 attaches that situated evidence to a ready open CrossingPlan without crossing Closure.
 
 Since the previous audit, the effect path itself became enforceable rather than merely resolved. Scope and Authority now bind through Environment-owned boundaries and refuse at closure when no boundary can be supplied (#10, #11). A violation the Technique caught and swallowed still fails the Cast, because the Kernel reads the boundary rather than the Technique's account of itself. Consequence is classified independently of executor status, and an executor cannot certify its own rollback (#27). Reactive reach beyond the attenuated handle is observed separately, so a Cast cannot claim a small radius because its handle was narrow (#28). Requirements bind to exact capability receipts by typed demand (#13) and compile to typed obligations that do not collapse into capability checks (#32). Concurrent Casts detect conflict on observed pre-state identity (#30). Familiar revisions are immutable and addressable (#15), View omission is accounted for exactly once (#14), and maintenance replay is guarded on source identity and accepted receipt (#12).
 
@@ -371,6 +374,6 @@ Since the previous audit, the effect path itself became enforceable rather than 
 
 - that the Mana runtime participates in the Cast lifecycle at all — #16;
 - that the Mana state shape is settled — #26, now open design work rather than a gate;
-- that the full 0.7 crossing is integrated. The CrossingPlan / Brink / Closure contract (#34) is completed Work, and the #71 branch attaches evidenced Situation to an open plan, but post-execution observation (#35), sealing (#36), conformance (#37), and reference-Kernel integration/adoption (#38) remain open;
+- that the full 0.7 crossing is integrated. CrossingPlan/Brink/Closure are completed contract Work (#34), exact Situation-to-open-plan attachment is completed Work (#71), and #73 is the bounded practitioner Closure caller under test; Mana commitment (#16), post-execution observation (#35), sealing (#36), conformance (#37), and reference-Kernel integration/adoption (#38) remain separate;
 - that any of 0.3, 0.4, 0.5, or 0.6 is Current, Archive, or superseded by any other. Each is **retained as Work** under #53, which records their standing without taking a crossing. 0.2 remains the only Current specification, and the running Kernel exceeds it;
 - that observation is exhaustive. Unknown reactive reach is representable and is recorded as unknown; it is not treated as absent.
