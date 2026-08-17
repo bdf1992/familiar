@@ -40,8 +40,8 @@ from environment.observation import (
 
 from .crossing import ClosedPlan, EvidenceContract
 from .obligations import (
+    DISCHARGED,
     NOT_APPLICABLE,
-    SATISFIED,
     UNRESOLVED,
     VIOLATED,
     RuntimeObligation,
@@ -265,7 +265,7 @@ def _evaluate_one(
         evaluated.append(
             {
                 "observation_id": observation.id,
-                "status": SATISFIED if passed else VIOLATED,
+                "status": DISCHARGED if passed else VIOLATED,
             }
         )
 
@@ -273,8 +273,8 @@ def _evaluate_one(
         status = UNRESOLVED
         reason = "evaluator failed for at least one independent observation"
     elif all(outcomes):
-        status = SATISFIED
-        reason = "all independent observed values satisfy the sealed evaluator"
+        status = DISCHARGED
+        reason = "all independent observed values discharge the sealed obligation"
     elif not any(outcomes):
         status = VIOLATED
         reason = "all independent observed values violate the sealed evaluator"
