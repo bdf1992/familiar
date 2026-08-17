@@ -480,7 +480,10 @@ class ExecutorClaimAndSettlementTests(unittest.TestCase):
 
         self.assertEqual(1, event.details["spent"])
         self.assertEqual(1, event.details["released"])
-        self.assertEqual(f"observation-account:{account.digest}", event.details["consequence_receipt"])
+        self.assertEqual(
+            f"observation-account:{account.digest}",
+            event.details["decision"]["receipt_id"],
+        )
         self.assertEqual(20, magic.total())
 
     def test_missing_evaluated_account_leaves_commitment_live(self):
