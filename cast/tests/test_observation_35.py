@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from dataclasses import MISSING, fields
 import json
 from pathlib import Path
 import unittest
@@ -25,8 +24,8 @@ from cast.practitioner.observation import (
 )
 from cast.practitioner.obligations import (
     CAPABILITY_GATE,
+    DISCHARGED,
     NOT_APPLICABLE,
-    SATISFIED,
     STATE_PREDICATE,
     UNRESOLVED,
     VIOLATED,
@@ -34,7 +33,7 @@ from cast.practitioner.obligations import (
     RuntimeObligation,
 )
 from cast.practitioner.situation import CapabilityReceipt, Demand
-from environment.consequence import ConsequenceFinding
+from environment.consequence import RESIDUAL, ConsequenceFinding
 from environment.magic import MagicLimits, MagicRuntime, MagicRuntimeError
 from environment.observation import (
     OBSERVED,
@@ -245,38 +244,16 @@ def observation(
 
 
 def consequence(observer: str = "observer:consequence", mana_spent: int = 1) -> ConsequenceFinding:
-    """Construct a typed #27 finding without depending on one particular kind.
+    """Use a real valid #27 consequence while carrying #35 settlement evidence."""
 
-    #27 already tests ConsequenceFinding's own constructor invariants. These #35
-    tests need a value of that exact type while remaining resilient to future
-    additions of fields: every dataclass field is populated, and any mapping-like
-    evidence/detail field carries the independent Mana observation used by the
-    account-store settlement adapter.
-    """
-
-    finding = object.__new__(ConsequenceFinding)
-    for field in fields(ConsequenceFinding):
-        if field.name == "observer":
-            value = observer
-        elif field.name in {"detail", "evidence", "metadata"}:
-            value = {"mana_spent": mana_spent, "observation": "independent consequence"}
-        elif field.name == "kind":
-            value = "observed-consequence"
-        elif field.name in {"persistent", "confirmed"}:
-            value = True
-        elif field.name.endswith("path"):
-            value = None
-        elif field.default is not MISSING:
-            value = deepcopy(field.default)
-        elif getattr(field, "default_factory", MISSING) is not MISSING:
-            try:
-                value = field.default_factory()
-            except TypeError:
-                value = None
-        else:
-            value = None
-        object.__setattr__(finding, field.name, value)
-    return finding
+    return ConsequenceFinding(
+        kind=RESIDUAL,
+        observer=observer,
+        detail={
+            "mana_spent": mana_spent,
+            "observation": "independent consequence",
+        },
+    )
 
 
 def evaluate(
@@ -302,16 +279,16 @@ class StatusTests(unittest.TestCase):
     def test_all_four_obligation_statuses_are_representable(self):
         _closed, cast_id = closed_attempt()[2:4]
 
-        satisfied = evaluate((observation(cast_id, "satisfied", "ready"),))[2]
+        discharged = evaluate((observation(cast_id, "discharged", "ready"),))[2]
         violated = evaluate((observation(cast_id, "violated", "broken"),))[2]
         unresolved = evaluate(
             (observation(cast_id, "unavailable", status=UNAVAILABLE),)
         )[2]
 
-        self.assertEqual(SATISFIED, next(f for f in satisfied.obligation_findings if f.obligation_id == "post-state").status)
+        self.assertEqual(DISCHARGED, next(f for f in discharged.obligation_findings if f.obligation_id == "post-state").status)
         self.assertEqual(VIOLATED, next(f for f in violated.obligation_findings if f.obligation_id == "post-state").status)
         self.assertEqual(UNRESOLVED, next(f for f in unresolved.obligation_findings if f.obligation_id == "post-state").status)
-        self.assertEqual(NOT_APPLICABLE, next(f for f in satisfied.obligation_findings if f.obligation_id == "optional-after").status)
+        self.assertEqual(NOT_APPLICABLE, next(f for f in discharged.obligation_findings if f.obligation_id == "optional-after").status)
 
     def test_unavailable_and_unknown_remain_explicit_unknown_space(self):
         _view, _attached, _closed, cast_id = closed_attempt()
@@ -348,7 +325,7 @@ class EvidenceBindingTests(unittest.TestCase):
         self.assertEqual("post-state-evaluator", finding.evaluator_id)
         self.assertEqual("environment:post-state-evaluator", finding.evaluator_provenance)
         self.assertEqual("environment:post-state-evaluator", finding.evidence_contract["observer"])
-        self.assertEqual(SATISFIED, finding.status)
+        self.assertEqual(DISCHARGED, finding.status)
         self.assertEqual("probe:obs:bound", account.observations[0].provenance)
         self.assertEqual(closed.digest, account.plan_digest)
         self.assertTrue(account.digest.startswith("sha256:"))
