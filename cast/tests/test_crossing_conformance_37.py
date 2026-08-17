@@ -12,7 +12,6 @@ name that failure rather than silently harmonize it.
 
 from __future__ import annotations
 
-from copy import deepcopy
 from dataclasses import replace
 import unittest
 
@@ -22,7 +21,6 @@ from cast.practitioner.crossing import canonical_material
 from cast.practitioner.observation import (
     ExecutorClaim,
     ObservationAccountStore,
-    ObservationEvaluationError,
     evaluate_crossing_observations,
 )
 from cast.practitioner.obligations import RuntimeObligation
@@ -182,6 +180,7 @@ class Claim2ExactCapabilityBindingTests(unittest.TestCase):
         )
         changed[0] = replace(gate, demand=changed_demand)
 
+        baseline = closed_attempt()[2].plan
         with self.assertRaises(SituationCrossingError):
             construct_attached_open_plan(
                 view,
@@ -189,9 +188,9 @@ class Claim2ExactCapabilityBindingTests(unittest.TestCase):
                 technique={"id": "technique:github-read", "operation": "read"},
                 obligations=tuple(changed),
                 mechanisms=mechanisms(),
-                mana=closed_attempt()[2].plan.mana,
-                evidence_contracts=closed_attempt()[2].plan.evidence_contracts,
-                residual_bounds=closed_attempt()[2].plan.residual_bounds,
+                mana=baseline.mana,
+                evidence_contracts=baseline.evidence_contracts,
+                residual_bounds=baseline.residual_bounds,
                 required_situation_evidence=("environment-domain-role",),
             )
 
@@ -240,7 +239,7 @@ class Claim4ManaClosureConservationTests(unittest.TestCase):
         self.assertEqual(20, magic.total())
 
     def test_defeat_same_cast_cannot_commit_twice(self):
-        _view, _attached, closed, cast_id = closed_attempt()
+        _view, _attached, _closed, cast_id = closed_attempt()
         magic = magic_runtime()
         magic.claim("bdo", "network", 3)
         magic.commit(cast_id, "bdo", "network", 2)
@@ -262,7 +261,7 @@ class Claim4ManaClosureConservationTests(unittest.TestCase):
 
 class Claim5IndependentObservationTests(unittest.TestCase):
     def test_defeat_executor_success_cannot_override_independent_violation(self):
-        closed, cast_id, _magic, account, _sealed, _claim, _commit, _settle = complete_crossing(observed_value="broken")
+        closed, _cast_id, _magic, account, _sealed, _claim, _commit, _settle = complete_crossing(observed_value="broken")
         self.assertTrue(account.executor_claim.succeeded)
         finding = next(item for item in account.obligation_findings if item.obligation_id == "post-state")
         self.assertEqual("violated", finding.status)
@@ -334,7 +333,18 @@ class AlgebraSeparationTests(unittest.TestCase):
     def test_capacity_obligations_and_mana_remain_separate_closed_plan_algebras(self):
         closed = closed_attempt()[2]
         material = canonical_material(closed.plan)
-        self.assertEqual({"configuration", "capacity", "obligations", "mana", "evidence_contracts", "residual_bounds"}, set(material))
+        self.assertEqual(
+            {
+                "crossing_plan_version",
+                "configuration",
+                "capacity",
+                "obligations",
+                "mana",
+                "evidence_contracts",
+                "residual_bounds",
+            },
+            set(material),
+        )
         self.assertNotEqual(material["capacity"], material["obligations"])
         self.assertNotEqual(material["capacity"], material["mana"])
         self.assertNotEqual(material["obligations"], material["mana"])
@@ -372,11 +382,12 @@ class AlgebraSeparationTests(unittest.TestCase):
         capacity["usd_ceiling"] = 25
         capacity["model_tokens"] = 32000
 
+        self.assertEqual(5000, capacity["wall_clock_ms"])
+        self.assertEqual(25, capacity["usd_ceiling"])
+        self.assertEqual(32000, capacity["model_tokens"])
         self.assertEqual(before, magic.total())
         self.assertEqual(20, magic.total())
-        self.assertNotIn("wall_clock_ms", magic.snapshot())
-        self.assertNotIn("usd_ceiling", magic.snapshot())
-        self.assertNotIn("model_tokens", magic.snapshot())
+        self.assertEqual(0, magic.committed_by("bdo"))
 
 
 if __name__ == "__main__":
