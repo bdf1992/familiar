@@ -214,6 +214,7 @@ Broader capability receipts still live in `cast/practitioner/situation.py`. `spe
 | `cast/practitioner/brink_closure.py` | Observed-Brink Closure seam: retains a non-authorizing construction receipt, verifies exact #71 attachment before and after independent probes, rejects caster/Technique self-observation, and calls the existing #34 Closure without Mana movement or execution. | Code | Work | #73 complete by PR #74 |
 | `cast/practitioner/mana_cast.py` | First bounded Cast–Mana integration over the shared conserved `MagicRuntime`: verifies a pre-existing Claim basis before Closure, commits exactly after immutable Closure, executes only after commit, routes settlement through independent Environment consequence verification, and refuses replay/multi-participant flattening. | Code | Work | #16 |
 | `cast/practitioner/observation.py` | Evaluates raw Environment observations against the exact after-phase Runtime Obligations, discharge mechanisms, and EvidenceContracts frozen in a ClosedPlan; preserves executor claims, disagreement, unknowns, consequence, and an account digest without sealing CAST. | Code | Work | #35 |
+| `cast/practitioner/cast_record.py` | Canonical immutable CAST 0.7 Work record over exact ClosedPlan, capability/handle evidence, Mana transitions, #35 findings/observations, execution trace, outcome, residuals and settlement; `record_digest` is integrity only. | Code | Work | #36 |
 | `cast/practitioner/__init__.py` | Practitioner public exports. | Code | Current | — |
 
 The three transitional composition symlinks under cast — pointing at the Familiar domain, the Spell format, and Owl — were aids after the domain move, never duplicate authorities. They were removed under #17: runtime code resolves another domain's artifacts through `cast/kernel/resources.py` by canonical repository path, so the supported test command no longer depends on whether the checkout can materialize symlinks. Their paths are named without backticks here deliberately, so the completeness check does not read a historical note as a live inventory claim.
@@ -229,6 +230,8 @@ The three transitional composition symlinks under cast — pointing at the Famil
 | `cast/kernel/0.4-draft/cast.schema.json` | Candidate 0.4 CAST schema. | Code | Work | Emitted by `cast/validation/casting_04.py` |
 | `cast/kernel/0.4-draft/technique-binding.schema.json` | Exact Technique Binding contract. | Code | Work | — |
 | `cast/kernel/0.6-draft/KERNEL.md` | Magic participation beneath the existing invariant casting law. | Knowledge | Work | Added by PR #8; **absent from every previous audit**. Cast integration — #16 |
+| `cast/kernel/0.7-draft/CAST.md` | Immutable CAST 0.7 Work contract: field set, statuses, canonicalization, integrity/trust distinctions and evidence ownership. | Knowledge | Work | #36; does not promote 0.7 |
+| `cast/kernel/0.7-draft/cast.schema.json` | Machine shape for the CAST 0.7 Work record, including refusal-without-Closure and post-Closure plan identity. | Code | Work | #36; not the Current CAST schema |
 
 ## Cast domain — validation layer
 
@@ -302,6 +305,7 @@ All files under `cast/tests/` are **Current Code** because CI depends on them. T
 | `cast/tests/test_brink_closure_73.py` | Independent pre-Closure Brink observation and exact Closure attachment; rejects missing/raising/self-certified probes, nonzero Cast-attributable deltas, plan/Situation mutation before or during observation, and proves Closure moves no Mana or Technique state. |
 | `cast/tests/test_cast_mana_16.py` | Conserved Mana crossing through the practitioner path: pre-existing Claim admission, post-Closure commit-before-effect ordering, executor/consequence separation, settlement-only retry, replay refusal, one shared runtime across Casts, and conservation. |
 | `cast/tests/test_observation_35.py` | Independent post-execution observation/evaluation: canonical four obligation statuses, unknown/unavailable evidence, sealed EvidenceContract binding, observer independence, disagreement retention, executor-claim separation, and evaluated-account Mana settlement. |
+| `cast/tests/test_cast_sealing_36.py` | CAST 0.7 Work sealing: canonical record identity, schema/statuses, refusal without fake Closure, caller/readback mutation isolation, exact ClosedPlan/#35 composition, Mana transition identity, and non-success seals. |
 | `cast/tests/test_resource_resolution_17.py` | Canonical cross-domain resolution without composition symlinks, including a symlink-free checkout. |
 | `cast/tests/test_familiar_revisions_15.py` | Immutable Familiar revisions addressable by `FamiliarRef`; a newer write does not destroy an older revision. |
 | `cast/tests/test_familiar_view_14.py` | Every source guidance category accounted for exactly once; a silently dropped category fails. |
@@ -358,12 +362,12 @@ These are different kinds of statement and the distinction is load-bearing.
 
 | Issue | Owns |
 |---|---|
-| #16 | Conserved Mana integration with the invariant Cast lifecycle; this branch proves the bounded single-participation transition but broader #35/#36/#38 integration remains |
+| #16 | Conserved Mana integration with the invariant Cast lifecycle; bounded single-participation transition exists, while final 0.7 integration remains |
 | #18 | This audit |
 | #26 | Mana as typed sparse relations versus tensor product — open design work, explicitly not a gate on the bounded #16 integration |
 | #56 | Adopt FORMAT 0.3 — including resolving **which of two incompatible 0.3 generations** it is, absorbed from #55. The Cast domain owns an admission schema the Spell domain does not generate |
 | #57 · #58 · #59 | The remaining ladder rungs — KERNEL 0.4, 0.6 Magic participation, and the 0.5 disposition. See `LIFECYCLE_LADDER.md` |
-| #35 · #36 · #37 · #38 | Milestone 0.7 proof-carrying crossing: broader post-execution observation seam, CAST sealing, adversarial conformance suite, and reference-Kernel integration/adoption |
+| #36 · #37 · #38 | Milestone 0.7 remaining Work: immutable CAST sealing, adversarial conformance suite, and reference-Kernel integration/adoption. #35 observation is closed. |
 
 **Deferred by explicit decision, not by oversight:** remote Library transport and subscription, semantic-version range resolution, Presence lifetimes beyond a session, a Dismiss Spell, Level 0 semantics, portable Mana fields in `SPELL.md`, zero-Mana/Level-0 Cast semantics, multi-participant/locality Mana commitment, a universal sandbox implementation, a mandatory theorem prover, external PKI, and distributed consensus.
 
@@ -375,12 +379,12 @@ These are different kinds of statement and the distinction is load-bearing.
 
 Since the previous audit, the effect path itself became enforceable rather than merely resolved. Scope and Authority now bind through Environment-owned boundaries and refuse at closure when no boundary can be supplied (#10, #11). A violation the Technique caught and swallowed still fails the Cast, because the Kernel reads the boundary rather than the Technique's account of itself. Consequence is classified independently of executor status, and an executor cannot certify its own rollback (#27). Reactive reach beyond the attenuated handle is observed separately, so a Cast cannot claim a small radius because its handle was narrow (#28). Requirements bind to exact capability receipts by typed demand (#13) and compile to typed obligations that do not collapse into capability checks (#32). Concurrent Casts detect conflict on observed pre-state identity (#30). Familiar revisions are immutable and addressable (#15), View omission is accounted for exactly once (#14), and maintenance replay is guarded on source identity and accepted receipt (#12).
 
-The current #16 branch adds Work that projects one sealed `ManaParticipation` into the shared conserved `MagicRuntime`: it treats the sealed Claim quantity as a required pre-existing basis, commits only after Closure, orders the executor after successful commitment, routes spending/release through independent Environment consequence verification, retains failed/unobserved settlement as a live commitment for settlement-only retry, and derives replay identity from the immutable ClosedPlan. This paragraph inventories branch Work; it is not included in the earlier `main` evidence named at the top until this branch itself passes and merges.
+The merged #16 Work projects one sealed `ManaParticipation` into the shared conserved `MagicRuntime`: it treats the sealed Claim quantity as a required pre-existing basis, commits only after Closure, orders the executor after successful commitment, routes spending/release through independent Environment consequence verification, retains failed/unobserved settlement as a live commitment for settlement-only retry, and derives replay identity from the immutable ClosedPlan. #35 now independently evaluates raw Environment observations against the sealed obligation/evidence contracts and keeps executor claim, observation, finding, consequence and settlement decision distinct. The #36 branch inventories a canonical immutable record over those already-attributable objects; this sentence records Work standing, not final merged evidence.
 
 **Not proven, and not claimed:**
 
 - that the final relational Mana state shape is settled — #26 remains open research;
 - that zero-Mana/Level-0 or multi-participant/locality commitment semantics are settled by the bounded #16 subset;
-- that the full 0.7 crossing is integrated. CrossingPlan/Brink/Closure are completed Work (#34/#73), exact Situation-to-open-plan attachment is completed Work (#71), and the #16 branch supplies the bounded conserved-Mana transition; broader post-execution observation (#35), sealing (#36), conformance (#37), and reference-Kernel integration/adoption (#38) remain separate;
+- that the full 0.7 crossing is integrated. CrossingPlan/Brink/Closure are completed Work (#34/#73), exact Situation-to-open-plan attachment is completed Work (#71), bounded conserved Mana integration exists (#16), and independent post-execution evaluation is completed Work (#35); #36 sealing remains Work on this branch, followed by conformance (#37) and reference-Kernel integration/adoption (#38);
 - that any of 0.3, 0.4, 0.5, or 0.6 is Current, Archive, or superseded by any other. Each is **retained as Work** under #53, which records their standing without taking a crossing. 0.2 remains the only Current specification, and the running Kernel exceeds it;
 - that observation is exhaustive. Unknown reactive reach is representable and is recorded as unknown; it is not treated as absent.
