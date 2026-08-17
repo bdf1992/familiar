@@ -45,6 +45,7 @@ plan that could change would be unforgeable in name only.
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
+from copy import deepcopy
 from dataclasses import dataclass, field
 from hashlib import sha256
 import json
@@ -449,6 +450,13 @@ def close(plan: CrossingPlan, brink: BrinkFinding) -> ClosedPlan:
     fail-closed for the same reason: a Cast that closes over an unbound
     obligation, or over a world where it has already acted, has sealed a
     description of something other than what will happen.
+
+    Closure snapshots the complete plan graph. `@dataclass(frozen=True)` only
+    freezes attribute assignment on the outer objects; nested mappings and
+    capacity/spec structures may still be mutable. Retaining the caller's plan
+    object would therefore let post-Closure mutation rewrite the supposedly
+    immutable closed material and make `verify()` compare the changed object to
+    itself. The deep snapshot is the actual immutability boundary.
     """
     reasons: list[str] = []
     if not plan.ready:
@@ -457,7 +465,8 @@ def close(plan: CrossingPlan, brink: BrinkFinding) -> ClosedPlan:
         reasons.extend(brink.reasons())
     if reasons:
         raise CrossingPlanError("; ".join(reasons))
-    return ClosedPlan(plan=plan, digest=plan_digest(plan), brink=brink)
+    frozen_plan = deepcopy(plan)
+    return ClosedPlan(plan=frozen_plan, digest=plan_digest(frozen_plan), brink=deepcopy(brink))
 
 
 # -- post-Closure verification -------------------------------------------
