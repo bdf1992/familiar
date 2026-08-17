@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://familiar.local/cast/kernel/0.7-draft/cast.schema.json",
+  "title": "CAST 0.7 draft immutable crossing account",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "cast_format",
+    "cast_id",
+    "plan_digest",
+    "recorded_configuration",
+    "capability_match_evidence",
+    "enforced_handle_receipts",
+    "mana_transitions",
+    "obligation_findings",
+    "observations",
+    "execution_trace",
+    "outcome",
+    "residuals",
+    "mana_settlement",
+    "status",
+    "record_digest"
+  ],
+  "properties": {
+    "cast_format": {"const": "0.7-draft"},
+    "cast_id": {"type": "string", "minLength": 1},
+    "plan_digest": {
+      "oneOf": [
+        {"type": "null"},
+        {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      ]
+    },
+    "recorded_configuration": {"type": "object"},
+    "capability_match_evidence": {"type": "object"},
+    "enforced_handle_receipts": {"type": "object"},
+    "mana_transitions": {"type": "array", "items": {"type": "object"}},
+    "obligation_findings": {"type": "array", "items": {"type": "object"}},
+    "observations": {"type": "array", "items": {"type": "object"}},
+    "execution_trace": {"type": "object"},
+    "outcome": {"type": "object"},
+    "residuals": {"type": "array", "items": {"type": "object"}},
+    "mana_settlement": {"oneOf": [{"type": "null"}, {"type": "object"}]},
+    "status": {
+      "enum": ["successful", "refused", "aborted", "violated", "unresolved"]
+    },
+    "record_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "refused"}}, "required": ["status"]},
+      "then": {"properties": {"plan_digest": {"type": "null"}}},
+      "else": {"properties": {"plan_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}}}
+    }
+  ]
+}
