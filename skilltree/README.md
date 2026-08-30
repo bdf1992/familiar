@@ -103,6 +103,11 @@ and repositories such as Soveraeign can therefore participate through adapters.
 The adapter string in `ArtifactRef` is open on purpose; the kernel preserves its
 identity but does not pretend to understand its format.
 
+The active successor concerns are [#82](https://github.com/bdf1992/familiar/issues/82)
+for persistent lessons and gated artifact evolution, and
+[#83](https://github.com/bdf1992/familiar/issues/83) for read-only discovery
+adapters and the first reviewed Familiar collection.
+
 ## Load-bearing distinctions
 
 ```text

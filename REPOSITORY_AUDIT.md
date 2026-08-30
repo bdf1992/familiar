@@ -388,7 +388,8 @@ promotion of those tickets.
 | Issue | Owns |
 |---|---|
 | #18 | This audit |
-| #80 | Collection/build kernel now exists as Work; artifact discovery, lesson maintenance, candidate minting, and independent gates remain future bounded concerns |
+| #82 | Persistent lesson/evolution identities, atomic candidate proposals, and independent gate receipts |
+| #83 | Read-only artifact discovery adapters and the first reviewed Familiar skill collection |
 
 **Deferred by explicit decision, not by oversight:** remote Library transport and subscription, semantic-version range resolution, Presence lifetimes beyond a session, a Dismiss Spell, Level 0 semantics, portable Mana fields in `SPELL.md`, zero-Mana/Level-0 Cast semantics, multi-participant/locality Mana commitment, a universal sandbox implementation, a mandatory theorem prover, external PKI, and distributed consensus.
 
