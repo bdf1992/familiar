@@ -7,13 +7,22 @@ Work in this repository by preserving the distinctions in `FOUNDATIONS.md` and t
 1. Read `README.md` for the current practitioner path.
 2. Read `FOUNDATIONS.md` for invariant distinctions and domain ownership.
 3. Read `CONTRIBUTING.md` for work metadata, priority, dependency, lifecycle, and residual rules.
-4. Identify the owning domain: Spell, Cast, Familiar, Registry, Environment, or root Assembly.
+4. Identify the owning domain: Spell, Cast, Familiar, Registry, Environment,
+   Skill Tree Work, or root Assembly.
 5. Check `REPOSITORY_AUDIT.md` before creating a new root concept or duplicate surface.
 6. Check open GitHub Issues before creating a new residual. Prefer linking or refining an existing issue over duplicating backlog prose.
+7. For collection, build, lesson, or skill-evolution work, read
+   `skilltree/README.md` and preserve its adapter boundary.
 
 ## Change law
 
 - Do not turn a Skill or Technique into a Spell merely by naming it one.
+- Do not turn a skill graph into a canonical tree. Trees are bounded
+  projections; stable skill identity belongs to the collection graph.
+- Do not let skill points, prerequisites, lesson frequency, or an accepted
+  build grant runtime authority or establish execution success.
+- Do not let a lesson maintainer or artifact proposer activate its own output.
+  Candidate minting and independent evaluation/gating remain separate roles.
 - Do not treat registration, publication, resolution, or Presence as casting.
 - Do not let Familiar preference alter Spell semantics or runtime authority.
 - Do not claim a Requirement is enforced unless the Environment exposes a concrete mechanism and the consequence path cannot bypass it.

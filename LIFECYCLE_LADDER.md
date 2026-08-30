@@ -1,6 +1,20 @@
 # The lifecycle ladder
 
-Status: Work + Knowledge. This document specifies a **route**, not a standing. It adopts nothing, archives nothing, and promotes nothing. Each rung is a crossing that must still be taken and recorded on its own terms.
+Status: **Archive + Knowledge**. This document records a route that was
+considered and not taken. It adopts nothing and promotes nothing.
+
+On 2026-08-30 the complete 0.7 Work crossing had a provider-neutral
+adversarial conformance suite at `330538fa758699eb200e683b86019c1f37bd5a48`
+(452 tests; successful Agent Spells CI run 31994895589). The remaining rungs
+would have promoted a Spell-specific declaration/runtime stack before the
+skill-neutral collection and learning substrate was defined. That direction is
+superseded by the Work boundary in `skilltree/README.md`.
+
+FORMAT and KERNEL 0.2 remain Current for the retained Agent Spells
+compatibility profile. The 0.3–0.7 artifacts remain attributable Work/reference
+material. Issues #38 and #56–#59 are closed as superseded rather than silently
+completed. The historical text below remains intact so the abandoned route and
+its reasoning stay inspectable.
 
 `FOUNDATIONS.md` states that *"Work becomes Current only through explicit adoption"* and that *"an invalid or implicit crossing should be noticeable rather than normalized away."* It says what a crossing **is**. It does not say how a repository gets from one Current generation to a much later one when several generations of Work have accumulated in between.
 

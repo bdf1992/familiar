@@ -1,6 +1,8 @@
 # Foundations
 
-This file anchors the distinctions the rest of Agent Spells must preserve. It explains meaning; it does not silently create runtime requirements or new `SPELL.md` fields.
+This file anchors the distinctions Familiar and its retained Agent Spells
+profile must preserve. It explains meaning; it does not silently create runtime
+requirements, new `SPELL.md` fields, or a universal skill format.
 
 ## Core distinctions
 
@@ -13,6 +15,9 @@ This file anchors the distinctions the rest of Agent Spells must preserve. It ex
 - **Requirement is not assertion.** A Requirement is governable only when the current Situation exposes a concrete mechanism capable of checking or enforcing it.
 - **Composition is not erasure.** Layers may contract internal structure, but must preserve the identity, responsibility, boundaries, and evidence needed by the enclosing assembly.
 - **Evidence is not doctrine.** Tests, CAST records, observations, and validation may support or defeat current claims; they do not become normative solely by existing.
+- **Skill graph is not tree projection.** A tree is one bounded view of a relation graph. Repetition in a projected branch does not duplicate the underlying skill identity.
+- **Experience is not lesson is not skill.** Execution evidence may inform maintained knowledge; maintained knowledge may motivate a candidate artifact; neither transition activates executable instructions by itself.
+- **Build selection is not runtime authority.** Skill points and prerequisites can govern one collection's build without granting Capability, Scope, Authority, Presence, or successful execution.
 
 ## SPELL
 
@@ -40,7 +45,7 @@ The compositional context: parts, shapes, features, assemblies, stacks, bindings
 
 ## Domain ownership
 
-The repository is being reassembled around five subject domains:
+The retained Agent Spells reference profile is assembled around five subject domains:
 
 - **Spell** — declared possibility and Effect semantics.
 - **Cast** — situated participation under the invariant casting law.
@@ -49,6 +54,12 @@ The repository is being reassembled around five subject domains:
 - **Environment** — the context in which things can be observed, reached, made present, and supplied with concrete capabilities.
 
 The repository root is the assembly over these domains. Root documents may govern the whole, but should not duplicate domain specifications.
+
+`skilltree/` is a provisional Work surface above and across artifact formats,
+not a silently adopted sixth Agent Spells domain. It may refer to Spells,
+ordinary Skills, workflows, or repository-native artifacts through adapters.
+Its collection graph, build accounting, lesson provenance, installation, and
+execution boundaries must remain distinguishable.
 
 ## Artifact stake and lifecycle
 

@@ -1,6 +1,9 @@
 # Contributing
 
-This repository treats work metadata as a control surface over the five subject domains. Metadata should make work, dependencies, lifecycle crossings, and residuals visible without turning GitHub bookkeeping into domain doctrine.
+This repository treats work metadata as a control surface over the five Agent
+Spells subject domains and the cross-format Skill Tree workbench. Metadata
+should make work, dependencies, lifecycle crossings, and residuals visible
+without turning GitHub bookkeeping into domain doctrine.
 
 `FOUNDATIONS.md` remains authoritative for domain ownership, Stake, Lifecycle, and Crossing semantics. This file governs how repository work is represented.
 
@@ -11,7 +14,7 @@ Every active issue must begin with a `## Metadata` block containing:
 ```text
 - **Type:** bug | enhancement | documentation
 - **Priority:** P0 | P1 | P2 | P3
-- **Domain:** Spell | Cast | Familiar | Registry | Environment | Repository | Cross-domain
+- **Domain:** Spell | Cast | Familiar | Registry | Environment | Skill Tree | Repository | Cross-domain
 - **Depends on:** none | #issue references
 - **Blocks:** none | #issue references
 - **Related:** none | #issue references
