@@ -4,9 +4,9 @@ Purpose: make every repository surface legible before architectural change. `AGE
 
 This is an audit, not a claim that every Work artifact is Current doctrine, and not a release.
 
-**Audited commit `10ac3c3449559c13b04ad0fedfac1b6d1a9383b5`** — *"Merge PR #74: observe Brink and close exact CrossingPlan"*, `main`.
+**Audited commit `330538fa758699eb200e683b86019c1f37bd5a48`** — *"Inventory 0.7 crossing conformance suite"*, exact head of PR #79.
 
-**Attributable evidence:** `Agent Spells CI` run [31981431938](https://github.com/bdf1992/familiar/actions/runs/31981431938) on `fdcde5c06cd20b54bf4f6c67c45eb889a3349423` concluded **success**, running **386 tests, OK** across ubuntu-latest, windows-latest, and a symlink-disabled checkout before merge as PR #74. Work Metadata run [31981431940](https://github.com/bdf1992/familiar/actions/runs/31981431940) also concluded **success**. That is the evidence this audit rests on. Saying tests exist is not evidence; a named run against a named commit is.
+**Attributable evidence:** `Agent Spells CI` run [31994895589](https://github.com/bdf1992/familiar/actions/runs/31994895589) on `330538fa758699eb200e683b86019c1f37bd5a48` concluded **success**, running **452 tests, OK** across ubuntu-latest, windows-latest, and a symlink-disabled checkout. Work Metadata run [31994902745](https://github.com/bdf1992/familiar/actions/runs/31994902745) also concluded **success**. That is the evidence this audit rests on. Saying tests exist is not evidence; a named run against a named commit is.
 
 The commit that merges any change to this file is necessarily one commit later than the one it names. That is not drift: the completeness check covers the tree mechanically on every run, and the named run covers the behavior at a commit that actually existed.
 
@@ -32,7 +32,7 @@ It deliberately does **not** check that any row is *correct*. Purpose, Stake, an
 
 ## Lifecycle generations
 
-Five generations coexist. **None is archived by this audit, and none has ever been adopted.** A newer number is not a supersession. `FOUNDATIONS.md` is explicit that *"Work becomes Current only through explicit adoption"*, and **no such crossing has been recorded for any generation here.**
+Six generations coexist. **None is archived by this audit, and none after 0.2 has ever been adopted.** A newer number is not a supersession. `FOUNDATIONS.md` is explicit that *"Work becomes Current only through explicit adoption"*, and **no such crossing has been recorded for any later generation here.**
 
 ```text
 0.2 compatibility   Current   the format and Kernel the runtime actually validates against
@@ -40,6 +40,7 @@ Five generations coexist. **None is archived by this audit, and none has ever be
 0.4 draft           Work      invariant casting law and the Technique Binding boundary
 0.5 work docs       Work      practitioner loop and registry/summoning narratives — no kernel generation
 0.6 draft           Work      Magic participation beneath the existing casting law
+0.7 draft           Work      closed plan, observation, sealing, and adversarial conformance
 ```
 
 **Read that table as parallel drafts beside a Current 0.2, not as a ladder that has been climbed.** 0.6 does not build on 0.5; it builds on the 0.3 format and the existing casting law and skips 0.5 entirely, which is coherent once you notice 0.5 was never a kernel generation. `spell/format/0.3-draft/SPECIFICATION.md` still says so in its own header: *"FORMAT 0.2 remains Current until an explicit adoption crossing."*
@@ -56,7 +57,8 @@ Under #53, each generation now carries exactly one disposition. The available di
 | 0.3 kernel | `cast/kernel/0.3-draft/KERNEL.md`, `cast/kernel/0.3-draft/cast.schema.json` | **retained** | Its own header states it *"does not replace the current reference Kernel yet."* Not superseded — see the ledger answer below. |
 | 0.4 | `cast/kernel/0.4-draft/CASTING.md`, `cast/kernel/0.4-draft/KERNEL.md`, `cast/kernel/0.4-draft/cast.schema.json`, `cast/kernel/0.4-draft/technique-binding.schema.json` | **retained** | Declares itself *"a development draft"* that *"extends the requirement-centered 0.3 work"* and *"does not establish Spell standing."* Extension is not replacement. |
 | 0.5 | `cast/work/docs/PRACTITIONER_LOOP_0_5.md`, `cast/work/docs/REGISTRY_AND_SUMMONING_0_5.md` | **retained** | Practitioner and registry integration narrative. **There is no 0.5 kernel generation**, so there is nothing here that could be adopted as a runtime specification. |
-| 0.6 | `cast/kernel/0.6-draft/KERNEL.md`, `environment/MAGIC.md`, `environment/magic.py` | **retained** | Declares that it *"adds Magic participation beneath the existing invariant casting law"* and *"does not change the 0.3 Spell format."* It is not integrated with the Cast lifecycle at all — #16 owns that crossing. |
+| 0.6 | `cast/kernel/0.6-draft/KERNEL.md`, `environment/MAGIC.md`, `environment/magic.py` | **retained** | Declares that it *"adds Magic participation beneath the existing invariant casting law"* and *"does not change the 0.3 Spell format."* A bounded single-participant path now integrates it without adopting the draft. |
+| 0.7 | `cast/kernel/0.7-draft/CAST.md`, `cast/kernel/0.7-draft/cast.schema.json` | **retained** | The complete Work crossing and adversarial conformance evidence exist; the draft was not promoted into the compatibility Kernel specification. |
 
 **The ledger's open question is answered.** `spell/migration/LEDGER.md` asks whether the 0.3 kernel draft remains active Work or has been explicitly superseded by 0.4. (It asks this using the pre-reassembly relative path, which is why the path is not cited here: `cast/kernel/0.3-draft/` is where that material actually lives.) It remains active Work. 0.4 states in its own header that it **extends** the 0.3 work, and `cast/kernel/0.4-draft/CASTING.md` describes itself as *"derived from the 0.3 FORMAT/KERNEL validation work."* Derivation and extension are not supersession. Nothing archives 0.3, and no crossing is recorded because none occurred.
 
@@ -69,13 +71,13 @@ Under #53, each generation now carries exactly one disposition. The available di
 - `spell/format/spell.schema.json` and `cast/kernel/cast.schema.json` are what the Kernel actually validates against. They are **Current**, and they are 0.2.
 - The 0.3 candidate reaches that Kernel through `cast/validation/candidate_adapter.py`, which normalizes a candidate declaration into the compatibility shape. It is an adapter, not a second Kernel.
 - The 0.4 casting law and Technique Binding boundary are implemented and exercised — `cast/validation/casting_04.py`, `cast/tests/test_casting_04.py`, `cast/tests/test_casting_order_04.py` — and the adapter emits into 0.4's CAST schema.
-- The 0.6 Magic runtime exists and passes its own tests, but no Cast reaches it. `cast/kernel/spell_kernel.py` contains no Mana participation; #16 owns that.
+- The 0.6 Magic runtime is reached by the bounded practitioner crossing in `cast/practitioner/mana_cast.py`; the 0.2 compatibility Kernel itself still contains no Mana participation.
 
 **So the running Kernel implements substantial parts of 0.3, 0.4, and 0.6 while none of those drafts is its specification.** The implementation ran ahead of the lifecycle record. A reader asking *"which generation governs this code?"* gets the honest answer: **0.2 is the only Current specification, and the code exceeds it.** Closing that gap means either adopting a generation as the Kernel's specification or writing a specification that describes what the Kernel now does — and both are lifecycle crossings that require an explicit decision. This record does not take one.
 
 That decision is not owned by this section. Recording the standing is what #53 required, and silence is what it forbade.
 
-**The route out is specified in `LIFECYCLE_LADDER.md`.** It states the ordered crossings from 0.2 Current to 0.7 Current — schema reconciliation (#55), FORMAT 0.3 (#56), KERNEL 0.4 (#57), the 0.5 disposition (#59), 0.6 Magic participation (#58), then 0.7 (#38) — with entry conditions and required evidence for each. It takes none of them. **Until a rung is actually taken, the standing recorded in this section remains authoritative**, and a route is not a promotion.
+**The abandoned route is retained in `LIFECYCLE_LADDER.md`.** It specified ordered crossings from 0.2 Current to 0.7 Current. The route was not taken: after the complete 0.7 Work crossing was conformance-tested, the Spell-specific promotion ladder was superseded by a skill-neutral receiving surface. The standing recorded here remains authoritative, and the archived route is not a promotion.
 
 `AGENT_SPELLS.md` predates the five-domain split and carries historical 0.2 framing. It is **Current/Historical Knowledge**: still referenced, not authoritative where it disagrees with `FOUNDATIONS.md`. Its explicit lifecycle decision remains untaken.
 
@@ -85,14 +87,14 @@ That decision is not owned by this section. Recording the standing is what #53 r
 
 | Path | Purpose | Stake | Lifecycle | Authority / issue |
 |---|---|---|---|---|
-| `README.md` | Practitioner orientation, five-domain map, local-first path, current status. | Knowledge | Current | — |
-| `FOUNDATIONS.md` | Constitutional distinctions, SPELL lens, five domains, lifecycle and crossing rules. | Knowledge | Current | Authoritative for domain ownership |
+| `README.md` | Familiar orientation, retained Agent Spells profile, Skill Tree Work surface, local-first path, current status. | Knowledge | Current | — |
+| `FOUNDATIONS.md` | Constitutional distinctions, SPELL lens, retained domains, skill-learning boundaries, lifecycle and crossing rules. | Knowledge | Current | Authoritative for domain ownership |
 | `AGENTS.md` | Repository participation contract for agents. | Knowledge | Current | — |
 | `CLAUDE.md` | Claude-specific adaptation of `AGENTS.md`; creates no separate doctrine. | Knowledge | Current | Defers to `AGENTS.md` |
-| `CONTRIBUTING.md` | How repository work is represented as metadata over the five domains. | Knowledge | Current | Defers to `FOUNDATIONS.md` for domain semantics |
+| `CONTRIBUTING.md` | How repository work is represented as metadata over the retained domains and Skill Tree workbench. | Knowledge | Current | Defers to `FOUNDATIONS.md` for domain semantics |
 | `AGENT_SPELLS.md` | Earlier structural baseline and accumulated protocol reasoning. | Knowledge | Current/Historical | Contains 0.2 framing; supersession decision untaken |
 | `REPOSITORY_AUDIT.md` | This inventory. | Knowledge | Current | Completeness checked by `cast/tests/test_repository_audit_18.py` |
-| `LIFECYCLE_LADDER.md` | The ordered sequence of crossings from 0.2 Current to 0.7 Current, with an owning issue per rung. | Knowledge | Work | Specifies a route, not a standing. Takes no crossing — #55, #56, #57, #58, #59 and #38 own the rungs |
+| `LIFECYCLE_LADDER.md` | Archived Spell-specific promotion route from 0.2 Current to 0.7 Current. | Knowledge | Archive | Route not taken; superseded by `skilltree/README.md` |
 | `FIRST_FAMILIAR_SEAL.md` | Bounded pre-cast readiness statement and practitioner procedure. | Knowledge | Current for the seal | Bootstrap roles superseded by `MIDNIGHT_FIRST_FAMILIAR.md` |
 | `MIDNIGHT_FIRST_FAMILIAR.md` | Smallest corrected first-cast candidate after the seal exposed a bootstrap-role error. | Knowledge | Current | Supersedes the seal's caster/subject roles only |
 | `.gitattributes` | Pins every tracked file to LF in the repository and in the working tree. | Code | Current | Digest identity rests on bytes; unmanaged line endings put a platform variable under every seal |
@@ -114,7 +116,19 @@ Added by the work-metadata line and **absent from every previous audit**.
 | `.github/ISSUE_TEMPLATE/config.yml` | Disables blank issues so every issue carries work metadata. | Code | Current | — |
 | `.github/PULL_REQUEST_TEMPLATE.md` | Pull request template: Work, Change, Metadata impact, Validation, Residuals. | Knowledge | Current | — |
 
-**Observation, recorded rather than fixed here:** at this commit the validator holds one open issue as non-conforming. Issue #38 lacks a `## Specification` heading, which `work-metadata.js` requires alongside `## Problem` and `## Acceptance criteria`, and carries the `invalid` label from run [31937193349](https://github.com/bdf1992/familiar/actions/runs/31937193349). The governance mechanism is working; the issue body is what does not conform.
+The metadata validator remains a syntax and queue-hygiene guard. It does not
+decide lifecycle standing or whether a proposed direction should remain active.
+
+## Skill Tree workbench
+
+This is **Work**, not an adopted Agent Spells generation.
+
+| Path | Purpose | Stake | Lifecycle | Authority / issue |
+|---|---|---|---|---|
+| `skilltree/README.md` | Skill-neutral collection/build boundary and WikiSkill-inspired learning separation. | Knowledge | Work | #80 |
+| `skilltree/collection.schema.json` | Machine shape for collection identity, skill nodes, point costs, prerequisites, artifact adapters, and lesson references. | Code | Work | #80 |
+| `skilltree/kernel.py` | Dependency-free graph validation, point accounting, immutable unlock receipts, and non-authoritative tree projection. | Code | Work | #80 |
+| `skilltree/__init__.py` | Public exports for the small receiving kernel. | Code | Work | #80 |
 
 ## Spell domain
 
@@ -183,7 +197,7 @@ Content addressing gives integrity and exact identity. It does not establish who
 | `environment/presence/__init__.py` | Public Presence exports. | Code | Current | — |
 | `environment/presence/store.py` | Host-owned session Presence store with identity preservation checks. | Code | Current | — |
 | `environment/MAGIC.md` | Environment-owned 0.6 Magic runtime semantics: conservation, dispositions, participation, maintenance. | Knowledge | Work | Added by PR #8; **absent from every previous audit**. Retained as Work under #53 — see § *Lifecycle generations* |
-| `environment/magic.py` | Conserved Mana runtime with a digest-chained event ledger and restart replay. | Code | Work | Replay guards closed by #41. State shape — #26; Cast integration — #16 |
+| `environment/magic.py` | Conserved Mana runtime with a digest-chained event ledger and restart replay. | Code | Work | Replay guards closed by #41; bounded Cast integration proven by #16 |
 | `environment/MANA_TENSOR.md` | Candidate boundary for Mana as typed sparse relations over situated Spell participation. | Knowledge | Work | Added by #33 (issue #26). Explicitly a candidate: it does not replace `MAGIC.md` and is not integrated into `MagicRuntime` |
 | `environment/mana_tensor.py` | Immutable sparse `ManaCoordinate` / `ManaTerm` / `ManaTensor`, projection, contraction, and conservation-preserving transitions. | Code | Work | State shape remains open design work — #26 |
 | `environment/scope.py` | Environment-owned effect-path boundaries for Scope enforcement, plus one reference filtered object capability. | Code | Current | Added by #44 (issue #10). The Kernel specifies the contract; the Environment owns the mechanism |
@@ -212,9 +226,9 @@ Broader capability receipts still live in `cast/practitioner/situation.py`. `spe
 | `cast/practitioner/crossing.py` | CrossingPlan, Brink observation, Closure, canonical `plan_digest`, and post-Closure verification. Closure deep-snapshots the complete plan graph before digesting so later mutation of the caller's open plan cannot rewrite `ClosedPlan` material. | Code | Work | #34 contract complete; immutability defect exposed and corrected by #73 |
 | `cast/practitioner/situation_crossing.py` | Pre-Closure attachment from exact #69 Situation evidence into the existing CrossingPlan contract; reconstructs Environment receipts, re-compiles obligations, and refuses any Demand/receipt/attenuated-handle mismatch. Never observes Brink or calls Closure. | Code | Work | #71 complete by PR #72 |
 | `cast/practitioner/brink_closure.py` | Observed-Brink Closure seam: retains a non-authorizing construction receipt, verifies exact #71 attachment before and after independent probes, rejects caster/Technique self-observation, and calls the existing #34 Closure without Mana movement or execution. | Code | Work | #73 complete by PR #74 |
-| `cast/practitioner/mana_cast.py` | First bounded Cast–Mana integration over the shared conserved `MagicRuntime`: verifies a pre-existing Claim basis before Closure, commits exactly after immutable Closure, executes only after commit, routes settlement through independent Environment consequence verification, and refuses replay/multi-participant flattening. | Code | Work | #16 |
-| `cast/practitioner/observation.py` | Evaluates raw Environment observations against the exact after-phase Runtime Obligations, discharge mechanisms, and EvidenceContracts frozen in a ClosedPlan; preserves executor claims, disagreement, unknowns, consequence, and an account digest without sealing CAST. | Code | Work | #35 |
-| `cast/practitioner/cast_record.py` | Canonical immutable CAST 0.7 Work record over exact ClosedPlan, capability/handle evidence, Mana transitions, #35 findings/observations, execution trace, outcome, residuals and settlement; `record_digest` is integrity only. | Code | Work | #36 |
+| `cast/practitioner/mana_cast.py` | First bounded Cast–Mana integration over the shared conserved `MagicRuntime`: verifies a pre-existing Claim basis before Closure, commits exactly after immutable Closure, executes only after commit, routes settlement through independent Environment consequence verification, and refuses replay/multi-participant flattening. | Code | Work | #16 completed bounded profile |
+| `cast/practitioner/observation.py` | Evaluates raw Environment observations against the exact after-phase Runtime Obligations, discharge mechanisms, and EvidenceContracts frozen in a ClosedPlan; preserves executor claims, disagreement, unknowns, consequence, and an account digest without sealing CAST. | Code | Work | #35 completed |
+| `cast/practitioner/cast_record.py` | Canonical immutable CAST 0.7 Work record over exact ClosedPlan, capability/handle evidence, Mana transitions, #35 findings/observations, execution trace, outcome, residuals and settlement; `record_digest` is integrity only. | Code | Work | #36 completed |
 | `cast/practitioner/__init__.py` | Practitioner public exports. | Code | Current | — |
 
 The three transitional composition symlinks under cast — pointing at the Familiar domain, the Spell format, and Owl — were aids after the domain move, never duplicate authorities. They were removed under #17: runtime code resolves another domain's artifacts through `cast/kernel/resources.py` by canonical repository path, so the supported test command no longer depends on whether the checkout can materialize symlinks. Their paths are named without backticks here deliberately, so the completeness check does not read a historical note as a live inventory claim.
@@ -307,6 +321,7 @@ All files under `cast/tests/` are **Current Code** because CI depends on them. T
 | `cast/tests/test_observation_35.py` | Independent post-execution observation/evaluation: canonical four obligation statuses, unknown/unavailable evidence, sealed EvidenceContract binding, observer independence, disagreement retention, executor-claim separation, and evaluated-account Mana settlement. |
 | `cast/tests/test_cast_sealing_36.py` | CAST 0.7 Work sealing: canonical record identity, schema/statuses, refusal without fake Closure, caller/readback mutation isolation, exact ClosedPlan/#35 composition, Mana transition identity, and non-success seals. |
 | `cast/tests/test_crossing_conformance_37.py` | Provider-neutral 0.7 cross-claim conformance: complete Mana-bearing crossing plus valid/defeating specimens for Requirement coverage, exact capability binding, Scope/Authority attenuation, Mana Closure/conservation/replay, independent observation/post-effect failure, faithful sealing, and algebra separation. |
+| `cast/tests/test_skilltree_kernel.py` | Skill-neutral collection schema, prerequisite/cycle refusal, point accounting, immutable unlock receipts, exact revision binding, multi-format artifact references, inert lesson provenance, and tree projection. |
 | `cast/tests/test_resource_resolution_17.py` | Canonical cross-domain resolution without composition symlinks, including a symlink-free checkout. |
 | `cast/tests/test_familiar_revisions_15.py` | Immutable Familiar revisions addressable by `FamiliarRef`; a newer write does not destroy an older revision. |
 | `cast/tests/test_familiar_view_14.py` | Every source guidance category accounted for exactly once; a silently dropped category fails. |
@@ -358,17 +373,23 @@ These are different kinds of statement and the distinction is load-bearing.
 | #53 | #54 | Recorded lifecycle standing for the 0.3, 0.4, 0.5 and 0.6 generations |
 | #71 | #72 | Exact Environment-evidenced Situation attached to a ready open CrossingPlan without crossing Closure |
 | #73 | #74 | Exact plan attachment re-verified around independent Brink probes and sealed into an immutable ClosedPlan with zero Mana movement/execution |
+| #16 | #75 | Bounded single-participant conserved Mana integration across Closure, execution, independent consequence, settlement, and replay refusal |
+| #35 | #76 | Independent observation/evaluation kept separate from executor claim and Mana decision |
+| #36 | #77 | Immutable CAST 0.7 Work sealing without truth or success inflation |
+| #37 | #79 | Provider-neutral adversarial conformance for all six 0.7 crossing claims |
 
-**Ticket-owned residuals** — places where the implementation does not yet meet an invariant above, or where a required decision has not been recorded. Each is a live GitHub issue and none is restated here:
+**Successor Work boundary** — the old ladder issues are not implementation
+residuals for the new skill-neutral direction. #26, #38, and #56–#59 are closed
+as superseded; their artifacts and reasoning remain attributable. #65's frozen
+Handle theory and chart are closed as the knowledge line that exposed the
+receiving boundary. New work begins from `skilltree/README.md`, not from silent
+promotion of those tickets.
 
 | Issue | Owns |
 |---|---|
-| #16 | Conserved Mana integration with the invariant Cast lifecycle; bounded single-participation transition exists, while final 0.7 integration remains |
 | #18 | This audit |
-| #26 | Mana as typed sparse relations versus tensor product — open design work, explicitly not a gate on the bounded #16 integration |
-| #56 | Adopt FORMAT 0.3 — including resolving **which of two incompatible 0.3 generations** it is, absorbed from #55. The Cast domain owns an admission schema the Spell domain does not generate |
-| #57 · #58 · #59 | The remaining ladder rungs — KERNEL 0.4, 0.6 Magic participation, and the 0.5 disposition. See `LIFECYCLE_LADDER.md` |
-| #36 · #37 · #38 | Milestone 0.7 remaining Work: immutable CAST sealing, adversarial conformance suite, and reference-Kernel integration/adoption. #35 observation is closed. |
+| #82 | Persistent lesson/evolution identities, atomic candidate proposals, and independent gate receipts |
+| #83 | Read-only artifact discovery adapters and the first reviewed Familiar skill collection |
 
 **Deferred by explicit decision, not by oversight:** remote Library transport and subscription, semantic-version range resolution, Presence lifetimes beyond a session, a Dismiss Spell, Level 0 semantics, portable Mana fields in `SPELL.md`, zero-Mana/Level-0 Cast semantics, multi-participant/locality Mana commitment, a universal sandbox implementation, a mandatory theorem prover, external PKI, and distributed consensus.
 
@@ -376,16 +397,17 @@ These are different kinds of statement and the distinction is load-bearing.
 
 `README.md` and this audit must agree, and this section is what they agree on.
 
-**Proven, by the CI run named at the top:** one local practitioner can cast Find Familiar, explicitly accept the resulting Familiar, persist it under a private host path, and resolve the exact artifact after restart. Registration, Presence, and the conserved Mana runtime each pass their own tests, and digest-chained ledger replay reconstructs conserved state across restart. The read-only Domain Handle and Situation seams preserve participant-relative projection separately from attributable Environment evidence and exact capability matching; #71 attaches that situated evidence to a ready open CrossingPlan; and #73 independently observes the Cast-attributable zero-delta Brink and seals an immutable ClosedPlan without moving Mana or executing a Technique.
+**Proven, by the CI run named at the top:** one local practitioner can cast Find Familiar, explicitly accept the resulting Familiar, persist it under a private host path, and resolve the exact artifact after restart. Registration, Presence, and the conserved Mana runtime each pass their own tests, and digest-chained ledger replay reconstructs conserved state across restart. The read-only Domain Handle and Situation seams preserve participant-relative projection separately from attributable Environment evidence and exact capability matching; the path continues through exact open plan, independently observed Brink, immutable Closure, one conserved Mana commitment, effect attempt, independent observation/evaluation, settlement, and immutable CAST sealing. The dedicated conformance suite carries valid and defeating specimens for all six retained 0.7 Work claims.
 
 Since the previous audit, the effect path itself became enforceable rather than merely resolved. Scope and Authority now bind through Environment-owned boundaries and refuse at closure when no boundary can be supplied (#10, #11). A violation the Technique caught and swallowed still fails the Cast, because the Kernel reads the boundary rather than the Technique's account of itself. Consequence is classified independently of executor status, and an executor cannot certify its own rollback (#27). Reactive reach beyond the attenuated handle is observed separately, so a Cast cannot claim a small radius because its handle was narrow (#28). Requirements bind to exact capability receipts by typed demand (#13) and compile to typed obligations that do not collapse into capability checks (#32). Concurrent Casts detect conflict on observed pre-state identity (#30). Familiar revisions are immutable and addressable (#15), View omission is accounted for exactly once (#14), and maintenance replay is guarded on source identity and accepted receipt (#12).
 
-The merged #16 Work projects one sealed `ManaParticipation` into the shared conserved `MagicRuntime`: it treats the sealed Claim quantity as a required pre-existing basis, commits only after Closure, orders the executor after successful commitment, routes spending/release through independent Environment consequence verification, retains failed/unobserved settlement as a live commitment for settlement-only retry, and derives replay identity from the immutable ClosedPlan. #35 now independently evaluates raw Environment observations against the sealed obligation/evidence contracts and keeps executor claim, observation, finding, consequence and settlement decision distinct. The #36 branch inventories a canonical immutable record over those already-attributable objects; this sentence records Work standing, not final merged evidence.
+The merged #16 Work projects one sealed `ManaParticipation` into the shared conserved `MagicRuntime`: it treats the sealed Claim quantity as a required pre-existing basis, commits only after Closure, orders the executor after successful commitment, routes spending/release through independent Environment consequence verification, retains failed/unobserved settlement as a live commitment for settlement-only retry, and derives replay identity from the immutable ClosedPlan. #35 independently evaluates raw Environment observations against the sealed obligation/evidence contracts and keeps executor claim, observation, finding, consequence and settlement decision distinct. #36 seals the attributable crossing without claiming truth, and #37 defeats cross-claim coupling failures.
 
 **Not proven, and not claimed:**
 
-- that the final relational Mana state shape is settled — #26 remains open research;
+- that the final relational Mana state shape is a universal skill-tree concern; the old #26 Spell/Mana research is retained but superseded for this repository direction;
 - that zero-Mana/Level-0 or multi-participant/locality commitment semantics are settled by the bounded #16 subset;
-- that the full 0.7 crossing is integrated. CrossingPlan/Brink/Closure are completed Work (#34/#73), exact Situation-to-open-plan attachment is completed Work (#71), bounded conserved Mana integration exists (#16), and independent post-execution evaluation is completed Work (#35); #36 sealing remains Work on this branch, followed by conformance (#37) and reference-Kernel integration/adoption (#38);
+- that the conformance-tested 0.7 Work crossing has been promoted into the 0.2 compatibility Kernel or adopted as Current. It has not, and the archived ladder will not be taken here;
 - that any of 0.3, 0.4, 0.5, or 0.6 is Current, Archive, or superseded by any other. Each is **retained as Work** under #53, which records their standing without taking a crossing. 0.2 remains the only Current specification, and the running Kernel exceeds it;
 - that observation is exhaustive. Unknown reactive reach is representable and is recorded as unknown; it is not treated as absent.
+- that the Skill Tree Work surface discovers, installs, executes, or evolves artifacts. This slice proves only collection validation, point-accounted build transitions, immutable receipts, and tree projection.

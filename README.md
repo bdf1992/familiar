@@ -1,8 +1,16 @@
-# Agent Spells
+# Familiar
 
-Agent Spells is an experimental local-first protocol for declaring **Spells**, attempting their **Effects** through one invariant casting law, preserving exact runtime evidence as **CAST** records, and keeping Familiar guidance distinct from runtime authority.
+Familiar is an experimental local-first workbench for portable agent guidance,
+machine-checkable skill collections, and evidence-backed skill evolution.
 
-The repository is organized around five subject domains:
+The repository's first complete reference profile is **Agent Spells**: a
+protocol for declaring **Spells**, attempting their **Effects** through one
+invariant casting law, preserving exact runtime evidence as **CAST** records,
+and keeping Familiar guidance distinct from runtime authority. Agent Spells is
+retained as a downstream compatibility and evidence profile; it is not the
+ontology every skill tree must adopt.
+
+The retained Agent Spells profile is organized around five subject domains:
 
 - **Spell** — portable Effect declarations, Requirements, Telemetry, and Spellcraft.
 - **Cast** — situated invocation, closure, governed execution, observation, residuals, and CAST records.
@@ -11,6 +19,25 @@ The repository is organized around five subject domains:
 - **Environment** — concrete host mechanisms such as Presence, observability, authority, scope, meters, clocks, containment, and conserved Mana.
 
 The root is the assembly over those domains. See [FOUNDATIONS.md](FOUNDATIONS.md) for the distinctions that must survive composition.
+
+## Skill-tree receiving surface
+
+[`skilltree/`](skilltree/) is a provisional, skill-neutral Work surface. Its
+small kernel validates collection graphs, prerequisites, point costs, builds,
+and immutable unlock receipts while leaving artifact formats to adapters.
+
+```text
+skill graph != tree projection
+unlock != install != execute
+experience != lesson != executable skill
+build selection != runtime authority
+```
+
+The first slice can reference Agent Skills, Spells, workflows, or opaque
+repository-native artifacts without interpreting them. It also installs the
+WikiSkill learning separation as a boundary: immutable execution references
+may inform persistent lessons; lessons may motivate one candidate artifact;
+only an independent evaluation and explicit gate may activate that revision.
 
 ## Core law
 
@@ -142,6 +169,7 @@ cast/                      invariant casting runtime, practitioner loop, tests, 
 familiar/                  Familiar contract, Owl, guidance, view/report work, persistence
 registry/                  Scroll / Spellbook / Library / local registration
 environment/               Presence and conserved Magic runtime mechanisms
+skilltree/                 skill-neutral collections, builds, projections, learning boundary (Work)
 ```
 
 The historical seals remain evidence of prior crossings; they are not silently rewritten.
@@ -156,11 +184,23 @@ The audit's completeness is checked by `cast/tests/test_repository_audit_18.py` 
 
 The suite no longer reports an expected failure. The Scope containment defect is closed by #10: a resolved Scope binds the effect path through a concrete Environment boundary, closure refuses when no such boundary can be supplied, and a violation the Technique swallowed is still recorded by the mechanism and still fails the Cast. Direct containment is necessary and not sufficient, and the ambient reactive reach beyond it is now observed under #28 — a Cast does not get to claim a small radius because its handle was narrow.
 
-What is **not** established: Mana participation in the Cast lifecycle (#16), the Mana state shape (#26), and the whole 0.7 crossing — its plan contract (#34), observation seam (#35), sealing contract (#36), conformance suite (#37), and integration (#38).
+What is established as retained **Work**: the complete practitioner crossing
+from Environment-grounded Handle through immutable Closure, conserved Mana
+participation, independent observation, truthful CAST sealing, and the
+provider-neutral adversarial 0.7 conformance suite. The exact conformance head
+passed 452 tests. This evidence does not promote the numbered draft generations.
+
+What is **not** established: a final universal Mana ontology, adoption of the
+0.3–0.7 draft ladder, a skill-artifact installer, an execution adapter, or an
+automated WikiSkill-style maintainer/proposer/gate.
 
 The 0.3, 0.4, 0.5 and 0.6 draft generations are each **retained as Work** under #53; none is adopted, superseded, or archived, and every one of them says in its own header that it extends or sits beneath what came before rather than replacing it. **0.2 remains the only Current specification, and the running Kernel exceeds it** — see [REPOSITORY_AUDIT.md](REPOSITORY_AUDIT.md) § *Lifecycle generations*.
 
-[LIFECYCLE_LADDER.md](LIFECYCLE_LADDER.md) specifies the route out: the ordered crossings from 0.2 Current to 0.7 Current, with an owning issue and required evidence for each rung. It takes none of them — a route is not a promotion.
+[LIFECYCLE_LADDER.md](LIFECYCLE_LADDER.md) is retained as the archived route
+that was considered for promoting the spell-centric generations. It was not
+taken. The skill-neutral workbench is the successor Work surface; the 0.2
+compatibility profile remains the current specification of the retained Agent
+Spells Kernel until that downstream profile is separately revised.
 
 ## Test
 
@@ -181,10 +221,14 @@ The repository tracks no symlinks. Runtime code resolves another domain's artifa
 
 ## Source baselines
 
-Reviewed 2026-08-15:
+Reviewed 2026-08-30:
 
 - Agent Skills specification
 - MCP specification revision 2026-07-28
 - MCP 2026-07-28 release notes
+- WikiSkill, arXiv:2608.27454v1 — raw experience / persistent knowledge /
+  executable skill separation and gated evolution
+- Soveraeign's experimental typed-contract charting — graph-first skills,
+  bounded tree projections, and adapter-owned execution boundaries
 
 Agent Spells is an independent experimental protocol and is not part of Agent Skills or MCP.
