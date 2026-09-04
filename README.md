@@ -1,7 +1,9 @@
 # Familiar
 
-Familiar is an experimental local-first workbench for portable agent guidance,
-machine-checkable skill collections, and evidence-backed skill evolution.
+Familiar is a local-first workbench for three things: writing agent guidance
+that travels between hosts, checking collections of skills by machine rather
+than by eye, and keeping the evidence for why a skill changed. It is
+experimental.
 
 The repository's first complete reference profile is **Agent Spells**: a
 protocol for declaring **Spells**, attempting their **Effects** through one

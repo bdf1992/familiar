@@ -1,0 +1,20 @@
+{
+  "reviews": {
+    "README.md": {
+      "artifact_digest": "sha256:bd05e7f5f24186f6d88521c9fbdf704ac73e1b62acbf463fc6320dbc1c26ce98",
+      "basis": [
+        {
+          "digest": "sha256:17e85597d43644455ed73b56bd435f7eaa4fd894001cc392899ac496e1026c49",
+          "path": "CLAUDE.md"
+        },
+        {
+          "digest": "sha256:e71233f4e71d33dd5900f3f4818a911673bbfa0031f659a28a78fdd3986ff8c3",
+          "path": "AGENTS.md"
+        }
+      ],
+      "changed": true
+    }
+  },
+  "schema": "soveraeign-clarity-coverage/v1",
+  "skill": "clarity/v1"
+}
