@@ -234,3 +234,20 @@ Reviewed 2026-08-30:
   bounded tree projections, and adapter-owned execution boundaries
 
 Agent Spells is an independent experimental protocol and is not part of Agent Skills or MCP.
+
+<!-- lineage:begin — generated from system-cartographer lineage/lineage.yaml. Do not hand-edit. -->
+
+## Where this sits
+
+This is one of 20 repositories on this account whose relations are recorded, with the evidence for each, in [`lineage.yaml`](https://github.com/bdf1992/system-cartographer/blob/claude/access-requirements-zbl1s7/lineage/lineage.yaml). What that record says about this one:
+
+**Claim.** A local-first workbench for agent guidance that a practitioner has to accept before it binds.
+
+**Checked.** `python -m pytest -q` — 463 passed, 86 subtests passed, observed 2026-09-04.
+
+**Relations.**
+
+- This repository **adapts** `soveraeign`. familiar's skilltree kernel accepts Soveraeign skills as one artifact type. cast/tests/test_skilltree_kernel.py:49 uses the adapter "soveraeign-skill/v1", and line 63 lists it alongside agent-skill/v1, spell/v0.2 and opaque/v1.
+- This repository **uses** `owl`. Owl is an agent role inside familiar's casting protocol. cast/examples/find-familiar/SPELL.md:31 says "The Owl Agent may conduct the cast using owl.system as its Familiar", and bounds it: Owl cannot accept the Whole for the subject, grant authority, or waive Requirements. The relation is one-way; Owl does not mention familiar.
+
+<!-- lineage:end -->
