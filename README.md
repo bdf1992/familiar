@@ -205,14 +205,14 @@ Spells Kernel until that downstream profile is separately revised.
 ## Test
 
 ```bash
-python -m pip install PyYAML jsonschema
+python -m pip install -r requirements.txt
 PYTHONPATH=cast:environment:. python -m unittest discover -s cast/tests -v
 ```
 
 On Windows PowerShell:
 
 ```powershell
-python -m pip install PyYAML jsonschema
+python -m pip install -r requirements.txt
 $env:PYTHONPATH = "cast;environment;."
 python -m unittest discover -s cast/tests -v
 ```
