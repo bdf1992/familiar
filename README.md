@@ -1,7 +1,26 @@
 # Familiar
 
 Familiar is an experimental local-first workbench for portable agent guidance,
-machine-checkable skill collections, and evidence-backed skill evolution.
+checking skill collections and prerequisites, and recording the evidence behind
+skill changes.
+
+**State: experimental.** The skill-neutral collection kernel is provisional
+**Work**. The retained Agent Spells runtime still uses **0.2 as its Current
+specification**; later numbered drafts have not been adopted. The
+[repository audit](REPOSITORY_AUDIT.md) explains the implementation and its
+limits.
+
+## Start here
+
+- [Skill Tree Workbench](skilltree/README.md) — collection graphs, prerequisites,
+  build validation, and the boundary between unlocking and executing a skill.
+- [First Familiar example](MIDNIGHT_FIRST_FAMILIAR.md) — the retained Agent
+  Spells bootstrap path, with explicit subject acceptance.
+- [Run the tests](#test) — reproduce the runtime checks locally.
+- [Current work](https://github.com/bdf1992/familiar/issues) — the maintained
+  backlog and dependency metadata.
+
+## Agent Spells reference profile
 
 The repository's first complete reference profile is **Agent Spells**: a
 protocol for declaring **Spells**, attempting their **Effects** through one
@@ -205,14 +224,14 @@ Spells Kernel until that downstream profile is separately revised.
 ## Test
 
 ```bash
-python -m pip install PyYAML jsonschema
+python -m pip install PyYAML jsonschema "pydantic>=2,<3"
 PYTHONPATH=cast:environment:. python -m unittest discover -s cast/tests -v
 ```
 
 On Windows PowerShell:
 
 ```powershell
-python -m pip install PyYAML jsonschema
+python -m pip install PyYAML jsonschema "pydantic>=2,<3"
 $env:PYTHONPATH = "cast;environment;."
 python -m unittest discover -s cast/tests -v
 ```
